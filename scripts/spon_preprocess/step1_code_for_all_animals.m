@@ -1,5 +1,6 @@
 %%Code to process the ITI period for all animals with extraction 
-%of running periods, quiescence periods, and high pupil and low pupil periods.
+%of running periods, quiescence periods, and high pupil and low pupil
+%periods and save
 restoredefaultpath;
 rehash toolboxcache
 cd('X:\Hadas\Meso-imaging\lan\results\code\Directed_Network_Allen')
