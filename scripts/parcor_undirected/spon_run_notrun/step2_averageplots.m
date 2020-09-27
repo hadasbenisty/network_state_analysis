@@ -1,4 +1,4 @@
-%% corr
+%% average plots for partial corr for spon run not run
 clear;close all;
 cd('X:\Lav\ProcessingDirectory\parcor_undirected\')
 addpath(genpath('X:\Lav\network_state_analysis\functions\'))
@@ -41,11 +41,8 @@ for i=1:length(animals)
     spon_notrun_cat_eigenvector=cat(2, spon_notrun_cat_eigenvector,spon_notrun.cent_corr.eigenvector); 
     clearvars spon_run spon_notrun
 end
+%get parcel label
 [~,textt]=xlsread('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
-textt(1,:)=[];
-isleftlabel=2:2:56;
-toremove=setdiff(1:56,[21:26 53:56]);
-finalindex=intersect(isleftlabel,toremove);
 parcels_names=textt(finalindex,1);
 
 graph_overlay_allen_paired(spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)',parcels_names,length(animals));
@@ -53,3 +50,7 @@ graph_overlay_allen_paired(spon_run_cat_closeness,spon_notrun_cat_closeness,'spo
 graph_overlay_allen_paired(spon_run_cat_pagerank,spon_notrun_cat_pagerank,'spon_run_notrun','pagerank_centrality','run vs notrun pagerank Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(spon_run_cat_eigenvector,spon_notrun_cat_eigenvector,'spon_run_notrun','eigenvector_centrality','run vs notrun eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(spon_run_cat_betweenness,spon_notrun_cat_betweenness,'spon_run_notrun','betweenness_centrality','run vs notrun betweenness Centrality (spon)',parcels_names,length(animals));
+
+graph_overlay_allen_notpaired(spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(spon_run_cat_closeness,spon_notrun_cat_closeness,'spon_run_notrun','closeness_centrality','run vs notrun closeness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(early_cat,late_cat,condition,name,plottitle,parcels_names,num)
