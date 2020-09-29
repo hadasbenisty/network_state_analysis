@@ -54,6 +54,4 @@ graph_overlay_allen_paired(trial_notrun_highvis_cat_pagerank,trial_notrun_lowvis
 graph_overlay_allen_paired(trial_notrun_highvis_cat_eigenvector,trial_notrun_lowvis_cat_eigenvector,'trial_notrun_highvis_trial_notrun_lowvis','eigenvector_centrality','trial_notrun_highvis vs trial_notrun_lowvis eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(trial_notrun_highvis_cat_betweenness,trial_notrun_lowvis_cat_betweenness,'trial_notrun_highvis_trial_notrun_lowvis','betweenness_centrality','trial_notrun_highvis vs trial_notrun_lowvis betweenness Centrality (spon)',parcels_names,length(animals));
 
-graph_overlay_allen_notpaired(trial_notrun_highvis_cat_degree,trial_notrun_lowvis_cat_degree,'trial_notrun_highvis_trial_notrun_lowvis','degree_centrality','trial_notrun_highvis vs trial_notrun_lowvis degree Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_notpaired(trial_notrun_highvis_cat_closeness,trial_notrun_lowvis_cat_closeness,'trial_notrun_highvis_trial_notrun_lowvis','closeness_centrality','trial_notrun_highvis vs trial_notrun_lowvis closeness Centrality (spon)',parcels_names,length(animals));
-    %calculate early
+graph_overlay_allen_notpaired(trial_notrun_highvis_cat_eigenvector,trial_notrun_lowvis_cat_eigenvector,'trial_notrun_highvis_trial_notrun_lowvis','eigenvector_centrality','trial_notrun_highvis vs trial_notrun_lowvis eigenvector Centrality (spon)',parcels_names,length(animals));

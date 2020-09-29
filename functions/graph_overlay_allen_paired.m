@@ -22,12 +22,13 @@ for b = 1:23 %plot bars in loop to custom color scheme per parcel based on regio
     bar(b, meandiff(b), 'FaceColor',  RegionColors(indx,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
 end
 view([-90 90]);
+ylim([-0.06 0.06]);
 % show standard deviation on top
 %h = errorbar(1:23,meandiff, sediff,'LineStyle','none','LineWidth',0.5)
 %h=ploterr()h = ploterr(1:2, mean(dat), [], std(dat), 'k.', 'abshhxy', 0);
 ylabel('Node Centrality');title(plottitle);
-h.Color='k';h.CapSize = 0;
-set(h, 'marker', 'none'); % remove marker
+%h.Color='k';h.CapSize = 0;
+%set(h, 'marker', 'none'); % remove marker
 hold all
 % plot(find(htest<=0.05), meandiff(htest<=0.05),'k*', 'MarkerSize',12);hold on;
 view([90 -90]);

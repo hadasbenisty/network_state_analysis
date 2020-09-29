@@ -54,7 +54,4 @@ graph_overlay_allen_paired(spon_pupilhigh_cat_pagerank,spon_pupillow_cat_pageran
 graph_overlay_allen_paired(spon_pupilhigh_cat_eigenvector,spon_pupillow_cat_eigenvector,'spon_pupilhigh_pupillow','eigenvector_centrality','pupilhigh vs pupillow eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(spon_pupilhigh_cat_betweenness,spon_pupillow_cat_betweenness,'spon_pupilhigh_pupillow','betweenness_centrality','pupilhigh vs pupillow betweenness Centrality (spon)',parcels_names,length(animals));
 
-graph_overlay_allen_notpaired(spon_pupilhigh_cat_degree,spon_pupillow_cat_degree,'spon_pupilhigh_pupillow','degree_centrality','pupilhigh vs pupillow degree Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_notpaired(spon_pupilhigh_cat_closeness,spon_pupillow_cat_closeness,'spon_pupilhigh_pupillow','closeness_centrality','pupilhigh vs pupillow closeness Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_notpaired(early_cat,late_cat,condition,name,plottitle,parcels_names,num)
-    %calculate early
+graph_overlay_allen_notpaired(spon_pupilhigh_cat_eigenvector,spon_pupillow_cat_eigenvector,'spon_pupilhigh_pupillow','eigenvector_centrality','pupilhigh vs pupillow eigenvector Centrality (spon)',parcels_names,length(animals));

@@ -57,6 +57,7 @@ switch method
 %        C=corr(xet');
 %         C = C.*(C>th);
         W=squareform(rho);
+        W(eye(size(W)) == 1) = 1;
     case 'relative_modeling_contribution'
         R2_full = train_full_model(data, params);
         well_modeled_nodes = find(R2_full > params.modeled_energy_th);
