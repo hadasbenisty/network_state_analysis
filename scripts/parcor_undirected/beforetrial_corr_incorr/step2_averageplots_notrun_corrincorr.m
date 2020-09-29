@@ -11,7 +11,8 @@ trial_notrun_correct_cat_closeness=[];trial_notrun_incorrect_cat_closeness=[];
 trial_notrun_correct_cat_betweenness=[];trial_notrun_incorrect_cat_betweenness=[];
 trial_notrun_correct_cat_pagerank=[];trial_notrun_incorrect_cat_pagerank=[];
 trial_notrun_correct_cat_eigenvector=[];trial_notrun_incorrect_cat_eigenvector=[];
-condition1='trial_notrun_correct';condition2='trial_notrun_incorrect';
+condition1='trial_notrun_correct';
+condition2='trial_notrun_incorrect';
 parcels_region_labels_bitrial_notrun_incorrectral=[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 5 5 5 5 5 5 0 0 0 0 3 3 4 4 2 2 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 7 7 7 7 0 0 0 0];
 parcels_region_labels=parcels_region_labels_bitrial_notrun_incorrectral(finalindex);
 counter=1;
@@ -47,11 +48,11 @@ isleftlabel=2:2:56;
 toremove=setdiff(1:56,[21:26 53:56]);
 finalindex=intersect(isleftlabel,toremove);
 parcels_names=textt(finalindex,1);
+graph_overlay_allen_paired(trial_notrun_correct_cat_pagerank,trial_notrun_incorrect_cat_pagerank,'trial_notrun_correct_trial_notrun_incorrect','pagerank_centrality','trial_notrun_correct vs trial_notrun_incorrect pagerank Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(trial_notrun_correct_cat_eigenvector,trial_notrun_incorrect_cat_eigenvector,'trial_notrun_correct_trial_notrun_incorrect','eigenvector_centrality','trial_notrun_correct vs trial_notrun_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
 
 graph_overlay_allen_paired(trial_notrun_correct_cat_degree,trial_notrun_incorrect_cat_degree,'trial_notrun_correct_trial_notrun_incorrect','degree_centrality','trial_notrun_correct vs trial_notrun_incorrect degree Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(trial_notrun_correct_cat_closeness,trial_notrun_incorrect_cat_closeness,'trial_notrun_correct_trial_notrun_incorrect','closeness_centrality','trial_notrun_correct vs trial_notrun_incorrect closeness Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(trial_notrun_correct_cat_pagerank,trial_notrun_incorrect_cat_pagerank,'trial_notrun_correct_trial_notrun_incorrect','pagerank_centrality','trial_notrun_correct vs trial_notrun_incorrect pagerank Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(trial_notrun_correct_cat_eigenvector,trial_notrun_incorrect_cat_eigenvector,'trial_notrun_correct_trial_notrun_incorrect','eigenvector_centrality','trial_notrun_correct vs trial_notrun_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(trial_notrun_correct_cat_betweenness,trial_notrun_incorrect_cat_betweenness,'trial_notrun_correct_trial_notrun_incorrect','betweenness_centrality','trial_notrun_correct vs trial_notrun_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
 
-graph_overlay_allen_notpaired(trial_notrun_correct_cat_eigenvector,trial_notrun_incorrect_cat_eigenvector,'trial_notrun_correct_trial_notrun_incorrect','eigenvector_centrality','trial_notrun_correct vs trial_notrun_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));

@@ -1,4 +1,6 @@
-cd('X:\Lav\ProcessingDirectory')
+addpath(genpath('../../../utils/'));
+cd('X:\Lav\ProcessingDirectory');
+
 addpath(genpath('X:\Lav\network_state_analysis\scripts\parcor_undirected'))
 animals={'xt','xs','xu','xx','xz','xw'};
 
