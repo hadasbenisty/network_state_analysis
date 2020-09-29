@@ -1,10 +1,10 @@
-function demo_all_runningnotrunning(animal)
+function demo_all_runningnotrunning(animal, outputpth)
 rehash
 rehash path
 addpath(genpath('X:\Lav/network_state_analysis\functions'))
 cd('X:\Lav\ProcessingDirectory')
 inputfolder=fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',animal,'\');
-outputfolder=fullfile('X:\Lav\ProcessingDirectory\',animal,'\');
+outputfolder=fullfile(outputpth, animal,'\');
 mkdir(animal);
 % load the time traces file (notice the animal and day)
 rundata=load(strcat(inputfolder, strcat(animal,'spon_running_notrunning.mat')));
@@ -30,7 +30,7 @@ for j=1:2
         %disp('lassoweights done')
         
         %% Graph Analysis
-        [indic_corr, cent_corr, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names);
+        [indic_corr, cent_corr, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names, isw);
         %[indic_lasso, cent_lasso, G_lasso, names_lasso] = graph_analysis_afterclust(W_lasso, th_lasso, parcels_names);
         disp('graph analysis done')
         

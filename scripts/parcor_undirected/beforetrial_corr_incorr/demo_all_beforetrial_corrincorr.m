@@ -1,11 +1,11 @@
-function demo_all_beforetrial_corrincorr(animal)
+function demo_all_beforetrial_corrincorr(outputpth, animal, isw)
 rehash
 rehash path
 addpath(genpath('X:\Lav/network_state_analysis\functions'))
 cd('X:\Lav\ProcessingDirectory')
 inputfolder=fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',animal,'\');
-outputfolder=fullfile('X:\Lav\ProcessingDirectory\',animal,'\');
-mkdir(animal);
+outputfolder=fullfile(outputpth, animal,'\');
+mkdir(outputpth);
 % load the time traces file (notice the animal and day)
 rundata=load(strcat(inputfolder, strcat(animal,'state_trials_networkanalysis.mat')));
 isleftlabel=2:2:56;
@@ -40,7 +40,7 @@ for j=1:10
     end
     if isempty(find(isnan(data)==1))
         %% measure weights
-        W_corr = measure_weights_partial(data, 'corr');
+        W_corr = measure_weights_partial(data, 'corr', isw);
          disp('corweights done')
 %         [W_lasso, well_modeled_nodes] = measure_weights(data, 'relative_modeling_contribution');
 %         disp('lassoweights done')

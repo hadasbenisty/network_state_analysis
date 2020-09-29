@@ -1,3 +1,4 @@
+function step2_averageplots_lowpupil_corrincorr(inputpth,outputpth)
 %% corr
 clear;close all;
 cd('X:\Lav\ProcessingDirectory\parcor_undirected\')
@@ -17,8 +18,8 @@ parcels_region_labels=parcels_region_labels_bitrial_lowpup_incorrectral(finalind
 counter=1;
 for i=1:length(animals)
     animal=char(animals(i)); 
-    trial_lowpup_correct=load(strcat('X:\Lav\ProcessingDirectory\',animal,'\','network_analysis_corr',condition1),'W_corr','indic_corr','cent_corr','G_corr','names_corr');
-    trial_lowpup_incorrect=load(strcat('X:\Lav\ProcessingDirectory\',animal,'\','network_analysis_corr',condition2),'W_corr','indic_corr','cent_corr','G_corr','names_corr');   
+    trial_lowpup_correct=load(strcat(inputpth,animal,'\','network_analysis_corr',condition1),'W_corr','indic_corr','cent_corr','G_corr','names_corr');
+    trial_lowpup_incorrect=load(strcat(inputpth,animal,'\','network_analysis_corr',condition2),'W_corr','indic_corr','cent_corr','G_corr','names_corr');   
     trial_lowpup_correct_cat_degree=cat(2, trial_lowpup_correct_cat_degree,trial_lowpup_correct.cent_corr.degree); 
     trial_lowpup_correct_cat_closeness=cat(2, trial_lowpup_correct_cat_closeness,trial_lowpup_correct.cent_corr.closeness); 
     trial_lowpup_correct_cat_betweenness=cat(2, trial_lowpup_correct_cat_betweenness,trial_lowpup_correct.cent_corr.betweenness);    
@@ -48,11 +49,11 @@ toremove=setdiff(1:56,[21:26 53:56]);
 finalindex=intersect(isleftlabel,toremove);
 parcels_names=textt(finalindex,1);
 
-graph_overlay_allen_paired(trial_lowpup_correct_cat_degree,trial_lowpup_incorrect_cat_degree,'trial_lowpup_correct_trial_lowpup_incorrect','degree_centrality','trial_lowpup_correct vs trial_lowpup_incorrect degree Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(trial_lowpup_correct_cat_closeness,trial_lowpup_incorrect_cat_closeness,'trial_lowpup_correct_trial_lowpup_incorrect','closeness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect closeness Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(trial_lowpup_correct_cat_pagerank,trial_lowpup_incorrect_cat_pagerank,'trial_lowpup_correct_trial_lowpup_incorrect','pagerank_centrality','trial_lowpup_correct vs trial_lowpup_incorrect pagerank Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(trial_lowpup_correct_cat_eigenvector,trial_lowpup_incorrect_cat_eigenvector,'trial_lowpup_correct_trial_lowpup_incorrect','eigenvector_centrality','trial_lowpup_correct vs trial_lowpup_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(trial_lowpup_correct_cat_betweenness,trial_lowpup_incorrect_cat_betweenness,'trial_lowpup_correct_trial_lowpup_incorrect','betweenness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_degree,trial_lowpup_incorrect_cat_degree,'trial_lowpup_correct_trial_lowpup_incorrect','degree_centrality','trial_lowpup_correct vs trial_lowpup_incorrect degree Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_closeness,trial_lowpup_incorrect_cat_closeness,'trial_lowpup_correct_trial_lowpup_incorrect','closeness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect closeness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_pagerank,trial_lowpup_incorrect_cat_pagerank,'trial_lowpup_correct_trial_lowpup_incorrect','pagerank_centrality','trial_lowpup_correct vs trial_lowpup_incorrect pagerank Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_eigenvector,trial_lowpup_incorrect_cat_eigenvector,'trial_lowpup_correct_trial_lowpup_incorrect','eigenvector_centrality','trial_lowpup_correct vs trial_lowpup_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_betweenness,trial_lowpup_incorrect_cat_betweenness,'trial_lowpup_correct_trial_lowpup_incorrect','betweenness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
 
 graph_overlay_allen_notpaired(trial_lowpup_correct_cat_degree,trial_lowpup_incorrect_cat_degree,'trial_lowpup_correct_trial_lowpup_incorrect','degree_centrality','trial_lowpup_correct vs trial_lowpup_incorrect degree Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_notpaired(trial_lowpup_correct_cat_closeness,trial_lowpup_incorrect_cat_closeness,'trial_lowpup_correct_trial_lowpup_incorrect','closeness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect closeness Centrality (spon)',parcels_names,length(animals));

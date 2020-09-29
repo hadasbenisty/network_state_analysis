@@ -7,7 +7,7 @@ rehash path
 addpath(genpath('X:\Lav/network_state_analysis\functions'))
 cd('X:\Lav\ProcessingDirectory')
 inputfolder=fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',animal,'\');
-outputfolder=fullfile('X:\Lav\ProcessingDirectory\',animal,'\');
+outputfolder=fullfile('X:\Lav\ProcessingDirectory_spet29\',animal,'\');
 mkNewDir(animal);
 % load the time traces file (notice the animal and day)
 pupildata=load(strcat(inputfolder, strcat(animal,'spon_pupilhigh_pupillow.mat')));
