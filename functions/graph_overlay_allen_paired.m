@@ -1,4 +1,4 @@
-function graph_overlay_allen_paired(condition1,condition2,condition,name,plottitle,parcels_names,num)
+function graph_overlay_allen_paired(outputpath, condition1,condition2,condition,name,plottitle,parcels_names,num)
 %get parcel labels
 isleftlabel=2:2:56;
 toremove=setdiff(1:56,[21:26 53:56]);
@@ -12,7 +12,6 @@ difference_cond1_cond2=condition1-condition2;
 %mean of difference across animals
 meandiff=mean(difference_cond1_cond2,2);
 %se of difference across animals
-sediff=std(difference_cond1_cond2,0,2)./sqrt(num-1);
 figure;
 set(gcf,'renderer','painters');
 subplot(1,1,1)
@@ -22,11 +21,11 @@ for b = 1:23 %plot bars in loop to custom color scheme per parcel based on regio
     bar(b, meandiff(b), 'FaceColor',  RegionColors(indx,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
 end
 view([-90 90]);
-ylim([-0.06 0.06]);
+% ylim([-0.06 0.06]);
 % show standard deviation on top
 %h = errorbar(1:23,meandiff, sediff,'LineStyle','none','LineWidth',0.5)
 %h=ploterr()h = ploterr(1:2, mean(dat), [], std(dat), 'k.', 'abshhxy', 0);
-ylabel('Node Centrality');title(plottitle);
+ylabel('Node Centrality');title(underline2space(plottitle));
 %h.Color='k';h.CapSize = 0;
 %set(h, 'marker', 'none'); % remove marker
 hold all
@@ -37,6 +36,6 @@ set(gca,'xtick',1:23)
 set(gca,'xticklabel',parcels_names)
 set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
 %set(gca,'XTickLabelRotation',45);
-mkdir(condition);
-mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\parcor_undirected\',condition,name), 'all');
+mkNewDir(fullfile(outputpath, condition));
+mysave(gcf, fullfile(outputpath, condition,name), 'all');
 end

@@ -1,4 +1,4 @@
-function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plottitle,parcels_names,num)
+function graph_overlay_allen_notpaired(outputpth, cond1_cat,cond2_cat,condition,name,plottitle,parcels_names,num)
     %calculate average and error of condition 1
     condition1_meanvec_parcel=mean(cond1_cat,2);
     condition1_sevec_parcel=std(cond1_cat,0,2)./sqrt(num-1);
@@ -18,7 +18,8 @@ function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plotti
     set(gcf,'renderer','Painters')
     for i=1:23
         indx=parcels_region_labels(i);
-        h=errorbar(i,condition1_meanvec_parcel(i),condition1_sevec_parcel(i),'color',RegionColors(indx,:),'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(plottitle);        
+        h=errorbar(i,condition1_meanvec_parcel(i),condition1_sevec_parcel(i),'color',RegionColors(indx,:),'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');
+        title(underline2space(plottitle));        
         alpha = 1;
         set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha])
         hold on
@@ -26,7 +27,8 @@ function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plotti
         hold on    
     for i=1:23
         indx=parcels_region_labels(i);
-        h=errorbar(i,condition2_meanvec_parcel(i),condition2_sevec_parcel(i),'color',RegionColors(indx,:),'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(plottitle);        
+        h=errorbar(i,condition2_meanvec_parcel(i),condition2_sevec_parcel(i),'color',RegionColors(indx,:),'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');
+        title(underline2space(plottitle));        
         alpha = 0.3;
         set([h.Bar, h.Line], 'ColorType', 'truecoloralpha', 'ColorData', [h.Line.ColorData(1:3); 255*alpha])
         hold on
@@ -37,19 +39,20 @@ function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plotti
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
     set(gca,'XTickLabelRotation',45);
     
-    mkdir(condition);
+    mkNewDir(condition);
     mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\parcor_undirected\',condition,strcat(name,'regioncolored')), 'all');
     %plot the same thing again but color coded for condition not region
     figure;
     set(gcf,'renderer','Painters')
-    errorbar(condition1_meanvec_parcel,condition1_sevec_parcel,'color',[0 0 0.8008],'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(plottitle);
+    errorbar(condition1_meanvec_parcel,condition1_sevec_parcel,'color',[0 0 0.8008],'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(underline2space(plottitle));
     hold on;
-    errorbar(condition2_meanvec_parcel,condition2_sevec_parcel,'color',[0.9961 0.2695 0],'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(plottitle);
+    errorbar(condition2_meanvec_parcel,condition2_sevec_parcel,'color',[0.9961 0.2695 0],'LineStyle','none','LineWidth',1.5);ylabel('Node Centrality');title(underline2space(plottitle));
     set(gcf, 'Position',  [150,150, 1000,500]);
     set(gca,'xtick',1:23)
     set(gca,'xticklabel',parcels_names)
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
     set(gca,'XTickLabelRotation',45);
-    mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\parcor_undirected\',condition,strcat(name,'conditioncolored')), 'all');
+    mkNewDir(fullfile(outputpth,condition));
+    mysave(gcf, fullfile(outputpth,condition,strcat(name,'conditioncolored')), 'all');
 end
 

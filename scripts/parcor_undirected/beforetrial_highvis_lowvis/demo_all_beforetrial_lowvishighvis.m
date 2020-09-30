@@ -5,7 +5,7 @@ addpath(genpath('X:\Lav/network_state_analysis\functions'))
 cd('X:\Lav\ProcessingDirectory')
 inputfolder=fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',animal,'\');
 outputfolder=fullfile('X:\Lav\ProcessingDirectory\',animal,'\');
-mkdir(animal);
+mkNewDir(animal);
 % load the time traces file (notice the animal and day)
 beforetrialdata=load(strcat(inputfolder, strcat(animal,'before_trials_networkanalysis.mat')));
 isleftlabel=2:2:56;
