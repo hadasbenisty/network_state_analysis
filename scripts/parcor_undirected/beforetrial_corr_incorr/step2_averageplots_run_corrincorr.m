@@ -57,3 +57,11 @@ graph_overlay_allen_paired(outputpth, trial_run_correct_cat_closeness,trial_run_
 graph_overlay_allen_paired(outputpth, trial_run_correct_cat_eigenvector,trial_run_incorrect_cat_eigenvector,'trial_run_correct_trial_run_incorrect','eigenvector_centrality','trial_run_correct vs trial_run_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(outputpth, trial_run_correct_cat_betweenness,trial_run_incorrect_cat_betweenness,'trial_run_correct_trial_run_incorrect','betweenness_centrality','trial_run_correct vs trial_run_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
 
+braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators, trial_run_correct_cat_pagerank,trial_run_incorrect_cat_pagerank,'trial_run_correct_trial_run_incorrect','pagerank_centrality','trial_run_correct vs trial_run_incorrect pagerank Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators, trial_run_correct_cat_degree,trial_run_incorrect_cat_degree,'trial_run_correct_trial_run_incorrect','degree_centrality','trial_run_correct vs trial_run_incorrect degree Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators, trial_run_correct_cat_closeness,trial_run_incorrect_cat_closeness,'trial_run_correct_trial_run_incorrect','closeness_centrality','trial_run_correct vs trial_run_incorrect closeness Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators, trial_run_correct_cat_eigenvector,trial_run_incorrect_cat_eigenvector,'trial_run_correct_trial_run_incorrect','eigenvector_centrality','trial_run_correct vs trial_run_incorrect eigenvector Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators, trial_run_correct_cat_betweenness,trial_run_incorrect_cat_betweenness,'trial_run_correct_trial_run_incorrect','betweenness_centrality','trial_run_correct vs trial_run_incorrect betweenness Centrality (spon)');
+

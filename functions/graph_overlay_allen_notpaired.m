@@ -1,4 +1,4 @@
-function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plottitle,parcels_names,num)
+function graph_overlay_allen_notpaired(outputpth,cond1_cat,cond2_cat,condition,name,plottitle,parcels_names,num)
     %calculate average and error of condition 1
     condition1_meanvec_parcel=mean(cond1_cat,2);
     condition1_sevec_parcel=std(cond1_cat,0,2)./sqrt(num-1);
@@ -38,7 +38,7 @@ function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plotti
     set(gca,'XTickLabelRotation',45);
     
     mkdir(condition);
-    mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\parcor_undirected\',condition,strcat(name,'regioncolored')), 'all');
+    mysave(gcf, fullfile(outputpth,condition,strcat(name,'regioncolored')), 'all');
     %plot the same thing again but color coded for condition not region
     figure;
     set(gcf,'renderer','Painters')
@@ -50,6 +50,6 @@ function graph_overlay_allen_notpaired(cond1_cat,cond2_cat,condition,name,plotti
     set(gca,'xticklabel',parcels_names)
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
     set(gca,'XTickLabelRotation',45);
-    mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\parcor_undirected\',condition,strcat(name,'conditioncolored')), 'all');
+    mysave(gcf, fullfile(outputpth,condition,strcat(name,'conditioncolored')), 'all');
 end
 
