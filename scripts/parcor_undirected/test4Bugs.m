@@ -27,8 +27,8 @@ animals={'xw','xx','xz','xs','xt','xu'};
 
 for i=1:length(animals)
     animal=char(animals(i)); 
-    trial_notrun_correct=load(strcat('X:\Lav\ProcessingDirectory_spet29\',animal,'\','network_analysis_corr',condition1),'W_corr','indic_corr','cent_corr','G_corr','names_corr');
-    trial_notrun_incorrect=load(strcat('X:\Lav\ProcessingDirectory_spet29\',animal,'\','network_analysis_corr',condition2),'W_corr','indic_corr','cent_corr','G_corr','names_corr');   
+    trial_notrun_correct=load(strcat('X:\Lav\ProcessingDirectory\',animal,'\','network_analysis_corr',condition1),'W_corr','indic_corr','cent_corr','G_corr','names_corr');
+    trial_notrun_incorrect=load(strcat('X:\Lav\ProcessingDirectory\',animal,'\','network_analysis_corr',condition2),'W_corr','indic_corr','cent_corr','G_corr','names_corr');   
     trial_notrun_correct_cat_eigenvector=cat(2, trial_notrun_correct_cat_eigenvector,trial_notrun_correct.cent_corr.eigenvector); 
       trial_notrun_incorrect_cat_eigenvector=cat(2, trial_notrun_incorrect_cat_eigenvector,trial_notrun_incorrect.cent_corr.eigenvector); 
 
