@@ -1,6 +1,6 @@
 function step2_averageplots_lowpupil_corrincorr(inputpth,outputpth)
 %% corr
-clear;close all;
+%clear;close all;
 cd('X:\Lav\ProcessingDirectory\parcor_undirected\')
 addpath(genpath('X:\Lav\network_state_analysis\functions\'))
 animals={'xw','xx','xz','xs','xt','xu'};
@@ -55,6 +55,9 @@ graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_pagerank,trial_lo
 graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_eigenvector,trial_lowpup_incorrect_cat_eigenvector,'trial_lowpup_correct_trial_lowpup_incorrect','eigenvector_centrality','trial_lowpup_correct vs trial_lowpup_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_paired(outputpth, trial_lowpup_correct_cat_betweenness,trial_lowpup_incorrect_cat_betweenness,'trial_lowpup_correct_trial_lowpup_incorrect','betweenness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
 
-graph_overlay_allen_notpaired(trial_lowpup_correct_cat_degree,trial_lowpup_incorrect_cat_degree,'trial_lowpup_correct_trial_lowpup_incorrect','degree_centrality','trial_lowpup_correct vs trial_lowpup_incorrect degree Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_notpaired(trial_lowpup_correct_cat_closeness,trial_lowpup_incorrect_cat_closeness,'trial_lowpup_correct_trial_lowpup_incorrect','closeness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect closeness Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_notpaired(trial_lowpup_correct_cat_eigenvector,trial_lowpup_incorrect_cat_eigenvector,'trial_lowpup_correct_trial_lowpup_incorrect','eigenvector_centrality','trial_lowpup_correct vs trial_lowpup_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(outputpth, trial_lowpup_correct_cat_degree,trial_lowpup_incorrect_cat_degree,'trial_lowpup_correct_trial_lowpup_incorrect','degree_centrality','trial_lowpup_correct vs trial_lowpup_incorrect degree Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(outputpth, trial_lowpup_correct_cat_closeness,trial_lowpup_incorrect_cat_closeness,'trial_lowpup_correct_trial_lowpup_incorrect','closeness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect closeness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(outputpth, trial_lowpup_correct_cat_pagerank,trial_lowpup_incorrect_cat_pagerank,'trial_lowpup_correct_trial_lowpup_incorrect','pagerank_centrality','trial_lowpup_correct vs trial_lowpup_incorrect pagerank Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(outputpth, trial_lowpup_correct_cat_eigenvector,trial_lowpup_incorrect_cat_eigenvector,'trial_lowpup_correct_trial_lowpup_incorrect','eigenvector_centrality','trial_lowpup_correct vs trial_lowpup_incorrect eigenvector Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_notpaired(outputpth, trial_lowpup_correct_cat_betweenness,trial_lowpup_incorrect_cat_betweenness,'trial_lowpup_correct_trial_lowpup_incorrect','betweenness_centrality','trial_lowpup_correct vs trial_lowpup_incorrect betweenness Centrality (spon)',parcels_names,length(animals));
+

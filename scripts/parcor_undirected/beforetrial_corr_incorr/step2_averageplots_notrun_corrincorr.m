@@ -1,6 +1,6 @@
 function step2_averageplots_notrun_corrincorr(inputpth, oututpth)
 %% corr
-clear;close all;
+%clear;close all;
 cd('X:\Lav\ProcessingDirectory\parcor_undirected\')
 addpath(genpath('X:\Lav\network_state_analysis\functions\'))
 animals={'xw','xx','xz','xs','xt','xu'};
