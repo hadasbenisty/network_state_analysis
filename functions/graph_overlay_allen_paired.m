@@ -28,7 +28,7 @@ end
 % show standard deviation on top
 %h = errorbar(1:23,meandiff, sediff,'LineStyle','none','LineWidth',0.5)
 %h=ploterr()h = ploterr(1:2, mean(dat), [], std(dat), 'k.', 'abshhxy', 0);
-ylabel('Node Centrality');title(plottitle);
+ylabel('Difference in Node Centrality');title(plottitle);
 %h.Color='k';h.CapSize = 0;
 %set(h, 'marker', 'none'); % remove marker
 hold all
