@@ -1,3 +1,4 @@
+addpath(genpath('X:\Lav\network_state_analysis\utils'))
 %% spon high low pupil
 % cd 'X:\Lav\network_state_analysis\scripts\parcor_undirected\spon_highpup_lowpup';
 % %step1_weightsandgraphanalysis
