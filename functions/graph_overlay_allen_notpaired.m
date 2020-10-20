@@ -52,4 +52,3 @@ function graph_overlay_allen_notpaired(outputpth,cond1_cat,cond2_cat,condition,n
     set(gca,'XTickLabelRotation',45);
     mysave(gcf, fullfile(outputpth,condition,strcat(name,'conditioncolored')), 'all');
 end
-

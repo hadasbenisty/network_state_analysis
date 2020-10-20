@@ -4,7 +4,8 @@ clear;
 addpath(genpath('X:\Hadas\Meso-imaging\lan\results\code\Functions'));
 cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude');
 animals={'xs','xx','xz','xw','xt','xu'};
-
+%% modified 10/20/2020 to set high pupil in quiescence as not running. the change does not 
+% matter much since we're no longer looking at not running as a state
 cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
 for ir=1:length(animals)
     animal=char(animals(ir));
@@ -13,14 +14,14 @@ for ir=1:length(animals)
     runningalldata=[];runningalldata_t=[];notrunningalldata=[];notrunningalldata_t=[];
     for dayy=1:length(unique(days_to_process)) %iterate over psychometric days
         animalname=strcat(animal,num2str(days_to_process(dayy)));
-        if exist(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'running_ITI.mat')),'file')
-            res = load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'running_ITI.mat')));
+        if exist(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'arousal_state_ITI.mat')),'file')
+            res= load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'arousal_state_ITI.mat')));
             %running data
             runningPT=reshape(res.running_time_traces.locomotionperiods,size(res.running_time_traces.locomotionperiods,1),[]);
             runningt=reshape(res.running_time_traces.t_wheelon,size(res.running_time_traces.t_wheelon,1)*size(res.running_time_traces.t_wheelon,2),1);
             %not running data
-            notrunningPT=reshape(res.running_time_traces.quiescenceperiods,size(res.running_time_traces.quiescenceperiods,1),[]);
-            notrunningt=reshape(res.running_time_traces.t_wheeloff,size(res.running_time_traces.t_wheeloff,1)*size(res.running_time_traces.t_wheeloff,2),1);
+            notrunningPT=reshape(res.running_time_traces.puphigh_on_q,size(res.running_time_traces.puphigh_on_q,1),[]);
+            notrunningt=reshape(res.running_time_traces.t_puphigh_on_q,size(res.running_time_traces.t_puphigh_on_q,1)*size(res.running_time_traces.t_puphigh_on_q,2),1);
             %concatenate across animals
             runningalldata=cat(2,runningalldata,runningPT);
             runningalldata_t=cat(1,runningalldata_t,runningt);
