@@ -25,7 +25,7 @@ for i=1:length(animals)
     spon_run_cat_betweenness=cat(2, spon_run_cat_betweenness,spon_run.cent_corr.betweenness);    
     spon_run_cat_pagerank=cat(2, spon_run_cat_pagerank,spon_run.cent_corr.pagerank); 
     spon_run_cat_eigenvector=cat(2, spon_run_cat_eigenvector,spon_run.cent_corr.eigenvector); 
-     subplot(2,length(animals),counter)
+    subplot(2,length(animals),counter)
     p=plot(spon_run.G_corr);title(strcat(condition1,animal));counter=counter+1;
     p.NodeCData=parcels_region_labels;
     p.NodeLabel = {};
@@ -40,17 +40,31 @@ for i=1:length(animals)
     spon_notrun_cat_betweenness=cat(2, spon_notrun_cat_betweenness,spon_notrun.cent_corr.betweenness);       
     spon_notrun_cat_pagerank=cat(2, spon_notrun_cat_pagerank,spon_notrun.cent_corr.pagerank); 
     spon_notrun_cat_eigenvector=cat(2, spon_notrun_cat_eigenvector,spon_notrun.cent_corr.eigenvector); 
+    diffusionmap_twoconditions(spon_run.W_corr,spon_notrun.W_corr,spon_run.cent_corr.eigenvector,spon_notrun.cent_corr.eigenvector,condition1,condition2,animal,'eigenvector')
     clearvars spon_run spon_notrun
 end
+
 %get parcel label
 [~,textt]=xlsread('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
+textt(1,:)=[];
 parcels_names=textt(finalindex,1);
 
-graph_overlay_allen_paired(outputpth, spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(outputpth,spon_run_cat_closeness,spon_notrun_cat_closeness,'spon_run_notrun','closeness_centrality','run vs notrun closeness Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(outputpth,spon_run_cat_pagerank,spon_notrun_cat_pagerank,'spon_run_notrun','pagerank_centrality','run vs notrun pagerank Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(outputpth,spon_run_cat_eigenvector,spon_notrun_cat_eigenvector,'spon_run_notrun','eigenvector_centrality','run vs notrun eigenvector Centrality (spon)',parcels_names,length(animals));
-graph_overlay_allen_paired(outputpth,spon_run_cat_betweenness,spon_notrun_cat_betweenness,'spon_run_notrun','betweenness_centrality','run vs notrun betweenness Centrality (spon)',parcels_names,length(animals));
+[avg_cond1,avg_cond2] = permuted_centrality('run','notrun');
+graph_overlay_allen_paired_permuted(avg_cond1,avg_cond2,outputpth,spon_run_cat_eigenvector,spon_notrun_cat_eigenvector,'spon_run_notrun','eigenvector_centrality','run vs notrun eigenvector Centrality (spon)',parcels_names,length(animals));
+
+% graph_overlay_allen_paired(outputpth, spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)',parcels_names,length(animals));
+% graph_overlay_allen_paired(outputpth,spon_run_cat_closeness,spon_notrun_cat_closeness,'spon_run_notrun','closeness_centrality','run vs notrun closeness Centrality (spon)',parcels_names,length(animals));
+% graph_overlay_allen_paired(outputpth,spon_run_cat_pagerank,spon_notrun_cat_pagerank,'spon_run_notrun','pagerank_centrality','run vs notrun pagerank Centrality (spon)',parcels_names,length(animals));
+% graph_overlay_allen_paired(outputpth,spon_run_cat_eigenvector,spon_notrun_cat_eigenvector,'spon_run_notrun','eigenvector_centrality','run vs notrun eigenvector Centrality (spon)',parcels_names,length(animals));
+% graph_overlay_allen_paired(outputpth,spon_run_cat_betweenness,spon_notrun_cat_betweenness,'spon_run_notrun','betweenness_centrality','run vs notrun betweenness Centrality (spon)',parcels_names,length(animals));
+
+braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators,spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators,spon_run_cat_closeness,spon_notrun_cat_closeness,'spon_run_notrun','closeness_centrality','run vs notrun closeness Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators,spon_run_cat_pagerank,spon_notrun_cat_pagerank,'spon_run_notrun','pagerank_centrality','run vs notrun pagerank Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators,spon_run_cat_eigenvector,spon_notrun_cat_eigenvector,'spon_run_notrun','eigenvector_centrality','run vs notrun eigenvector Centrality (spon)');
+graph_heatmap(outputpth,braininfo.brain_mask,parcelsallen.parcells_new.indicators,spon_run_cat_betweenness,spon_notrun_cat_betweenness,'spon_run_notrun','betweenness_centrality','run vs notrun betweenness Centrality (spon)');
 
 graph_overlay_allen_notpaired(outputpth, spon_run_cat_degree,spon_notrun_cat_degree,'spon_run_notrun','degree_centrality','run vs notrun degree Centrality (spon)',parcels_names,length(animals));
 graph_overlay_allen_notpaired(outputpth,spon_run_cat_closeness,spon_notrun_cat_closeness,'spon_run_notrun','closeness_centrality','run vs notrun closeness Centrality (spon)',parcels_names,length(animals));
