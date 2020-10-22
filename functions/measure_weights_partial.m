@@ -36,7 +36,7 @@ if ~exist('param', 'var')
             params.modeled_energy_th = 0.1;
         case 'corr'
             params.is_symmetric = true;
-            params.zero_diag = false;
+            params.zero_diag = true;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
     end
@@ -69,9 +69,9 @@ if params.is_symmetric
     W=(W+W')/2;
 end
 
-% if params.zero_diag
-%     W(eye(size(W)) == 1) = 0;
-% end
+if params.zero_diag
+    W(eye(size(W)) == 1) = 0;
+end
 % 
 % if params.how_to_normalize
 %     switch params.how_to_normalize
