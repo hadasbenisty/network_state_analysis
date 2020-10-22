@@ -85,10 +85,10 @@ outputpth = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 inputpth='X:\Lav\ProcessingDirectory\';
 step2_averageplots_3states(inputpth, outputpth)
 
-cd 'X:\Lav\network_state_analysis\scripts\parcor_undirected\spon_3states'
-outputpth = 'X:\Lav\ProcessingDirectory_spet29\parcor_undirected\';
-inputpth='X:\Lav\ProcessingDirectory_spet29\';
-step2_averageplots_3states(inputpth, outputpth)
+% cd 'X:\Lav\network_state_analysis\scripts\parcor_undirected\spon_3states'
+% outputpth = 'X:\Lav\ProcessingDirectory_spet29\parcor_undirected\';
+% inputpth='X:\Lav\ProcessingDirectory_spet29\';
+% step2_averageplots_3states(inputpth, outputpth)
 
 
 

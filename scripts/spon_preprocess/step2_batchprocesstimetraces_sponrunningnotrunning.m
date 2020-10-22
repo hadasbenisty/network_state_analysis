@@ -17,8 +17,8 @@ for ir=1:length(animals)
         if exist(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'arousal_state_ITI.mat')),'file')
             res= load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spike2Features'), strcat(animalname,'arousal_state_ITI.mat')));
             %running data
-            runningPT=reshape(res.running_time_traces.locomotionperiods,size(res.running_time_traces.locomotionperiods,1),[]);
-            runningt=reshape(res.running_time_traces.t_wheelon,size(res.running_time_traces.t_wheelon,1)*size(res.running_time_traces.t_wheelon,2),1);
+            runningPT=reshape(res.running_time_traces.puphigh_on_loc,size(res.running_time_traces.puphigh_on_loc,1),[]);
+            runningt=reshape(res.running_time_traces.t_puphigh_on_loc,size(res.running_time_traces.t_puphigh_on_loc,1)*size(res.running_time_traces.t_puphigh_on_loc,2),1);
             %not running data
             notrunningPT=reshape(res.running_time_traces.puphigh_on_q,size(res.running_time_traces.puphigh_on_q,1),[]);
             notrunningt=reshape(res.running_time_traces.t_puphigh_on_q,size(res.running_time_traces.t_puphigh_on_q,1)*size(res.running_time_traces.t_puphigh_on_q,2),1);
