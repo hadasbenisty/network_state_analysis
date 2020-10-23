@@ -9,7 +9,7 @@ addpath(genpath('X:\Hadas\Meso-imaging\lan\results\code\Functions\libsvm-3.22'))
 cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\')
 
 %initialize animal and days to process
-animal='xx';
+animal='xz';
 [~,days_to_process,~,~] = animaltodays(animal);
 mkdir(animal);
 disp(animal)
@@ -79,49 +79,49 @@ pupil=load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\videoFeatu
 
 %iterate through trials, classifying those that have >= 1cm/s (putative) for
 %any time window as running (1) , else as not running (0)
-
-e=findClosestDouble(spike2.spike2time_traces.t,-6);
-m=findClosestDouble(spike2.spike2time_traces.t,-3);
-ml=findClosestDouble(spike2.spike2time_traces.t,0);
-ml2=findClosestDouble(spike2.spike2time_traces.t,1);
-l=findClosestDouble(spike2.spike2time_traces.t,3);
+% e=findClosestDouble(pupil.pupil_time_trace.t,-6);
+str=findClosestDouble(spike2.spike2time_traces.t,-6);
+endr=findClosestDouble(spike2.spike2time_traces.t,1);
 
 allRunningTrials=[];
 for j=1:size(allWheels,2)
-    trialinfo=[];
-    earlyCurrent=nanmean(allWheels(e:m,j),1);
-    midCurrent=nanmean(allWheels(m:ml,j),1);
-    secondmidCurrent=nanmean(allWheels(ml:ml2,j),1);    
-    lateCurrent=nanmean(allWheels(ml2:l,j),1);
-    if (earlyCurrent>=10|midCurrent>=10|secondmidCurrent>=10|lateCurrent>=10)
+    Current=allWheels(str:endr,j);    
+    abovethres=find(Current>10);
+    belowthres=find(Current<10);
+    if length(abovethres)==length(Current)
         trialinfo=1;
-    else
+    elseif length(belowthres)==length(Current)
         trialinfo=0;
+    else
+        trialinfo=nan;
     end
     allRunningTrials(j)=trialinfo;
-    clearvars earlyCurrent midCurrent lateCurrent trialinfo
+    clearvars abovethres belowthres trialinfo
 end
 
-clearvars e m ml ml2 l
+%clearvars e m ml ml2 l
 
-e=findClosestDouble(pupil.pupil_time_trace.t,-6);
-m=findClosestDouble(pupil.pupil_time_trace.t,-3);
-ml=findClosestDouble(pupil.pupil_time_trace.t,0);
-l=findClosestDouble(pupil.pupil_time_trace.t,0.32);
+% e=findClosestDouble(pupil.pupil_time_trace.t,-6);
+% m=findClosestDouble(pupil.pupil_time_trace.t,-3);
+% ml=findClosestDouble(pupil.pupil_time_trace.t,0);
+% l=findClosestDouble(pupil.pupil_time_trace.t,0.33);
 
 %iterate through trials, classifying those that have >=0.6 quantile of
 %pupil data as "high pupil",those with <=0.4 quantile of pupil
 %data as low pupil, throw out everything between 0.4 and 0.6 quantile.
+st=findClosestDouble(pupil.pupil_time_trace.t,-6);
+ed=findClosestDouble(pupil.pupil_time_trace.t,0.33);
+
 allPupilTrials=[];
 for j=1:size(allWheels,2)
     trialinfo=[];
 if allRunningTrials(j)==0
-    earlyCurrent=nanmean(allpupil(e:m,j),1);
-    midCurrent=nanmean(allpupil(m:ml,j),1);
-    lateCurrent=nanmean(allpupil(ml:l,j),1);
-    if (earlyCurrent>=all_pupil_highthres(j)|midCurrent>=all_pupil_highthres(j)|lateCurrent>=all_pupil_highthres(j))
+    Current=allpupil(st:ed,j);
+    abovethres=find(Current>all_pupil_highthres(j));
+    belowthres=find(Current<all_pupil_lowthres(j));
+    if length(abovethres)==length(Current)
         trialinfo=2;
-    elseif(earlyCurrent<=all_pupil_lowthres(j)|midCurrent<=all_pupil_lowthres(j)|lateCurrent<=all_pupil_lowthres(j))
+    elseif length(belowthres)==length(Current)
         trialinfo=1;
     else
         trialinfo=0;
@@ -130,8 +130,13 @@ else
     trialinfo=0; 
 end
     allPupilTrials(j)=trialinfo;
-    clearvars earlyCurrent midCurrent lateCurrent trialinfo session_cutoff
+    clearvars Current trialinfo abovethres belowthres
 end
+disp(strcat(num2str(length(find(allPupilTrials==2))),'highpupil trials in', animal))
+disp(strcat(num2str(length(find(allPupilTrials==1))),'lowpupil trials in', animal))
+disp(strcat(num2str(length(find(allRunningTrials==1))),'running trials in', animal))
+disp(strcat(num2str(length(find(allRunningTrials==0))),'not running trials in', animal))
+
 %classify as high or low visual response trial from 100-320ms time window
 %slope of l-v1
 allVisTrials=[];
@@ -159,18 +164,18 @@ shadedErrorBar(pupil.pupil_time_trace.t(indx),mean(allpupil(indx,  allPupilTrial
 hold on
 shadedErrorBar(pupil.pupil_time_trace.t(indx),mean(allpupil(indx,  allPupilTrials==1),2),std(allpupil(indx,  allPupilTrials==1),0,2)/sqrt((size(allpupil(:, allPupilTrials==1),2)-1)),'lineprops','r');
 xlabel('Time [Sec]');ylabel('Pupil Area');title('Pupil in High vs Low Pupil Trials')
-mysave(gcf,strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'pupil_separation'),'all');
+mysave(gcf,strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'v2_pupil_separation'),'all');
 
 figure;
 hold on
 bar(cat(2,squeeze(mean(allSlopes(27,2,allVisTrials==2),3)),squeeze(mean(allSlopes(27,2,allVisTrials==1),3))));
 xlabel('High vs Low Vis');ylabel('Slopes');
-mysave(gcf,strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'v1_slope_separation'),'all');
+mysave(gcf,strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'v2_v1_slope_separation'),'all');
 
 %save workspace
-save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'allen_dataproc_psychometric_workspace'));
+save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'v2_allen_dataproc_psychometric_workspace'));
 
 %save select variabes
-save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'allen_dataproc_psychometric'),...
+save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\',animal,'\',animalDate,'v2_allen_dataproc_psychometric'),...
     'allSlopes','allWheels','labels_trials','labels_contrast','allRunningTrials','winStart','winEnd','days_to_process','allPupilTrials','allpupil','allVisTrials','all_slopes_highthres','all_slopes_lowthres');
 

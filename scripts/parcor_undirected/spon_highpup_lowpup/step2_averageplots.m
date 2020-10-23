@@ -40,7 +40,7 @@ for i=1:length(animals)
     spon_pupillow_cat_betweenness=cat(2, spon_pupillow_cat_betweenness,spon_pupillow.cent_corr.betweenness);       
     spon_pupillow_cat_pagerank=cat(2, spon_pupillow_cat_pagerank,spon_pupillow.cent_corr.pagerank); 
     spon_pupillow_cat_eigenvector=cat(2, spon_pupillow_cat_eigenvector,spon_pupillow.cent_corr.eigenvector); 
-    diffusionmap_twoconditions(spon_pupilhigh.W_corr,spon_pupillow.W_corr,spon_pupilhigh.cent_corr.eigenvector,spon_pupillow.cent_corr.eigenvector,condition1,condition2,animal,'eigenvector')
+    %diffusionmap_twoconditions(spon_pupilhigh.W_corr,spon_pupillow.W_corr,spon_pupilhigh.cent_corr.eigenvector,spon_pupillow.cent_corr.eigenvector,condition1,condition2,animal,'eigenvector')
 
     clearvars spon_pupilhigh spon_pupillow
 end
@@ -54,11 +54,11 @@ mkNewDir(outputpth);
 [avg_cond1,avg_cond2] = permuted_centrality('highpup','lowpup');
 graph_overlay_allen_paired_permuted(avg_cond1,avg_cond2,outputpth, spon_pupilhigh_cat_eigenvector,spon_pupillow_cat_eigenvector,'spon_pupilhigh_pupillow','eigenvector_centrality','pupilhigh vs pupillow eigenvector Centrality (spon)',parcels_names,length(animals));
 
-% graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_degree,spon_pupillow_cat_degree,'spon_pupilhigh_pupillow','degree_centrality','pupilhigh vs pupillow degree Centrality (spon)',parcels_names,length(animals));
-% graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_closeness,spon_pupillow_cat_closeness,'spon_pupilhigh_pupillow','closeness_centrality','pupilhigh vs pupillow closeness Centrality (spon)',parcels_names,length(animals));
-% graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_pagerank,spon_pupillow_cat_pagerank,'spon_pupilhigh_pupillow','pagerank_centrality','pupilhigh vs pupillow pagerank Centrality (spon)',parcels_names,length(animals));
-% graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_eigenvector,spon_pupillow_cat_eigenvector,'spon_pupilhigh_pupillow','eigenvector_centrality','pupilhigh vs pupillow eigenvector Centrality (spon)',parcels_names,length(animals));
-% graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_betweenness,spon_pupillow_cat_betweenness,'spon_pupilhigh_pupillow','betweenness_centrality','pupilhigh vs pupillow betweenness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_degree,spon_pupillow_cat_degree,'spon_pupilhigh_pupillow','degree_centrality','pupilhigh vs pupillow degree Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_closeness,spon_pupillow_cat_closeness,'spon_pupilhigh_pupillow','closeness_centrality','pupilhigh vs pupillow closeness Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_pagerank,spon_pupillow_cat_pagerank,'spon_pupilhigh_pupillow','pagerank_centrality','pupilhigh vs pupillow pagerank Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_eigenvector,spon_pupillow_cat_eigenvector,'spon_pupilhigh_pupillow','eigenvector_centrality','pupilhigh vs pupillow eigenvector Centrality (spon)',parcels_names,length(animals));
+graph_overlay_allen_paired(outputpth, spon_pupilhigh_cat_betweenness,spon_pupillow_cat_betweenness,'spon_pupilhigh_pupillow','betweenness_centrality','pupilhigh vs pupillow betweenness Centrality (spon)',parcels_names,length(animals));
 
 braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
 parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');

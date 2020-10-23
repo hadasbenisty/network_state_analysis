@@ -1,5 +1,4 @@
-%%Concatenates spontaneous state “trials” from the previous
-%step over all days in psyc testing, reshaped to be parcels over time (for high pupil low pupil).
+%%not being used yet
 
 clear;
 addpath(genpath('X:\Hadas\Meso-imaging\lan\results\code\Functions'));
