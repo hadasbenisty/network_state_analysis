@@ -69,7 +69,7 @@ load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitu
 disp(animal)
 for state_i = 1:length(statenames)
     disp(statenames{state_i})
-    if exist(strcat(outputfolder,'network_analysis_corr',statenames{state_i} ,'.mat'),'file')
+    if 0&&exist(strcat(outputfolder,'network_analysis_corr',statenames{state_i} ,'.mat'),'file')
         continue;
     end
     data = eval(statenames{state_i});
