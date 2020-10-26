@@ -9,20 +9,106 @@ addpath(genpath('../../utils'));
 animals={'xs','xx','xz','xw','xt','xu'};
 
 for ai = 1:length(animals)
-    extract_trials_imaging_by_state(animals{ai});
+    extract_trials_imaging_by_state_loose(animals{ai})
+%     extract_trials_imaging_by_state_super_strict(animals{ai});
+end
+isloose = true;
+concatenateTrialsPeriodsByState(animals, isloose);
+
+plot_time_spent(animals, isloose)
+
+end
+function extract_trials_imaging_by_state_loose(animalName)
+
+params.fsimaging=10;%imaging sampling rate
+params.fspupilcam=10; %pupil sampling rate
+params.fsspike2=5000;% spike2 sampling rate
+params.TimeBefore=4;% window of state before stim
+params.Duration=4.4;% window length of state 
+params.runningThSpeed = 1;% cm per sec
+params.runningPercentTh = 10;% %of time animal is running on a trial so it would be considered a running trial
+params.pupPercentTh= 10;% %of time animal is high pupil on a trial so it would be considered a high pupil trial
+spike2pth = fullfile('X:\Hadas\Meso-imaging\lan\spike2data', animalName);
+[~,days2process]=animaltodays(animalName);
+disp(animalName);
+%% for each mouse, load spont and airpuff folders and perform correlations
+for day_i=1:length(days2process)
+    disp(num2str(days2process(day_i)));
+     load(fullfile(spike2pth, ['spike2data',animalName num2str(days2process(day_i)) '.mat']),'channels_data',...
+        'timing', 'channels_data');
+    
+   
+    [pupil_time, pupil_Norm] = load_pupil_data(animalName, days2process(day_i), channels_data.pupil_frame, params.fsspike2);
+    wheel_speed = channels_data.wheelspeed;
+    wheel_time = (1:length(wheel_speed))/params.fsspike2;
+    stimtimes = timing.stimstart/params.fsspike2;
+    stimtimes=stimtimes(1:75);
+    before_time = stimtimes - params.TimeBefore;
+    for stim_i = 1:length(stimtimes)
+        ind1 = findClosestDouble(before_time(stim_i), wheel_time);
+        ind2 = ind1 + params.Duration*params.fsspike2;
+        wheel_trials(:,stim_i) = wheel_speed(ind1:ind2);        
+        
+        ind1 = findClosestDouble(before_time(stim_i), pupil_time);
+        ind2 = ind1 + params.Duration*params.fspupilcam;
+        pupil_trials(:,stim_i) = pupil_Norm(ind1:ind2);
+    end
+    trial_label = nan(length(stimtimes),1);
+    for stim_i = 1:length(stimtimes)
+        running_times = wheel_trials(:,stim_i) > params.runningThSpeed;
+        if 100*sum(running_times)/length(wheel_trials(:,stim_i)) > params.runningPercentTh
+           trial_label(stim_i) = 3;
+        end
+    end
+    q_pupil_vals = pupil_trials(:, trial_label~=1);
+    zthres_High=quantile(q_pupil_vals(:),0.60);
+    for stim_i = 1:length(stimtimes)
+        if isnan(trial_label(stim_i))
+            highpup_times = pupil_trials(:,stim_i) > zthres_High;
+            if 100*sum(highpup_times)/length(pupil_trials(:,stim_i)) > params.pupPercentTh
+                trial_label(stim_i) = 2;
+            else
+                trial_label(stim_i) = 1;
+            end
+        end
+    end
+    
+  
+    trials_labels_arousal_pup_loose = trial_label;
+    
+    trials_labels_arousal_pup_loose_lut = {'pupil_low_q', 'pupil_high_q','pupil_high_loc'};
+    if any(isnan(trials_labels_arousal_pup_loose))
+        error('there is at least one trial without a label')
+    end
+    
+    
+    
+    
+    
+       datapath = ['X:\Hadas\Meso-imaging\lan\' animalName 'psych\spt\'];
+
+   
+          load(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global.mat']),...
+              'trials_labels_arousal_pup_lut','trials_labels_arousal_facemap_lut','trialslabels','roiLabelsbyAllen','maskByAllen','regionLabel','isLeftLabel','imaging_time_traces');
+    trialslabels.trials_labels_arousal_pup_loose = trials_labels_arousal_pup_loose;
+    
+    save(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global.mat']),...
+        'trialslabels','roiLabelsbyAllen','maskByAllen','regionLabel','isLeftLabel','imaging_time_traces',...
+        'trials_labels_arousal_pup_lut','trials_labels_arousal_facemap_lut', 'trials_labels_arousal_pup_loose_lut')
 end
 
-concatenateTrialsPeriodsByState(animals);
-
-plot_time_spent(animals)
-
 end
 
-function plot_time_spent(animals)
+function plot_time_spent(animals, isloose)
 
+if isloose
+    loosestr = 'loose';
+else
+    loosestr = '';
+end
 
 for ai = 1:length(animals)
-    load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states'),...
+    load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states', loosestr),...
         'low_pup_q','high_pup_q','high_pup_l');
     Nall(ai, 1) = sum(low_pup_q.trialslabels.blinksummary<3);
     Ncor(ai, 1) = sum(low_pup_q.trialslabels.blinksummary==1);
@@ -36,6 +122,30 @@ for ai = 1:length(animals)
     Ncor(ai, 3) = sum(high_pup_l.trialslabels.blinksummary==1);
     Ninc(ai, 3) = sum(high_pup_l.trialslabels.blinksummary==2);
 end
+n=length(animals);
+Mall = nanmean(Nall);    
+Sall = nanstd(Nall)/sqrt(n-1);  
+Mcor = nanmean(Ncor);  
+Scor = nanstd(Ncor)/sqrt(n-1);  
+Minc = nanmean(Ninc);  
+Sinc = nanstd(Ninc)/sqrt(n-1);  
+
+figure;subplot(3,1,1);
+barwitherr(Sall, Mall);
+set(gca,'XTickLabel', {'low pup q','high pup q','high pup l'});
+title('All Trials');
+subplot(3,1,2);
+barwitherr(Scor, Mcor);
+set(gca,'XTickLabel', {'low pup q','high pup q','high pup l'});
+title('Correct Trials');
+subplot(3,1,3);
+barwitherr(Sinc, Minc);
+set(gca,'XTickLabel', {'low pup q','high pup q','high pup l'});
+title('Incorrect Trials');
+mysave(gcf,['X:\Lav\ProcessingDirectory\parcor_undirected\time_spent_bytrials_absolute_numbers' loosestr]) 
+
+
+
 n=length(animals);
 Mall = nanmean(Nall./sum(Nall,2));    
 Sall = nanstd(Nall./sum(Nall,2))/sqrt(n-1);  
@@ -71,12 +181,12 @@ set(gca,'XTickLabel', {'low pup q','high pup q','high pup l'});
 title('Time Spent By State');legend('Correct', 'Incorrect');
 
 
-mysave(gcf,'X:\Lav\ProcessingDirectory\parcor_undirected\time_spent_bytrials') 
+mysave(gcf,['X:\Lav\ProcessingDirectory\parcor_undirected\time_spent_bytrials' loosestr]) 
 
 
 
 end
-function concatenateTrialsPeriodsByState(animals)
+function concatenateTrialsPeriodsByState(animals, isloose)
 %% Concatenates spontaneous state “trials” from the previous step over all days in psyc testing,
 %reshaped to be parcels over time (for running not running).
 fltstr='spt';
@@ -104,33 +214,44 @@ for ir=1:length(animals)
     high_pup_l.trialslabels.blinksummary=[];
     high_pup_l.trialslabels.contrastLabels = [];
     
-    
+    if isloose
+        lutvar = 'trials_labels_arousal_pup_loose_lut';
+        labelsvar = 'trials_labels_arousal_pup_loose';
+    else
+        lutvar = 'trials_labels_arousal_pup_lut';
+        labelsvar = 'trials_labels_arousal_pup';
+    end
     for dayy=1:length(days_to_process) %iterate over psychometric days
         disp(days_to_process(dayy))
          datafile = fullfile(datapath,[animal num2str(days_to_process(dayy)) 'imaging_time_traces_global.mat']);
     
         if exist(datafile,'file')
              load(datafile, 'trialslabels','imaging_time_traces',...
-        'trials_labels_arousal_pup_lut');
+        lutvar);
  
     
             % state 1: low pup + q   
-            low_pup_q = get_trials_by_state(imaging_time_traces, trialslabels, 'pupil_low_q', trials_labels_arousal_pup_lut, low_pup_q);
+            low_pup_q = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, 'pupil_low_q', eval(lutvar), low_pup_q);
             % state 2: high pup + q  
-            high_pup_q = get_trials_by_state(imaging_time_traces, trialslabels, 'pupil_high_q', trials_labels_arousal_pup_lut, high_pup_q);
+            high_pup_q = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_q', eval(lutvar), high_pup_q);
             % state 3: high pup + loc       
-            high_pup_l = get_trials_by_state(imaging_time_traces, trialslabels, 'pupil_high_loc', trials_labels_arousal_pup_lut, high_pup_l);
+            high_pup_l = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_loc', eval(lutvar), high_pup_l);
             
         end
     end
     t = imaging_time_traces.t;
-    save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states'),...
+     if isloose
+         loosestr = 'loose';
+     else
+         loosestr = '';
+     end
+    save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states', loosestr),...
         'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't');
 end
 
 
 end
-function extract_trials_imaging_by_state(animalName)
+function extract_trials_imaging_by_state_super_strict(animalName)
 
 params.fsimaging=10;%imaging sampling rate
 params.fspupilcam=10; %pupil sampling rate
@@ -534,11 +655,11 @@ end
 
 end
 
-function trials_data = get_trials_by_state(imaging_time_traces, trialslabels, statestr, trials_labels_arousal_pup_lut, trials_data)
+function trials_data = get_trials_by_state(imaging_time_traces, trialslabels, labelsname, statestr, trials_labels_arousal_pup_lut, trials_data)
 
 state_label = find(strcmp(trials_labels_arousal_pup_lut, statestr));
-inds = trialslabels.trials_labels_arousal_pup == state_label;
-inds=inds(1:75);
+inds = trialslabels.(labelsname) == state_label;
+inds=inds(1:size(imaging_time_traces.Allen,3));
 trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,imaging_time_traces.Allen(:,:,inds));
 trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));
 trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contrastLabels, trialslabels.contrastLabels(inds));
