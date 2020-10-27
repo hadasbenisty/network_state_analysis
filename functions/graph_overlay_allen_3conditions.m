@@ -1,4 +1,4 @@
-function graph_overlay_allen_3conditions(outputpth,cond1_cat,cond2_cat,cond3_cat,condition,name,plottitle,parcels_names,num, legstr)
+function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_cat,cond3_cat,condition,name,plottitle,parcels_names,num, legstr)
     %calculate average and error of condition 1
     condition1_meanvec_parcel=mean(cond1_cat,2);
     condition1_sevec_parcel=std(cond1_cat,0,2)./sqrt(num-1);
@@ -35,7 +35,7 @@ function graph_overlay_allen_3conditions(outputpth,cond1_cat,cond2_cat,cond3_cat
     ylabel('Node Centrality');title(plottitle);
     legend(legstr);
     mkNewDir(fullfile(outputpth,condition));
-    mysave(gcf, fullfile(outputpth,condition,strcat(name,'3conditions')), 'all');
+    mysave(gcf, fullfile(outputpth,condition,strcat(name,'3conditions', strsuffix)), 'all');
 end
 
 

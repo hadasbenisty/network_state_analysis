@@ -10,7 +10,7 @@ pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for ai = 1:length(animals)
-%     eval_weights_and_cent(isloose, animals{ai}, saveplots, statenames, pre_trial_time_start, pre_trial_time_end);
+    eval_weights_and_cent(isloose, animals{ai}, saveplots, statenames, pre_trial_time_start, pre_trial_time_end);
 end
 for ismidcontrast=0:1
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';

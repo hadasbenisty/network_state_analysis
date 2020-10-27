@@ -29,7 +29,7 @@ params.fspupilcam=30; %pupil sampling rate
 params.fsspike2=5000;% spike2 sampling rate
 params.TimeBefore=4;% window of state before stim
 params.Duration=4.4;% window length of state 
-params.runningThSpeed = 1;% cm per sec
+params.runningThSpeed = 10;% mm per sec
 params.runningPercentTh = 10;% %of time animal is running on a trial so it would be considered a running trial
 params.pupPercentTh= 10;% %of time animal is high pupil on a trial so it would be considered a high pupil trial
 spike2pth = fullfile('X:\Hadas\Meso-imaging\lan\spike2data', animalName);
@@ -48,6 +48,7 @@ for day_i=1:length(days2process)
     stimtimes = timing.stimstart/params.fsspike2;
     stimtimes=stimtimes(1:75);
     before_time = stimtimes - params.TimeBefore;
+    t_spont = ones(size(pupil_Norm));
     for stim_i = 1:length(stimtimes)
         ind1 = findClosestDouble(before_time(stim_i), wheel_time);
         ind2 = ind1 + params.Duration*params.fsspike2;
@@ -56,8 +57,14 @@ for day_i=1:length(days2process)
         ind1 = findClosestDouble(before_time(stim_i), pupil_time);
         ind2 = ind1 + params.Duration*params.fspupilcam;
         pupil_trials(:,stim_i) = pupil_Norm(ind1:ind2);
+        t_spont(ind1:ind2+params.fspupilcam*4) = 0;
     end
+    wheel_speed_resampled = interp1(wheel_time, wheel_speed, pupil_time);
+    zthres_High=quantile( pupil_Norm(t_spont==1 & wheel_speed_resampled < params.runningThSpeed),0.60);
+   
     trial_label = nan(length(stimtimes),1);
+    
+    
     
     for stim_i = 1:length(stimtimes)
         running_times = wheel_trials(:,stim_i) > params.runningThSpeed;
@@ -66,7 +73,7 @@ for day_i=1:length(days2process)
         end
     end
     q_pupil_vals = pupil_trials(:, trial_label~=1);
-    zthres_High=quantile(q_pupil_vals(:),0.60);
+    
     for stim_i = 1:length(stimtimes)
         if isnan(trial_label(stim_i))
             highpup_times = pupil_trials(:,stim_i) > zthres_High;
@@ -78,7 +85,21 @@ for day_i=1:length(days2process)
         end
     end
     
-  
+    figure;
+    for k=1:3
+        subplot(2,1,1);
+    plot(linspace(-params.TimeBefore, params.Duration-params.TimeBefore, size(wheel_trials,1)),   mean(wheel_trials(:, trial_label==k),2));
+    hold all;
+    
+    end
+    legend('low pup q','high pup q','loc');xlabel('Time [sec]');ylabel('Speed mm/sec');
+    subplot(2,1,2);
+    for k=1:3
+    plot(linspace(-params.TimeBefore, params.Duration-params.TimeBefore, size(pupil_trials,1)),   mean(pupil_trials(:, trial_label==k),2));
+    
+    hold all;
+    end
+    legend('low pup q','high pup q','loc');xlabel('Time [sec]');ylabel('Pupil Area');
     trials_labels_arousal_pup_loose = trial_label;
     
     trials_labels_arousal_pup_loose_lut = {'pupil_low_q', 'pupil_high_q','pupil_high_loc'};
