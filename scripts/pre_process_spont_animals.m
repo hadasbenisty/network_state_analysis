@@ -52,9 +52,13 @@ end
 
 end
 function extract_spont_imaging_by_state(animalName)
-
-params.fsimaging=10;%imaging sampling rate
-params.fspupilcam=10; %pupil sampling rate
+switch animalName
+        case {'xu','xv','xt','xs'}
+            params.fsimaging=33;
+        otherwise
+            params.fsimaging=10;
+end
+params.fspupilcam=30; %pupil sampling rate
 params.fsspike2=5000;% spike2 sampling rate
 params.TimeSinceLocOn=3;%for locomotion state, minimum time since locomotion onset
 params.TimeBeforeLocOff=3;%for locomotion state, minimum time before locomotion offset

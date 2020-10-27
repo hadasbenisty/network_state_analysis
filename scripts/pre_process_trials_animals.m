@@ -19,9 +19,13 @@ plot_time_spent(animals, isloose)
 
 end
 function extract_trials_imaging_by_state_loose(animalName)
-
-params.fsimaging=10;%imaging sampling rate
-params.fspupilcam=10; %pupil sampling rate
+switch animalName
+        case {'xu','xv','xt','xs'}
+            params.fsimaging=33;
+        otherwise
+            params.fsimaging=10;
+end
+params.fspupilcam=30; %pupil sampling rate
 params.fsspike2=5000;% spike2 sampling rate
 params.TimeBefore=4;% window of state before stim
 params.Duration=4.4;% window length of state 
@@ -54,6 +58,7 @@ for day_i=1:length(days2process)
         pupil_trials(:,stim_i) = pupil_Norm(ind1:ind2);
     end
     trial_label = nan(length(stimtimes),1);
+    
     for stim_i = 1:length(stimtimes)
         running_times = wheel_trials(:,stim_i) > params.runningThSpeed;
         if 100*sum(running_times)/length(wheel_trials(:,stim_i)) > params.runningPercentTh

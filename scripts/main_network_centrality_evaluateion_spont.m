@@ -7,9 +7,9 @@ saveplots = false;
 animals={'xs','xx','xz','xw','xt','xu'};
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
-for ai = 1:length(animals)
-    eval_weights_and_cent(animals{ai}, saveplots, statenames);
-end
+% for ai = 1:length(animals)
+%     eval_weights_and_cent(animals{ai}, saveplots, statenames);
+% end
 plot_centrality_res(animals, outputfiggolder, statenames);
 end
 
@@ -54,6 +54,34 @@ for ni = 1:length(cent_features)
         spon_states_notweighted.high_pup_q.(cent_features{ni}), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
         'spon_threestates',cent_features{ni},['3 states ' cent_features{ni} ' Centrality (spon)'], parcels_names,length(animals), legstr);
     
+    %difference maps, not weighted, for each centrality measure
+    braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+    parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+
+    %high vs low pup
+    graph_overlay_allen_paired(fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_q.(cent_features{ni}),...
+        spon_states_notweighted.low_pup_q.(cent_features{ni}),'spon_pupilhigh_pupillow',cent_features{ni},['pupil high vs low ' cent_features{ni} ' Centrality (spon)'],parcels_names,length(animals));
+    
+    graph_heatmap(fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_q.(cent_features{ni}),spon_states_notweighted.low_pup_q.(cent_features{ni}),...
+        'spon_pupilhigh_pupillow',cent_features{ni},['pupil high vs low ' cent_features{ni} ' Centrality (spon)']);
+    
+    %locomotion vs low pup
+    graph_overlay_allen_paired(fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
+        spon_states_notweighted.low_pup_q.(cent_features{ni}),'spon_run_pupillow',cent_features{ni},['run vs pupil low ' cent_features{ni} ' Centrality (spon)'],parcels_names,length(animals));
+
+    graph_heatmap(fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_l.(cent_features{ni}),spon_states_notweighted.low_pup_q.(cent_features{ni}),...
+        'spon_run_pupillow',cent_features{ni},['run vs pupil low ' cent_features{ni} ' Centrality (spon)']);
+    
+    %locomotion vs high pup
+    graph_overlay_allen_paired(fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
+        spon_states_notweighted.high_pup_q.(cent_features{ni}),'spon_run_pupilhigh',cent_features{ni},['run vs pupil high ' cent_features{ni} ' Centrality (spon)'],parcels_names,length(animals));
+    
+    graph_heatmap(fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_l.(cent_features{ni}),spon_states_notweighted.high_pup_q.(cent_features{ni}),...
+        'spon_run_pupilhigh',cent_features{ni},['run vs pupil high ' cent_features{ni} ' Centrality (spon)']);
+    
 end
 
 end
@@ -73,6 +101,7 @@ for state_i = 1:length(statenames)
         continue;
     end
     data = eval(statenames{state_i});
+    
     data = data(finalindex, :);
     data = data(:, all(~isnan(data)));
     if any(isnan(data(:)))
