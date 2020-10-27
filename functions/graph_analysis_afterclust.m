@@ -1,4 +1,4 @@
-function [indic_weighted, indic_notweighted, cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W, str_labels)
+function [indic_weighted, indic_notweighted, cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W, str_labels, issim)
 params.knn =5;
 %step 1
 %W=1-W./(mean(W(:)).^2);
@@ -9,7 +9,9 @@ nn_dist = sort(abs(W.'),'descend').';
 v = nn_dist(:, 1:params.knn);
 th= median(v(:));%.10l*mean(v(v~=0));
 W(abs(W)<th)=0;
-
+if ~exist('issim','var')
+    issim=1;
+end
 %% adaptive
 % Wthresholded=zeros(23,23);
 % Windx=zeros(23,23);
@@ -29,12 +31,15 @@ W(abs(W)<th)=0;
 %W = bsxfun(@rdivide, W, sum(W,2)+eps);
 %W(eye(size(W)) == 1) = 0;
 %step 4
-isdirected = ~issymmetric(W);
+isdirected = ~issymmetric(W) || ~issim;
 
 if isdirected
-    G=digraph(W, str_labels);
-    c = {'indegree','outdegree','incloseness','outcloseness','betweenness','pagerank','hubs','authorities'};
-    error('code the weighted version');
+    G=digraph(double(W), str_labels);
+    c = {'indegree',             'outdegree',        'incloseness','outcloseness',...
+        'betweenness','pagerank','hubs','authorities'};
+    wstr = {'Importance'   'Importance'               'Cost'      'Cost'    'Cost'      'Importance'   'Importance' 'Importance'};
+    wnums = {abs(G.Edges.Weight) abs(G.Edges.Weight) exp(-G.Edges.Weight) exp(-G.Edges.Weight)...
+         exp(-G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight)};
 else
     G = graph(W);
     c = {'degree',         'closeness','betweenness','pagerank', 'eigenvector'};

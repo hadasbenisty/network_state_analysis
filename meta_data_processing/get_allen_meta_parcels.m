@@ -1,4 +1,4 @@
-function [parcels_names, parcels_region_labels, finalindex] = get_allen_meta_parcels
+function [parcels_names, parcels_region_labels, finalindex, region_lut] = get_allen_meta_parcels
 
 
 isleftlabel=2:2:56;
@@ -9,3 +9,5 @@ parcels_region_labels=parcels_region_labels_bilateral(finalindex);
 [~,textt]=xlsread('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
 textt(1,:)=[];
 parcels_names=textt(finalindex,1);
+
+region_lut = {'visual','parietal','temporal','auditory','rs','somato','motor'};
