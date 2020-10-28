@@ -14,9 +14,9 @@ statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 % end
 for ismidcontrast=0:1
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
-[trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
-[correct_states_notweighted, correct_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_correct');
-[incorrect_states_notweighted, incorrect_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
+% [trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
+% [correct_states_notweighted, correct_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_correct');
+% [incorrect_states_notweighted, incorrect_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
 close all;
 if isloose
     loosestr = 'loose';
@@ -31,7 +31,8 @@ end
 % save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
-plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+%plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+makeslopeamplitudeplots(animals, isloose,outputfiggolder)
 end
 end
 %%
@@ -354,8 +355,60 @@ for state_i = 1:length(statenames)
     
 end
 end
-
-
-
-
-
+function makeslopeamplitudeplots(animals, isloose,outputfiggolder)
+if isloose
+    loostr = 'loose';
+else
+    loostr = '';
+end
+statenames = {'low_pup_q_zscored', 'high_pup_q_zscored', 'high_pup_l_zscored'};
+for state_i=1:length(statenames)
+    fields = {'corr','incorr'}; 
+    c = cell(length(fields),1);
+    x = cell2struct(c,fields);
+    for animal_i=1:length(animals)
+        animal=char(animals(animal_i));
+        res=load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{animal_i},'\',animals{animal_i},'trials_3states', loostr));
+        %re = load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spt'), strcat(animaltodays(animal),'imaging_time_traces_global.mat')));
+        curr_corr=res.(statenames{state_i}).imaging_time_traces(2,:,res.(statenames{state_i}).trialslabels.blinksummary==1);
+        %zscoredbytrial_corr = normByPreActivity(re.imaging_time_traces.t, curr_corr, -3, -1); %normalize activity per day
+        curr_incorr=res.(statenames{state_i}).imaging_time_traces(2,:,res.(statenames{state_i}).trialslabels.blinksummary==2);
+        
+        vectorcorr=mean(squeeze(curr_corr),2);
+        vectorincorr=mean(squeeze(curr_incorr),2);
+        %Load 10 hz data
+        t_10=load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\','xz','psych\spt'), strcat(animaltodays('xz'),'imaging_time_traces_global.mat')));
+        if strcmp(animal,'xt')||strcmp(animal,'xs')||strcmp(animal,'xu')
+            t_33 = load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spt'), strcat(animaltodays(animal),'imaging_time_traces_global.mat')));
+            %x_10 = interp1(t_33, x_33, t_10);
+            vectorcorr=interp1(t_33.imaging_time_traces.t, vectorcorr, t_10.imaging_time_traces.t).';
+            vectorincorr=interp1(t_33.imaging_time_traces.t, vectorincorr, t_10.imaging_time_traces.t).';
+        else
+        end
+        st=findClosestDouble(t_10.imaging_time_traces.t,-0.5);ed=findClosestDouble(t_10.imaging_time_traces.t,2);
+        x.corr=cat(2,x.corr,vectorcorr(st:ed));
+        x.incorr=cat(2,x.incorr,vectorincorr(st:ed));
+        clearvars -except ir animals x t_10 loostr statenames state_i outputfiggolder
+    end
+t_10=load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\','xz','psych\spt'), strcat(animaltodays('xz'),'imaging_time_traces_global.mat')));    
+stind=findClosestDouble(t_10.imaging_time_traces.t,-0.5);enind=findClosestDouble(t_10.imaging_time_traces.t,2);
+%% plot correct and incorrect
+x1 = 0.0; x2 = 0.500;
+y1 = -2; y2 = 3;
+figure;
+set(gcf,'renderer','painters');
+fill([x1 x1 x2 x2],[y1 y2 y2 y1],[0.8 0.8 0.8],'LineStyle','none')
+hold on
+x3 = 0.450; x4 = 0.500;
+fill([x3 x3 x4 x4],[y1 y2 y2 y1],[0.3020 0.7490 0.9294],'LineStyle','none')
+xlim([-0.5 2])
+hold on
+shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.corr,2),(std(x.corr,0,2)./(sqrt(size(x.corr,2)-1))),'lineprops','g');
+hold on
+shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.incorr,2),(std(x.incorr,0,2)./(sqrt(size(x.incorr,2)-1))),'lineprops','r');
+xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg Correct vs Incorrect',statenames{state_i}));
+hold off
+mysave(gcf, fullfile(outputfiggolder,strcat('V1_corr_incorr_',statenames{state_i})), 'all');
+clearvars x t_10
+end
+end

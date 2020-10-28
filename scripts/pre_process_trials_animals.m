@@ -8,14 +8,15 @@ addpath(genpath('../../meta_data_processing'));
 addpath(genpath('../../utils'));
 animals={'xs','xx','xz','xw','xt','xu'};
 
-for ai = 1:length(animals)
-    extract_trials_imaging_by_state_loose(animals{ai})
-%     extract_trials_imaging_by_state_super_strict(animals{ai});
-end
+% for ai = 1:length(animals)
+%     extract_trials_imaging_by_state_loose(animals{ai})
+% %     extract_trials_imaging_by_state_super_strict(animals{ai});
+% end
 isloose = true;
 concatenateTrialsPeriodsByState(animals, isloose);
+%makeslopeamplitudeplots(animals, isloose);
 
-plot_time_spent(animals, isloose)
+%plot_time_spent(animals, isloose)
 
 end
 function extract_trials_imaging_by_state_loose(animalName)
@@ -240,6 +241,18 @@ for ir=1:length(animals)
     high_pup_l.trialslabels.blinksummary=[];
     high_pup_l.trialslabels.contrastLabels = [];
     
+    low_pup_q_zscored.imaging_time_traces=[];
+    low_pup_q_zscored.trialslabels.blinksummary=[];
+    low_pup_q_zscored.trialslabels.contrastLabels = [];
+    
+    high_pup_q_zscored.imaging_time_traces=[];
+    high_pup_q_zscored.trialslabels.blinksummary=[];
+    high_pup_q_zscored.trialslabels.contrastLabels = [];
+    
+    high_pup_l_zscored.imaging_time_traces=[];
+    high_pup_l_zscored.trialslabels.blinksummary=[];
+    high_pup_l_zscored.trialslabels.contrastLabels = []; 
+    
     if isloose
         lutvar = 'trials_labels_arousal_pup_loose_lut';
         labelsvar = 'trials_labels_arousal_pup_loose';
@@ -262,7 +275,14 @@ for ir=1:length(animals)
             high_pup_q = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_q', eval(lutvar), high_pup_q);
             % state 3: high pup + loc       
             high_pup_l = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_loc', eval(lutvar), high_pup_l);
-            
+
+            % state 1: low pup + q   
+            low_pup_q_zscored = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsvar, 'pupil_low_q', eval(lutvar), low_pup_q_zscored);
+            % state 2: high pup + q  
+            high_pup_q_zscored = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_q', eval(lutvar), high_pup_q_zscored);
+            % state 3: high pup + loc       
+            high_pup_l_zscored = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsvar, 'pupil_high_loc', eval(lutvar), high_pup_l_zscored);
+                       
         end
     end
     t = imaging_time_traces.t;
@@ -272,7 +292,7 @@ for ir=1:length(animals)
          loosestr = '';
      end
     save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states', loosestr),...
-        'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't');
+        'low_pup_q','high_pup_q','high_pup_l','low_pup_q_zscored','high_pup_q_zscored','high_pup_l_zscored','days_to_process', 't');
 end
 
 
@@ -689,4 +709,26 @@ inds=inds(1:size(imaging_time_traces.Allen,3));
 trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,imaging_time_traces.Allen(:,:,inds));
 trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));
 trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contrastLabels, trialslabels.contrastLabels(inds));
+end
+
+function trials_data = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsname, statestr, trials_labels_arousal_pup_lut, trials_data)
+state_label = find(strcmp(trials_labels_arousal_pup_lut, statestr));
+inds = trialslabels.(labelsname) == state_label;
+inds=inds(1:size(imaging_time_traces.Allen,3));
+
+zscoredbytrial = normByPreActivity(imaging_time_traces.t, imaging_time_traces.Allen, -3, -1); %normalize activity per day
+trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,zscoredbytrial(:,:,inds));
+trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));
+trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contrastLabels, trialslabels.contrastLabels(inds));
+end
+
+function Xnorm = normByPreActivity(t,X,st,en)
+stind = findClosestDouble(t, st);
+enind = findClosestDouble(t, en);
+
+mean_vals = mean(mean(X(:, stind:enind, :), 2),3);
+std_vals = mean(std(X(:, stind:enind, :), [], 2),3);
+
+Xnorm = bsxfun(@minus, X, mean_vals);
+Xnorm = bsxfun(@rdivide, Xnorm, std_vals);
 end
