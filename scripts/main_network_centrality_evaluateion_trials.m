@@ -155,6 +155,39 @@ for ni = 1:length(cent_features)
         spon_states_notweighted.high_pup_q.(cent_features{ni}), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
         suffix_files,cent_features{ni},['3 states ' cent_features{ni} ' Centrality (Trials)'], parcels_names,length(animals), legstr);
     
+    %states as before
+    mkNewDir(fullfile(outputfiggolder, 'not_weighted',suffix_files,'spon_pupilhigh_pupillow'))
+    mkNewDir(fullfile(outputfiggolder, 'not_weighted',suffix_files,'spon_run_pupillow'))
+    mkNewDir(fullfile(outputfiggolder, 'not_weighted',suffix_files,'spon_run_pupilhigh'))
+    
+    %difference maps, not weighted, for each centrality measure
+    braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+    parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+
+    %high vs low pup
+    graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_q.(cent_features{ni}),...
+        spon_states_notweighted.low_pup_q.(cent_features{ni}),strcat(suffix_files,'/spon_pupilhigh_pupillow/'),cent_features{ni},['pupil high vs low ' cent_features{ni} ' Centrality (trials)'],parcels_names,length(animals));
+    
+    graph_heatmap([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_q.(cent_features{ni}),spon_states_notweighted.low_pup_q.(cent_features{ni}),...
+        strcat(suffix_files,'/spon_pupilhigh_pupillow/'),cent_features{ni},['pupil high vs low ' cent_features{ni} ' Centrality (trials)']);
+    
+    %locomotion vs low pup
+    graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
+        spon_states_notweighted.low_pup_q.(cent_features{ni}),strcat(suffix_files,'/spon_run_pupillow/'),cent_features{ni},['run vs pupil low ' cent_features{ni} ' Centrality (trials)'],parcels_names,length(animals));
+
+    graph_heatmap([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_l.(cent_features{ni}),spon_states_notweighted.low_pup_q.(cent_features{ni}),...
+        strcat(suffix_files,'/spon_run_pupillow/'),cent_features{ni},['run vs pupil low ' cent_features{ni} ' Centrality (trials)']);
+    
+    %locomotion vs high pup
+    graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
+        spon_states_notweighted.high_pup_q.(cent_features{ni}),strcat(suffix_files,'/spon_run_pupilhigh/'),cent_features{ni},['run vs pupil high ' cent_features{ni} ' Centrality (trials)'],parcels_names,length(animals));
+    
+    graph_heatmap([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+        spon_states_notweighted.high_pup_l.(cent_features{ni}),spon_states_notweighted.high_pup_q.(cent_features{ni}),...
+        strcat(suffix_files,'/spon_run_pupilhigh/'),cent_features{ni},['run vs pupil high ' cent_features{ni} ' Centrality (trials)']);
+ 
 end
 
 end

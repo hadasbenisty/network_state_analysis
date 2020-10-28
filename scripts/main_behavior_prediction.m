@@ -15,7 +15,7 @@ outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
 
-plot_prediction(isloose, animals, statenames, outputfiggolder);
+%plot_prediction(isloose, animals, statenames, outputfiggolder);
 plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
@@ -46,7 +46,24 @@ for state_i = 1:length(statenames)
     end
 end
 end
-n = length(animals); 
+%% c50 and rmax per animal for barplots
+c50s=NaN(length(animals),length(statenames));
+rmax=NaN(length(animals),length(statenames));
+baseline=NaN(length(animals),length(statenames));
+for animal_i=1:length(animals)
+    for state_i=1:length(statenames)
+        [~,coefs]=HyFit([0 2 5 10 20 40 100].',psych_curv(:,state_i,animal_i));
+        c50s(animal_i,state_i)=coefs(3);
+        baseline(animal_i,state_i)=coefs(4);
+        rmax(animal_i,state_i)=coefs(1);
+        clearvars coefs
+    end
+end
+
+makepsychbarplot(c50s,animals,statenames,'c50_per_state')
+makepsychbarplot(rmax,animals,statenames,'rmax_per_state')
+makepsychbarplot(baseline,animals,statenames,'baseline_per_state')
+n=length(animals);
 M = nanmean(psych_curv, 3)*100;
 S = nanstd(psych_curv, [], 3)/sqrt(n-1)*100;
 
@@ -58,7 +75,36 @@ xlabel('% Contrast');
 ylabel('% Success Rate');
 legend(statenames);
 mysave(gcf, fullfile(outputfiggolder,['psych_curves_by_state' loosestr]));
-  
+
+%% hyperbolic ratio fit
+close all
+[model_lowpupq,~,~]=HyFit([0 2 5 10 20 40 100].',M(:,1)); 
+[model_highpupq,~,~]=HyFit([0 2 5 10 20 40 100].',M(:,2)); 
+[model_highpupl,~,~]=HyFit([0 2 5 10 20 40 100].',M(:,3)); 
+
+predicted_lowpupq=nanmean(predint(model_lowpupq,0:0.01:100),2); %predict values from function fit 
+predicted_highpupq=nanmean(predint(model_highpupq,0:0.01:100),2);
+predicted_highpupl=nanmean(predint(model_highpupl,0:0.01:100),2);
+figure;
+semilogx(0:0.01:100,predicted_lowpupq,'color','k'); %overlay early and late days psyc curve on semi log plot
+hold on;
+semilogx(0:0.01:100,predicted_highpupq,'color',[0.9290 0.6940 0.1250]);
+hold on
+semilogx(0:0.01:100,predicted_highpupl,'color','r');
+hold on
+errorbar([0 2 5 10 20 40 100].',M(:,1), S(:,1),'color','k','LineStyle','none');
+hold on
+errorbar([0 2 5 10 20 40 100].',M(:,2), S(:,2),'color',[0.9290 0.6940 0.1250],'LineStyle','none');
+hold on
+errorbar([0 2 5 10 20 40 100].',M(:,3), S(:,3),'color','r','LineStyle','none');
+axis([0,100,0,100]);
+set(gca,'XTickLabel', [0 0.1 1 10 100])
+xlabel('Contrast');
+ylabel('% Correct');
+title(strcat('Psyc Curve Across States'));
+mysave(gcf, fullfile(outputfiggolder,['psych_curve_hyperbolicfit_states' loosestr]));
+
+
 n = length(animals); 
 M = nanmean(suc_rate, 2)*100;
 S = nanstd(suc_rate, [], 2)/sqrt(n-1)*100;
@@ -67,8 +113,23 @@ set(gca,'XTickLabel',statenames);
 ylabel('% Success Rate');
 mysave(gcf, fullfile(outputfiggolder,['success_rate_by_state' loosestr]));
 
-    
-
+mean_mean_across_groups1=M;
+std_mean_across_groups1=S;
+figure;
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+subplot(1,1,1)
+set(gcf,'renderer','Painters')
+hold on
+for b = 1:3
+    bg=bar(b, mean_mean_across_groups1(b), 'FaceColor',  CondColors(b,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
+    bg.FaceAlpha = 0.8;
+end
+set(gca,'xtick',1:3)
+set(gca,'xticklabel',statenames)
+h = errorbar(1:3,mean_mean_across_groups1, std_mean_across_groups1,'LineStyle','none','LineWidth',0.5);title('State Success Rate');
+h.Color='k';
+set(h, 'marker', 'none'); 
+mysave(gcf, fullfile(outputfiggolder,['colored_success_rate_by_state' loosestr]), 'all');
 end
 
 
@@ -113,6 +174,25 @@ set(gca,'XTick', 1:length(parcels_names));
 set(gca,'XTickLabel', parcels_names);
 set(gcf,'Position',[1          41        1920         963])
 mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_per_parcel' loosestr]));
+
+%%difference plots
+%pupil high (2)-low(1)
+%run(3)-low(1)
+%run(3)-pupilhigh(2)
+braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+
+graph_overlay_allen_paired([],fullfile(outputfiggolder, 'not_weighted'),M(:,2),M(:,1),'trials/spon_pupilhigh_pupillow/','accuracy_SVM_diff','pupil high - low (svm acc)',parcels_names,n)
+graph_heatmap([],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+    M(:,2),M(:,1),'trials/spon_pupilhigh_pupillow/','accuracy_SVM_heatmap','pupil high - low (svm acc)');
+
+graph_overlay_allen_paired([],fullfile(outputfiggolder, 'not_weighted'),M(:,3),M(:,1),'trials/spon_run_pupillow/','accuracy_SVM_diff','run - pupil low (svm acc)',parcels_names,n)
+graph_heatmap([],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+    M(:,3),M(:,1),'trials/spon_run_pupillow/','accuracy_SVM_heatmap','run - pupil low (svm acc)');
+
+graph_overlay_allen_paired([],fullfile(outputfiggolder, 'not_weighted'),M(:,3),M(:,2),'trials/spon_run_pupilhigh/','accuracy_SVM_diff','run - pupil high (svm acc)',parcels_names,n)
+graph_heatmap([],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+    M(:,3),M(:,2),'trials/spon_run_pupilhigh/','accuracy_SVM_heatmap','run - pupil high (svm acc)');
 end
 function behavior_prediction(isloose, animal, statenames, slope_trial_time_start, slope_trial_time_end)
 
@@ -160,6 +240,28 @@ for state_i = 1:length(statenames)
     
 end
 end
+
+function makepsychbarplot(c50s,animals,statenames,name)
+n = length(animals); 
+mean_mean_across_groups1=nanmean(c50s,1);
+std_mean_across_groups1=nanstd(c50s,[],1)./sqrt(n-1);
+figure;
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+subplot(1,1,1)
+set(gcf,'renderer','Painters')
+hold on
+for b = 1:3
+    bg=bar(b, mean_mean_across_groups1(b), 'FaceColor',  CondColors(b,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
+    bg.FaceAlpha = 0.8;
+end
+set(gca,'xtick',1:3)
+set(gca,'xticklabel',statenames)
+h = errorbar(1:3,mean_mean_across_groups1, std_mean_across_groups1,'LineStyle','none','LineWidth',0.5);title(name);
+h.Color='k';
+set(h, 'marker', 'none'); 
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\','figure_1',name), 'all');
+end
+
 
 
 

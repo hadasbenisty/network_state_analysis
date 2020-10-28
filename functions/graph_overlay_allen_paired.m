@@ -1,4 +1,4 @@
-function graph_overlay_allen_paired(outputpth,condition1,condition2,condition,name,plottitle,parcels_names,num)
+function graph_overlay_allen_paired(strsuffix,outputpth,condition1,condition2,condition,name,plottitle,parcels_names,num)
 %get parcel labels
 isleftlabel=2:2:56;
 toremove=setdiff(1:56,[21:26 53:56]);
@@ -40,5 +40,5 @@ set(gca,'xticklabel',parcels_names)
 set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
 %set(gca,'XTickLabelRotation',45);
 mkdir(condition);
-mysave(gcf, fullfile(outputpth,condition,name), 'all');
+mysave(gcf, fullfile(outputpth,condition,strcat(name,strsuffix)), 'all');
 end
