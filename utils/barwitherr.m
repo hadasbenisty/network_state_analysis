@@ -145,7 +145,7 @@ if nRows > 1
         % order so use xOrder to ensure y values and errors are too:
         hErrorbar(col) = errorbar(mean(x,1), values(xOrder,col), lowerErrors(xOrder,col), upperErrors(xOrder, col), '.k');
         set(hErrorbar(col), 'marker', 'none')
-        set(hErrorbar(col), 'Color', 'r')
+        set(hErrorbar(col), 'Color', 'k')
     end
 else
     if verLessThan('matlab', '8.4')

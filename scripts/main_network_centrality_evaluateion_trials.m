@@ -9,9 +9,9 @@ pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-for ai = 1:length(animals)
-    eval_weights_and_cent(isloose, animals{ai}, saveplots, statenames, pre_trial_time_start, pre_trial_time_end);
-end
+% for ai = 1:length(animals)
+%     eval_weights_and_cent(isloose, animals{ai}, saveplots, statenames, pre_trial_time_start, pre_trial_time_end);
+% end
 for ismidcontrast=0:1
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 [trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
@@ -28,9 +28,9 @@ if ismidcontrast
 else
     midcontraststr='';
 end
-save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
-    'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
-    'incorrect_states_notweighted', 'incorrect_states_weighted');
+% save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
+%     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
+%     'incorrect_states_notweighted', 'incorrect_states_weighted');
 plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
 end
 end
@@ -50,7 +50,8 @@ load(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr  midcontras
     'correct_states_notweighted', 'correct_states_weighted',...
     'incorrect_states_notweighted', 'incorrect_states_weighted');
 [parcels_names] = get_allen_meta_parcels;
-
+braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
 N = size(correct_states_notweighted.low_pup_q.eigenvector,2);
 %% not weighted
 centnames = fieldnames(correct_states_notweighted.low_pup_q);
@@ -99,6 +100,22 @@ legend('Correct','Incorrect');
 suptitle(['Correct/Incorrect ' centstr]);
 set(gcf, 'Position', [1          41        1920         963]);
 mysave(gcf, fullfile(outputfiggolder, 'weighted', [centnames{l} '_centrality_stats_pretrial' loosestr  midcontraststr]));
+%% difference
+centnames = fieldnames(correct_states_notweighted.low_pup_q);
+for centt=1:length(centnames)
+    centstr = centnames{centt};
+    for k=1:length(statenames)
+        M1 = nanmean(correct_states_notweighted.(statenames{k}).(centstr),2);
+        M2 = nanmean(incorrect_states_notweighted.(statenames{k}).(centstr),2);
+        
+        %make graphs
+        graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), M1,...
+            M2,'trials',strcat(statenames{k},'_corrincorr_',centstr),['corr - incorr ' centstr ' Centrality (trials)' statenames{k}],parcels_names,N);
+        
+        graph_heatmap([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
+            M1,M2,'trials',strcat(statenames{k},'_corrincorr_',centstr),['corr - incorr ' centstr ' Centrality (trials)' statenames{k}]);
+    end
+end
 end
 end
 %%

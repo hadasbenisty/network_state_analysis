@@ -8,14 +8,14 @@ slope_trial_time_start = 0.1;
 slope_trial_time_end = 0.33;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 isloose = true;
-for ai = 1:length(animals)
-    behavior_prediction(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
-end
+% for ai = 1:length(animals)
+%     behavior_prediction(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
+% end
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
 
-%plot_prediction(isloose, animals, statenames, outputfiggolder);
+plot_prediction(isloose, animals, statenames, outputfiggolder);
 plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
@@ -156,22 +156,50 @@ for ai = 1:length(animals)
         end
     end
 end
-n=length(animals);
-M = nanmean(acc_all_parcels,2);
-S = nanstd(acc_all_parcels,[],2)/sqrt(n-1);
-figure;barwitherr(S,M);
-set(gca,'XTickLabel', statenames);
-ylim([0.5 0.9]);
-mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_all_parcels' loosestr]));
+
 parcels_names = get_allen_meta_parcels;
+
 figure;
+n = length(animals); 
+mean_mean_across_groups1=nanmean(acc_all_parcels,2);
+std_mean_across_groups1=nanstd(acc_all_parcels,[],2)/sqrt(n-1);
+figure;
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+subplot(1,1,1)
+set(gcf,'renderer','Painters')
+hold on
+for b = 1:3
+    bg=bar(b, mean_mean_across_groups1(b), 'FaceColor',  CondColors(b,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
+    bg.FaceAlpha = 0.8;
+end
+ylim([0.5 0.9]);
+set(gca,'xtick',1:3)
+set(gca,'xticklabel',statenames)
+h = errorbar(1:3,mean_mean_across_groups1, std_mean_across_groups1,'LineStyle','none','LineWidth',0.5);title('Acc All Parcels Per State');
+h.Color='k';
+set(h, 'marker', 'none'); 
+mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_all_parcels' loosestr]));
+
+figure;
+set(gcf,'renderer','Painters')
 M = nanmean(acc_per_parcel,3);
 S = nanstd(acc_per_parcel,[],3)/sqrt(n-1);
-barwitherr(S,M);
+h=barwitherr(S,M);
+CondColors=[0,0,0.8008;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
+h(1).EdgeColor = 'none';
+h(2).EdgeColor = 'none';
+h(3).EdgeColor = 'none';
+set(h(1),'FaceColor',CondColors(1,:));
+set(h(2),'FaceColor',CondColors(2,:));
+set(h(3),'FaceColor',CondColors(3,:));
+set(gcf, 'Position',  [150,150, 1500,700]);
 legend(statenames)
 ylim([0.5 0.9]);
 set(gca,'XTick', 1:length(parcels_names));
 set(gca,'XTickLabel', parcels_names);
+
+set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
+set(gca,'XTickLabelRotation',45);
 set(gcf,'Position',[1          41        1920         963])
 mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_per_parcel' loosestr]));
 

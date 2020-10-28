@@ -8,7 +8,7 @@ function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_ca
     
     condition3_meanvec_parcel=mean(cond3_cat,2);
     condition3_sevec_parcel=std(cond3_cat,0,2)./sqrt(num-1);
-    CondColors=[0.9961,0.5469,0;0,0,0.8008;0.6953,0.1328,0.1328;0.9961,0.8398,0];
+    CondColors=[0,0,0.8008;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
     
     %get colors
     figure;
@@ -16,6 +16,9 @@ function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_ca
     y = cat(2,condition1_meanvec_parcel,condition2_meanvec_parcel,condition3_meanvec_parcel);         % random y values (3 groups of 4 parameters)
     errY = cat(2,condition1_sevec_parcel,condition2_sevec_parcel,condition3_sevec_parcel);          % 10% error
     h = barwitherr(errY, y);% Plot with errorbars
+    h(1).EdgeColor = 'none';
+    h(2).EdgeColor = 'none';
+    h(3).EdgeColor = 'none';
     set(h(1),'FaceColor',CondColors(1,:));
     set(h(2),'FaceColor',CondColors(2,:));
     set(h(3),'FaceColor',CondColors(3,:));
