@@ -1,7 +1,9 @@
 function main_plot_simple_stats
 animals={'xs','xx','xz','xw','xt','xu'};
-plot_vals_by_state(animals)
-plot_time_spent_by_state_spont(animals)
+%plot_vals_by_state(animals)
+%plot_time_spent_by_state_spont(animals)
+%plot_learning_sponblink(animals)
+plot_exampletimetraces(animals,1,2,102,110)
 end
 
 
@@ -164,4 +166,160 @@ set(h, 'marker', 'none');
 ylabel('Fraction of time');
 %barwitherr([S.lowpup_q S.lowpup_locomotion S.highpup_q S.highpup_locomotion]/sqrt(length(animals)-1),[M.lowpup_q M.lowpup_locomotion M.highpup_q M.highpup_locomotion]);
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_time_spent_4states_byface');
+end
+
+function plot_learning_sponblink(animals)
+ispsychometric=false;
+addpath(genpath('X:\Hadas\Meso-imaging\lan\results\code\Functions'));
+cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude');
+cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
+spontblinkrate=nan(6,21);correctacceptrate=nan(6,21);falsealarmrate=nan(6,21);
+for animal_id=1:length(animals)
+    animal=char(animals(animal_id));
+    if ispsychometric
+       [~,days_to_process]=animaltodays(animal); 
+    else
+        days_to_process=animaltodayslearning(animal);
+    end
+    tic
+    for dayy=1:length(unique(days_to_process)) %iterate over psychometric days
+        %res = load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spt'), strcat(animal,num2str(days_to_process(dayy)),'imaging_time_traces_global.mat')));
+        %trial_labels=res.trialslabels.blinksummary(1:size(res.imaging_time_traces.Allen,3));
+        res=load(fullfile(strcat('X:\Lan\Meso-imaging\',animal), strcat(animal,'_D',num2str(days_to_process(dayy)),'_blinksummary.mat')));
+        trial_labels=res.blinksummary(:,1);
+        spontblink=load(fullfile(strcat('X:\Lan\Meso-imaging\',animal), strcat(animal,'_D',num2str(days_to_process(dayy)),'_spontblink.mat')));
+        %spont blink size is the # of spont blinks in the session per that
+        %day
+        timestamp=load(fullfile(strcat('X:\Lan\Meso-imaging\',animal), strcat(animal,'_D',num2str(days_to_process(dayy)),'_binary.mat')));
+        %borrowed from lan
+        %timestamp.timestamp is total time in sesion- 4seconds following each trial (cut out
+        %from spont blink analysis
+        %since time is in seconds, i multiply the whole vector elementwise
+        %by 0.45 to get spont blink rate for 450 ms
+        [timestamp.starton,~]=squaredetect(timestamp.startsig,0.05);
+        spontblinkrate(animal_id,dayy)=size(spontblink.spontblink,1)./(timestamp.timestamp(end-1)-4*length(timestamp.starton)).*0.45; %number of spont blinks scaled with recording duration-exlusion duration
+        correctacceptrate(animal_id,dayy)=sum(trial_labels==1)./(sum(trial_labels==1)+sum(trial_labels==2));
+        falsealarmrate(animal_id,dayy)=sum(trial_labels==3)./(sum(trial_labels==4)+sum(trial_labels==3));
+        %failurerate(animal_id,dayy)=sum(trial_labels==5)./length(sti(:,1));        
+    end
+    disp(strcat(char(animals(animal_id)),num2str(days_to_process(dayy))));
+    toc
+    %save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_pupilhigh_pupillow'),'pupilhighalldata','pupilhighalldata_t','pupillowalldata_t','pupillowalldata','days_to_process');
+    clearvars -except animal_id animals spontblinkrate correctacceptrate falsealarmrate ispsychometric
+end
+%error bars and plots averaged across 
+%maxdays=size(spontblinkrate,2);
+figure;
+hold on;
+errorbar(1:21,nanmean(spontblinkrate,1),nanstd(spontblinkrate,0,1)./sqrt(length(animals)-1),'r.-');
+hold on;
+errorbar(1:21,nanmean(correctacceptrate,1),nanstd(correctacceptrate,0,1)./sqrt(length(animals)-1),'k.-');
+%hold on;
+%errorbar(1:21,nanmean(falsealarmrate,1),nanstd(falsealarmrate,0,1)./sqrt(length(animals)-1),'b.-');
+xticks(1:21);
+xlim([0 22])
+if ispsychometric
+xticklabels(-2:19);
+xlabel('Day Relative to Psychometric Onset');
+title('Population Psychometric Corr Rate vs Spont Blink Rate');
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\','figure_1','psyc_corr_rate_spontblink'), 'all'); 
+else
+xticklabels(1:21);
+xlabel('Day');
+title('Population Learning Corr Rate vs Spont Blink Rate');
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\','figure_1','learning_corr_rate_spontblink'), 'all');
+end
+end
+
+function plot_exampletimetraces(animalNames,animal_i,day_i,t1,t2)
+%animal_i=1;
+% day_i=2;
+% t1=102;t2=110;
+%animal =xs, dayi=2, t1=102,t2=110
+%animal =xs, dayi=2, t1=202,t2=210 also 302 to 210
+%animalNames = {'xs'};%'xu'   'xs'    };
+addpath(genpath('../parcellation/'));
+addpath(genpath('../correlation'));
+addpath(genpath('../LSSC-higley-master\LSSC-higley-master'));
+addpath(genpath('../../../utils/Questionnaire/'));
+addpath(genpath('../pre_processing_scripts'));
+addpath(genpath('../pre_processing_scripts'));
+addpath('X:\Hadas\Meso-imaging\lan\results\code\Functions')
+[~, allen_parcels, maskAllen, maskAllenFrontal, allen_ROI_list] = getParcellsByLansAllansAtlass;
+[~,days]=animaltodays(char(animalNames(animal_i)));
+
+fltstr = 'spt';
+
+fsspike2=5e3;
+%initialize output and input paths
+outfigs = 'X:\Hadas\Meso-imaging\lan';
+spike2pth0 = 'X:\Hadas\Meso-imaging\lan\spike2data';
+addpath(genpath('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master'));
+
+data_smr_path = 'X:\Lan\Meso-imaging\';
+cedpath = 'X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\pre_processing_scripts\utils\CEDS64ML';
+switch animalNames{animal_i}
+    case {'xu','xv','xt','xs'}
+        fsimaing=33;
+        delay_filt = 500;
+    otherwise
+        fsimaing=10;
+        delay_filt=150;
+end
+disp([animalNames{animal_i}  ' '  num2str(days(day_i))]);
+datapath = ['X:\Hadas\Meso-imaging\lan\' animalNames{animal_i} 'psych\' fltstr '\'];
+spike2pth = fullfile(spike2pth0, animalNames{animal_i});
+load(fullfile(spike2pth, ['spike2data',animalNames{animal_i} num2str(days(day_i)) '.mat']),'channels_data',...
+    'timing', 't_imaging');
+parfile = fullfile(datapath, [animalNames{animal_i} '_' num2str(days(day_i)) '_allen.mat']);
+pardataAllan = load(parfile);
+if fsimaing < 33
+    t_imaging=t_imaging(1:2:end);
+end
+t_imaging = t_imaging(1:end-delay_filt);
+
+if length(t_imaging) > size(pardataAllan.parcels_time_trace,2)
+    t_imaging=t_imaging(1:size(pardataAllan.parcels_time_trace,2));
+end
+stim_timestamps = timing.stimstart/fsspike2;
+stim_timestamps=stim_timestamps(1:75);
+parcelsLabels.Allen = allen_parcels.regionNum;
+roiLabelsbyAllen.Allen = 1:length(allen_parcels.names);
+maskByAllen.Allen = maskAllen;
+regionLabel.Allen = allen_parcels.regionNum;
+isLeftLabel.Allen = repmat(1:2, 1, 28);
+regionLabel.nameslegend = {'Rest','Visual','Parietal','Temp','Aud','R-S','S-S','Motor'};
+pupil_data = fullfile('X:\Lan\Meso-imaging\', animalNames{animal_i}, [animalNames{animal_i} '_D' ...
+num2str(days(day_i))  '_pupil_clean.mat']);
+pupilarea = load(pupil_data,  'areaii');
+pupil_Norm=pupilarea.areaii; %get pupil camera timepoints
+[timing.pupilstart,timing.pupilend]=squaredetect(channels_data.pupil_frame,.5);
+pupil_time=timing.pupilstart/fsspike2;
+X_Allen =pardataAllan.parcels_time_trace(:, 1:length(t_imaging));
+t_spike2 = 1:length(channels_data.wheel)';
+%rmpath(genpath('Z:\Lan\Imaging scripts'))
+if size(pupil_Norm,1)==length(timing.pupilstart(1:end))
+    timing.pupilstart=timing.pupilstart(1:end);
+elseif size(pupil_Norm,1)<length(timing.pupilstart(1:end))
+    timing.pupilstart=timing.pupilstart(1:size(pupil_Norm,1));
+    timing.pupilend=timing.pupilend(1:size(pupil_Norm,1));
+elseif size(pupil_Norm,1)>length(timing.pupilstart(1:end))
+    pupil_Norm=pupil_Norm(1:length(timing.pupilstart),:);
+end
+t_spike2=t_spike2/5000;
+firstindx_run=findClosestDouble(t_spike2,t_imaging(1));
+firstindx_pup=findClosestDouble(pupil_time,t_imaging(1));
+t_spike2(1:firstindx_run)=[];channels_data.wheel(1:firstindx_run)=[];
+pupil_time(1:firstindx_pup)=[];pupil_Norm(1:firstindx_pup)=[];
+figure;
+set(gcf,'renderer','Painters')
+ax1=subplot(3,1,1)
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(2,t1*fsimaing:t2*fsimaing),'color','k');title('L-V1');
+ax2=subplot(3,1,2)
+plot(t_spike2(t1*fsspike2:t2*fsspike2),channels_data.wheelspeed(t1*fsspike2:t2*fsspike2).','color','r');title('wheel');
+ax3=subplot(3,1,3)
+plot(pupil_time(t1*30.3:t2*30.3),pupil_Norm(t1*30.3:t2*30.3).','color',[0.9290 0.6940 0.1250]);title('pupil');
+linkaxes([ax1, ax2, ax3],'x');
+
+mysave(gcf,fullfile('X:\Lav\ProcessingDirectory\figure_1',strcat('timetraces_allen',char(animalNames(animal_i)),num2str(days(day_i)),'t',num2str(t1),'to',num2str(t2))),'all');
 end
