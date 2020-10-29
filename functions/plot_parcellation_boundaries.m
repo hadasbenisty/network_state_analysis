@@ -1,4 +1,4 @@
-function plot_parcellation_boundaries_color(parcellsIndicators)
+function plot_parcellation_boundaries(parcellsIndicators)
 hold all;
 for k=1:size(parcellsIndicators,3)
     E=parcellsIndicators(:,:,k);

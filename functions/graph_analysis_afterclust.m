@@ -1,14 +1,11 @@
 function [indic_weighted, indic_notweighted, cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W, str_labels, issim)
-params.knn =5;
+
 %step 1
 %W=1-W./(mean(W(:)).^2);
 %W=1-W.^2;
 %step 2
 %nn_dist = sort(W.').';
-nn_dist = sort(abs(W.'),'descend').';
-v = nn_dist(:, 1:params.knn);
-th= median(v(:));%.10l*mean(v(v~=0));
-W(abs(W)<th)=0;
+W = threshold_cor_matrix(W);
 if ~exist('issim','var')
     issim=1;
 end
@@ -57,4 +54,11 @@ end
 indic_weighted(k,(cent_weighted.(c{k})> median(cent_weighted.(c{k}))))=1;
 indic_notweighted(k,(cent_notweighted.(c{k})> median(cent_notweighted.(c{k}))))=1;
 
+M=community_louvain(W~=0);
+cent_notweighted.participation=participation_coef((W~=0),M,0);
+cent_notweighted.community = M;
+
+M=community_louvain(W,1,[],'negative_sym');
+cent_weighted.participation=participation_coef(W,M,0);
+cent_weighted.community = M;
 end

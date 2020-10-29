@@ -1,9 +1,14 @@
 function plot_bars_3colors(M, S, legstr, xlbels)
+CondColors=get_3states_colors;
+% CondColors=[0,0,0;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
+for l=1:length(legstr)
+    legstr{l}(legstr{l} == '_') = ' ';
+end
+    
 
 figure;
 set(gcf,'renderer','Painters')
 h=barwitherr(S,M);
-CondColors=[0,0,0;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
 h(1).EdgeColor = 'none';
 h(2).EdgeColor = 'none';
 h(3).EdgeColor = 'none';

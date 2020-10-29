@@ -7,20 +7,43 @@ saveplots = false;
 animals={'xs','xx','xz','xw','xt','xu'};
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
-% for ai = 1:length(animals)
-%     eval_weights_and_cent(animals{ai}, saveplots, statenames);
-% end
+for ai = 1:length(animals)
+    eval_weights_and_cent(animals{ai}, saveplots, statenames);
+end
+% eval_diff_map(animals, statenames);
+
 plot_centrality_res(animals, outputfiggolder, statenames);
 end
 
+function eval_diff_map(animals, statenames)
+addpath(genpath('../centrality_measures/'));
+for ai=1:length(animals)
+    animal=animals{ai};
+    outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animal,'\');
+    for state_i = 1:length(statenames)
+        load(strcat(outputfolder,'network_analysis_corr',statenames{state_i}),'W_corr');
+        W_corr = threshold_cor_matrix(W_corr);
+        W_corr = W_corr + eye(size(W_corr));
+        [M(:, state_i, ai),Q(state_i, ai)]=community_louvain(abs(W_corr));
+P(:, state_i, ai)=participation_coef(abs(W_corr),M(:, state_i, ai),0);
 
+        configParams.maxInd=20;
+        [diffusion_map, Lambda, Psi, Ms, Phi, K_rw] = calcDiffusionMap(exp(W_corr), configParams);
+        eigenvals(:, state_i, ai) = Lambda(2:end);
+        firsteigenvec(:, state_i, ai) = Psi(:,2);
+    end
+end
+M = mean(eigenvals, 3);
+S = std(eigenvals, [],3)/sqrt(size(eigenvals,3)-1);
+barwitherr(S,M)
+end
 function plot_centrality_res(animals, outputfiggolder, statenames)
 [parcels_names] = get_allen_meta_parcels;
-cent_features = {'degree' 'closeness' 'betweenness' 'pagerank' 'eigenvector'};
+cent_features = {'degree' 'closeness' 'betweenness' 'pagerank' 'eigenvector', 'participation', 'community'};
 for state_i = 1:length(statenames)
     for cent_i = 1:length(cent_features)
         spon_states_notweighted.(statenames{state_i}).(cent_features{cent_i}) = [];
-        spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}) = [];
+%         spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}) = [];
     end
 end
 for i=1:length(animals)
@@ -28,28 +51,28 @@ for i=1:length(animals)
     outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020',animal);
     for state_i = 1:length(statenames)
         load(fullfile(outputfolder,['network_analysis_corr',statenames{state_i}]));
-        cent_features = fieldnames(cent_corr_weighted);
+        cent_features = fieldnames(cent_corr_notweighted);
         for cent_i = 1:length(cent_features)
             spon_states_notweighted.(statenames{state_i}).(cent_features{cent_i}) = cat(2,...
                 spon_states_notweighted.(statenames{state_i}).(cent_features{cent_i}), ...
                 cent_corr_notweighted.(cent_features{cent_i}));
             
-            spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}) = cat(2,...
-                spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}), ...
-                cent_corr_weighted.(cent_features{cent_i}));
+%             spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}) = cat(2,...
+%                 spon_states_weighted.(statenames{state_i}).(cent_features{cent_i}), ...
+%                 cent_corr_weighted.(cent_features{cent_i}));
         end
         
     end
 end
-mkNewDir(fullfile(outputfiggolder, 'weighted'))
+% mkNewDir(fullfile(outputfiggolder, 'weighted'))
 mkNewDir(fullfile(outputfiggolder, 'not_weighted'))
 legstr = {'Low Q', 'High Q', 'Loc'};
-for ni = 1:length(cent_features)
+for ni = 1:length(cent_features)-1
     
-    graph_overlay_allen_3conditions([],fullfile(outputfiggolder, 'weighted'), spon_states_weighted.low_pup_q.(cent_features{ni}),...
-        spon_states_weighted.high_pup_q.(cent_features{ni}), spon_states_weighted.high_pup_l.(cent_features{ni}),...
-        'spon_threestates',cent_features{ni},['3 states ' cent_features{ni} ' Centrality (spon)'], parcels_names,length(animals), legstr);
-    
+%     graph_overlay_allen_3conditions([],fullfile(outputfiggolder, 'weighted'), spon_states_weighted.low_pup_q.(cent_features{ni}),...
+%         spon_states_weighted.high_pup_q.(cent_features{ni}), spon_states_weighted.high_pup_l.(cent_features{ni}),...
+%         'spon_threestates',cent_features{ni},['3 states ' cent_features{ni} ' Centrality (spon)'], parcels_names,length(animals), legstr);
+%     
     graph_overlay_allen_3conditions([],fullfile(outputfiggolder, 'not_weighted'), spon_states_notweighted.low_pup_q.(cent_features{ni}),...
         spon_states_notweighted.high_pup_q.(cent_features{ni}), spon_states_notweighted.high_pup_l.(cent_features{ni}),...
         'spon_threestates',cent_features{ni},['3 states ' cent_features{ni} ' Centrality (spon)'], parcels_names,length(animals), legstr);

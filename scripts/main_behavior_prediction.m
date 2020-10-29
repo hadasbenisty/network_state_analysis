@@ -8,9 +8,10 @@ slope_trial_time_start = 0.1;
 slope_trial_time_end = 0.33;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 isloose = true;
-for ai = 1:length(animals)
+
+% for ai = 1:length(animals)
 %     behavior_prediction(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
-end
+% end
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
@@ -140,9 +141,10 @@ if isloose
 else
     loosestr = '';
 end
+
 for ai = 1:length(animals)
     Lab = load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states' loosestr '.mat'],...
-    'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't'); %#ok<NASGU>
+        'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't'); %#ok<NASGU>
     outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animals{ai},'\');
     for state_i = 1:length(statenames)
         if ~exist(strcat(outputfolder,'behavior_prediction',statenames{state_i}, loosestr ,'.mat'), 'file')
@@ -150,18 +152,14 @@ for ai = 1:length(animals)
             acc_per_parcel(:, state_i, ai) = nan(23,1);
         else
             load(strcat(outputfolder,'behavior_prediction',statenames{state_i}, loosestr ,'.mat'),'slopeData',...
-                'accuracy_vec','cvinds','fa_vec',...
-                'md_vec', 'accuracy_mat', 'cvinds_mat', 'fa_mat', 'md_mat');
+                'accuracy_vec','accuracy_mat');
             acc_all_parcels(state_i, ai) = mean(accuracy_vec);
             acc_per_parcel(:, state_i, ai) = mean(accuracy_mat);
             
-        
-    y = Lab.(statenames{state_i}).trialslabels.blinksummary;
-    inds = y<3;
-    labels = y(inds);
-    
-    
-    
+            
+            y = Lab.(statenames{state_i}).trialslabels.blinksummary;
+            inds = y<3;
+            labels = y(inds);
             slope_correct.(statenames{state_i})(:,ai) = mean(slopeData(:, labels==1),2);
             slope_incorrect.(statenames{state_i})(:,ai) = mean(slopeData(:, labels==2),2);
         end
@@ -170,26 +168,14 @@ end
 
 parcels_names = get_allen_meta_parcels;
 n = length(animals); 
-CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
 for state_i = 1:length(statenames)
     subplot(3,1,state_i);set(gcf,'renderer','Painters');
     M(:,1, state_i) = mean(slope_correct.(statenames{state_i}),2);
     M(:,2, state_i) = mean(slope_incorrect.(statenames{state_i}),2);
     S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
     S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
-    h=barwitherr(S(:,:, state_i),M(:,:, state_i));title(statenames{state_i});
-    h(1).EdgeColor = 'none';
-    h(2).EdgeColor = 'none';
-    set(h(1),'FaceColor','g');
-    set(h(2),'FaceColor','r'); 
-    set(h(1),'FaceAlpha',0.4);
-    set(h(2),'FaceAlpha',0.4); 
-    set(gca,'xtick',1:23)
-    set(gcf, 'Position',  [1,1, 700,1000]);    
-    set(gca,'xticklabel',parcels_names)
-    set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
-    set(gca,'XTickLabelRotation',45);
 end
+plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
 mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr]));
 
 plot_bars_3colors(squeeze(M(:,1,:)), squeeze(S(:,1,:)), statenames, parcels_names)
@@ -201,48 +187,12 @@ clear S;
 
 figure;
 mean_mean_across_groups1=nanmean(acc_all_parcels,2);
-std_mean_across_groups1=nanstd(acc_all_parcels,[],2)/sqrt(n-1);
-figure;
-CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
-subplot(1,1,1)
-set(gcf,'renderer','Painters')
-hold on
-for b = 1:3
-    bg=bar(b, mean_mean_across_groups1(b), 'FaceColor',  CondColors(b,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
-    bg.FaceAlpha = 0.8;
-end
-ylim([0.5 0.9]);
-set(gca,'xtick',1:3)
-set(gca,'xticklabel',statenames)
-h = errorbar(1:3,mean_mean_across_groups1, std_mean_across_groups1,'LineStyle','none','LineWidth',0.5);title('Acc All Parcels Per State');
-h.Color='k';
-set(h, 'marker', 'none'); 
+sem_mean_across_groups1=nanstd(acc_all_parcels,[],2)/sqrt(n-1);
+plot_3_bars(mean_mean_across_groups1, sem_mean_across_groups1, statenames);
 mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_all_parcels' loosestr]));
-
-figure;
-set(gcf,'renderer','Painters')
 M = nanmean(acc_per_parcel,3);
 S = nanstd(acc_per_parcel,[],3)/sqrt(n-1);
-h=barwitherr(S,M);
-CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
-h(1).EdgeColor = 'none';
-h(2).EdgeColor = 'none';
-h(3).EdgeColor = 'none';
-set(h(1),'FaceColor',CondColors(1,:));
-set(h(2),'FaceColor',CondColors(2,:));
-set(h(3),'FaceColor',CondColors(3,:));
-set(h(1),'FaceAlpha',0.8);
-set(h(2),'FaceAlpha',0.8);
-set(h(3),'FaceAlpha',0.8);
-set(gcf, 'Position',  [150,150, 1500,700]);
-legend(statenames)
-ylim([0.5 0.9]);
-set(gca,'XTick', 1:length(parcels_names));
-set(gca,'XTickLabel', parcels_names);
-
-set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
-set(gca,'XTickLabelRotation',45);
-set(gcf,'Position',[1          41        1500         700])
+plot_bars_3colors_per_parcel(M,S, statenames, parcels_names);
 mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_per_parcel' loosestr]));
 
 %%difference plots

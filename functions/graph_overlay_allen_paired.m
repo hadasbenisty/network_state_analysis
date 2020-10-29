@@ -45,6 +45,6 @@ set(gca,'xtick',1:23)
 set(gca,'xticklabel',parcels_names)
 set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
 %set(gca,'XTickLabelRotation',45);
-mkdir(condition);
+mkNewDir(condition);
 mysave(gcf, fullfile(outputpth,condition,strcat(name,strsuffix)), 'all');
 end
