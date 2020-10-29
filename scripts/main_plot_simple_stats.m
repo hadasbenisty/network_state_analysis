@@ -1,5 +1,66 @@
-animals={'xx','xz','xs','xw','xu'};
+function main_plot_simple_stats
 
+animals={'xs','xx','xz','xw','xt','xu'};
+plot_vals_by_state(animals)
+plot_time_spent_by_state_spont(animals)
+end
+
+
+function plot_vals_by_state(animals)
+binsN = 32;
+for animal_i = 1:length(animals)
+    animal=animals{animal_i};
+ res(animal_i) = load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_3states'),...
+        'low_pup_q','high_pup_q','high_pup_l',...
+        'wheel_low_pup_q', 'pupil_low_pup_q',...
+        'face_low_pup_q', 'wheel_high_pup_q', 'pupil_high_pup_q', 'face_high_pup_q', ...
+        'wheel_high_pup_l', 'pupil_high_pup_l', 'face_high_pup_l');
+end
+
+[parcels_names, parcels_region_labels, finalindex, region_lut] = get_allen_meta_parcels;
+binsN=32;
+figure;subplot(3,1,1);
+x=[res.low_pup_q];x=x(finalindex,:);
+hist(x(23,:), binsN); title('Low Q');
+x=[res.high_pup_q];x=x(finalindex,:);
+subplot(3,1,2);hist(x(23,:), binsN); title('High Q');
+x=[res.high_pup_l];x=x(finalindex,:);
+subplot(3,1,3);hist(x(23,:), binsN); title('High Loc');
+xlabel('V1');
+suptitle('V1 Distribution');
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_v1_hist_3states');
+
+
+
+binsN = linspace(0,60,32);
+
+figure;subplot(3,1,1);
+hist([res.wheel_low_pup_q], binsN);xlim([0 60]); title('Low Q');
+subplot(3,1,2);hist([res.wheel_high_pup_q], binsN); xlim([0 60]);title('High Q');
+subplot(3,1,3);hist([res.wheel_high_pup_l], binsN);xlim([0 60]);xlabel('Running Speed'); title('High Loc');
+xlabel('Running Speed'); suptitle('Running Speed Per State');
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_wheel_hist_3states');
+
+binsN = linspace(0,6e3,32);
+
+figure;subplot(3,1,1);
+hist([res.pupil_low_pup_q], binsN);xlim([0 6e3]);title('Low Q');
+subplot(3,1,2);hist([res.pupil_high_pup_q], binsN);xlim([0 6e3]);title('High Q');
+subplot(3,1,3);hist([res.pupil_high_pup_l], binsN);xlim([0 6e3]);xlabel('Pupil'); title('High Loc');
+suptitle('Pupil Per State');
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_pupil_hist_3states');
+
+binsN = linspace(-1e4,1e4,32);
+
+figure;subplot(3,1,1);
+hist([res.face_low_pup_q], binsN);xlim([-1e4 1e4]);title('Low Q');
+subplot(3,1,2);hist([res.face_high_pup_q], binsN);xlim([-1e4 1e4]);title('High Q');
+subplot(3,1,3);hist([res.face_high_pup_l], binsN);xlim([-1e4 1e4]);title('High L');
+xlabel('Face Map'); suptitle('Face Map Per State');
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_face_hist_3states');
+
+end
+function plot_time_spent_by_state_spont(animals)
 for animal_i = 1:length(animals)
     animal=animals{animal_i};
     locomotionperiods=[];quiescenceperiods=[];puplow_on_q=[];
@@ -74,3 +135,4 @@ barwitherr([S.lowface_q S.lowface_locomotion S.highface_q S.highface_locomotion]
 set(gca,'XTickLabel', {'low face q','low face loc' 'high face q' 'high face loc'});
 ylabel('Fraction of time');
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_time_spent_4states_byface');
+end

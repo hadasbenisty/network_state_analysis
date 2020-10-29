@@ -8,15 +8,15 @@ addpath(genpath('../../meta_data_processing'));
 addpath(genpath('../../utils'));
 animals={'xs','xx','xz','xw','xt','xu'};
 
-% for ai = 1:length(animals)
+for ai = 1:length(animals)
 %     extract_trials_imaging_by_state_loose(animals{ai})
 % %     extract_trials_imaging_by_state_super_strict(animals{ai});
-% end
+end
 isloose = true;
-concatenateTrialsPeriodsByState(animals, isloose);
+% concatenateTrialsPeriodsByState(animals, isloose);
 %makeslopeamplitudeplots(animals, isloose);
 
-%plot_time_spent(animals, isloose)
+plot_time_spent(animals, isloose)
 
 end
 function extract_trials_imaging_by_state_loose(animalName)
@@ -118,8 +118,14 @@ for day_i=1:length(days2process)
           load(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global.mat']),...
               'trials_labels_arousal_pup_lut','trials_labels_arousal_facemap_lut','trialslabels','roiLabelsbyAllen','maskByAllen','regionLabel','isLeftLabel','imaging_time_traces');
     trialslabels.trials_labels_arousal_pup_loose = trials_labels_arousal_pup_loose;
+     [imaging_time_traces.pupil_t, imaging_time_traces.pupil_trace] = time_trace2trials(...
+         pupil_Norm, pupil_time, imaging_time_traces.t, timing.stimstart/params.fsspike2, params.fspupilcam);
+     [imaging_time_traces.wheel_t, imaging_time_traces.wheel_trace] = time_trace2trials(...
+         wheel_speed_resampled, pupil_time, imaging_time_traces.t, timing.stimstart/params.fsspike2, params.fspupilcam);
     
-    save(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global.mat']),...
+
+     
+     save(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global.mat']),...
         'trialslabels','roiLabelsbyAllen','maskByAllen','regionLabel','isLeftLabel','imaging_time_traces',...
         'trials_labels_arousal_pup_lut','trials_labels_arousal_facemap_lut', 'trials_labels_arousal_pup_loose_lut')
 end
@@ -133,10 +139,56 @@ if isloose
 else
     loosestr = '';
 end
+wheelvals.low_pup_q.correct=[];
+wheelvals.low_pup_q.incorrect=[];
+pupvals.low_pup_q.correct=[];
+pupvals.low_pup_q.incorrect=[];
+
+wheelvals.high_pup_q.correct=[];
+wheelvals.high_pup_q.incorrect=[];
+pupvals.high_pup_q.correct=[];
+pupvals.high_pup_q.incorrect=[];
+
+wheelvals.high_pup_l.correct=[];
+wheelvals.high_pup_l.incorrect=[];
+pupvals.high_pup_l.correct=[];
+pupvals.high_pup_l.incorrect=[];
 
 for ai = 1:length(animals)
     load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states', loosestr),...
         'low_pup_q','high_pup_q','high_pup_l');
+        
+    % wheel low q
+    x = low_pup_q.wheel_trace(:,:, low_pup_q.trialslabels.blinksummary==1);
+    wheelvals.low_pup_q.correct = cat(1, wheelvals.low_pup_q.correct, x(:));
+    x = low_pup_q.wheel_trace(:,:, low_pup_q.trialslabels.blinksummary==2);
+    wheelvals.low_pup_q.incorrect = cat(1, wheelvals.low_pup_q.incorrect, x(:));
+    % pupil low q
+    x = low_pup_q.pupil_trace(:,:, low_pup_q.trialslabels.blinksummary==1);
+    pupvals.low_pup_q.correct = cat(1, pupvals.low_pup_q.correct, x(:));
+    x = low_pup_q.pupil_trace(:,:, low_pup_q.trialslabels.blinksummary==2);
+    pupvals.low_pup_q.incorrect = cat(1, pupvals.low_pup_q.incorrect, x(:));
+    % wheel high q
+    x = high_pup_q.wheel_trace(:,:, high_pup_q.trialslabels.blinksummary==1);
+    wheelvals.high_pup_q.correct = cat(1, wheelvals.high_pup_q.correct, x(:));
+    x = high_pup_q.wheel_trace(:,:, high_pup_q.trialslabels.blinksummary==2);
+    wheelvals.high_pup_q.incorrect = cat(1, wheelvals.high_pup_q.incorrect, x(:));
+    % pupil high q
+    x = high_pup_q.pupil_trace(:,:, high_pup_q.trialslabels.blinksummary==1);
+    pupvals.high_pup_q.correct = cat(1, pupvals.high_pup_q.correct, x(:));
+    x = high_pup_q.pupil_trace(:,:, high_pup_q.trialslabels.blinksummary==2);
+    pupvals.high_pup_q.incorrect = cat(1, pupvals.high_pup_q.incorrect, x(:));
+    % wheel high l
+    x = high_pup_l.wheel_trace(:,:, high_pup_l.trialslabels.blinksummary==1);
+    wheelvals.high_pup_l.correct = cat(1, wheelvals.high_pup_l.correct, x(:));
+    x = high_pup_l.wheel_trace(:,:, high_pup_l.trialslabels.blinksummary==2);
+    wheelvals.high_pup_l.incorrect = cat(1, wheelvals.high_pup_l.incorrect, x(:));
+    % pupil high l
+    x = high_pup_l.pupil_trace(:,:, high_pup_l.trialslabels.blinksummary==1);
+    pupvals.high_pup_l.correct = cat(1, pupvals.high_pup_l.correct, x(:));
+    x = high_pup_l.pupil_trace(:,:, high_pup_l.trialslabels.blinksummary==2);
+    pupvals.high_pup_l.incorrect = cat(1, pupvals.high_pup_l.incorrect, x(:));
+    
     Nall(ai, 1) = sum(low_pup_q.trialslabels.blinksummary<3);
     Ncor(ai, 1) = sum(low_pup_q.trialslabels.blinksummary==1);
     Ninc(ai, 1) = sum(low_pup_q.trialslabels.blinksummary==2);
@@ -150,6 +202,39 @@ for ai = 1:length(animals)
     Ninc(ai, 3) = sum(high_pup_l.trialslabels.blinksummary==2);
 end
 n=length(animals);
+
+
+binsN = linspace(0,60,32);
+
+figure;subplot(3,2,1);
+hist(wheelvals.low_pup_q.correct, binsN);title('Low Q Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,2);hist(wheelvals.low_pup_q.incorrect, binsN);title('Low Q incorrect');xlim([0 60]);xlabel('wheel') 
+
+subplot(3,2,3);
+hist(wheelvals.high_pup_q.correct, binsN);title('high Q Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,4);hist(wheelvals.high_pup_q.incorrect, binsN);title('high Q incorrect');xlim([0 60]);xlabel('wheel') 
+subplot(3,2,5);
+hist(wheelvals.high_pup_l.correct, binsN);title('high loc Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,6);hist(wheelvals.high_pup_l.incorrect, binsN);title('high loc incorrect');xlim([0 60]);xlabel('wheel') 
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\trial_wheel_hist_3states');
+binsN = linspace(0,6e3,32);
+
+figure;subplot(3,2,1);
+hist(pupvals.low_pup_q.correct, binsN);title('Low Q Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,2);hist(pupvals.low_pup_q.incorrect, binsN);title('Low Q incorrect');xlim([0 6e3]);xlabel('wheel') 
+
+subplot(3,2,3);
+hist(pupvals.high_pup_q.correct, binsN);title('high Q Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,4);hist(pupvals.high_pup_q.incorrect, binsN);title('high Q incorrect');xlim([0 6e3]);xlabel('wheel') 
+subplot(3,2,5);
+hist(pupvals.high_pup_l.correct, binsN);title('high loc Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,6);hist(pupvals.high_pup_l.incorrect, binsN);title('high loc incorrect');xlim([0 6e3]);xlabel('wheel') 
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\trial_pup_hist_3states');
+
+
+
+
+
 Mall = nanmean(Nall);    
 Sall = nanstd(Nall)/sqrt(n-1);  
 Mcor = nanmean(Ncor);  
@@ -232,14 +317,23 @@ for ir=1:length(animals)
     low_pup_q.imaging_time_traces=[];
     low_pup_q.trialslabels.blinksummary=[];
     low_pup_q.trialslabels.contrastLabels = [];
+    low_pup_q.pupil_trace=[];
+    low_pup_q.wheel_trace=[];
+    low_pup_q.Gal = [];
     
     high_pup_q.imaging_time_traces=[];
     high_pup_q.trialslabels.blinksummary=[];
     high_pup_q.trialslabels.contrastLabels = [];
+    high_pup_q.pupil_trace=[];
+    high_pup_q.wheel_trace=[];
+    high_pup_q.Gal = [];
     
     high_pup_l.imaging_time_traces=[];
     high_pup_l.trialslabels.blinksummary=[];
     high_pup_l.trialslabels.contrastLabels = [];
+    high_pup_l.pupil_trace=[];
+    high_pup_l.wheel_trace=[];
+    high_pup_l.Gal = [];
     
     low_pup_q_zscored.imaging_time_traces=[];
     low_pup_q_zscored.trialslabels.blinksummary=[];
@@ -709,6 +803,12 @@ inds=inds(1:size(imaging_time_traces.Allen,3));
 trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,imaging_time_traces.Allen(:,:,inds));
 trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));
 trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contrastLabels, trialslabels.contrastLabels(inds));
+
+trials_data.pupil_trace=cat(3,trials_data.pupil_trace,imaging_time_traces.pupil_trace(:,:,inds));
+trials_data.wheel_trace=cat(3,trials_data.wheel_trace,imaging_time_traces.wheel_trace(:,:,inds));
+trials_data.Gal=cat(3,trials_data.Gal,imaging_time_traces.Gal(:,:,inds));
+
+
 end
 
 function trials_data = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsname, statestr, trials_labels_arousal_pup_lut, trials_data)

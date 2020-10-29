@@ -8,9 +8,9 @@ slope_trial_time_start = 0.1;
 slope_trial_time_end = 0.33;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 isloose = true;
-% for ai = 1:length(animals)
+for ai = 1:length(animals)
 %     behavior_prediction(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
-% end
+end
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
@@ -141,7 +141,8 @@ else
     loosestr = '';
 end
 for ai = 1:length(animals)
-    
+    Lab = load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states' loosestr '.mat'],...
+    'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't'); %#ok<NASGU>
     outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animals{ai},'\');
     for state_i = 1:length(statenames)
         if ~exist(strcat(outputfolder,'behavior_prediction',statenames{state_i}, loosestr ,'.mat'), 'file')
@@ -153,14 +154,42 @@ for ai = 1:length(animals)
                 'md_vec', 'accuracy_mat', 'cvinds_mat', 'fa_mat', 'md_mat');
             acc_all_parcels(state_i, ai) = mean(accuracy_vec);
             acc_per_parcel(:, state_i, ai) = mean(accuracy_mat);
+            
+        
+    y = Lab.(statenames{state_i}).trialslabels.blinksummary;
+    inds = y<3;
+    labels = y(inds);
+    
+    
+    
+            slope_correct.(statenames{state_i})(:,ai) = mean(slopeData(:, labels==1),2);
+            slope_incorrect.(statenames{state_i})(:,ai) = mean(slopeData(:, labels==2),2);
         end
     end
 end
 
 parcels_names = get_allen_meta_parcels;
+n = length(animals); 
 
 figure;
-n = length(animals); 
+for state_i = 1:length(statenames)
+    subplot(3,1,state_i);
+M(:,1, state_i) = mean(slope_correct.(statenames{state_i}),2);
+M(:,2, state_i) = mean(slope_incorrect.(statenames{state_i}),2);
+S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
+S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
+barwitherr(S(:,:, state_i),M(:,:, state_i));title(statenames{state_i});
+end
+mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr]));
+
+plot_bars_3colors(squeeze(M(:,1,:)), squeeze(S(:,1,:)), statenames, parcels_names)
+mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_correct' loosestr]));
+plot_bars_3colors(squeeze(M(:,2,:)), squeeze(S(:,2,:)), statenames, parcels_names)
+mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_incorrect' loosestr]));
+clear M;
+clear S;
+
+figure;
 mean_mean_across_groups1=nanmean(acc_all_parcels,2);
 std_mean_across_groups1=nanstd(acc_all_parcels,[],2)/sqrt(n-1);
 figure;
