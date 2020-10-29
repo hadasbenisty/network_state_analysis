@@ -8,8 +8,8 @@ meandiff=mean(difference_cond1_cond2,2).';
 %upperlim=max(meandiff(:)); 
 %lowerlim=(min(min(meandiff(:)))); %(min(min(meandiff(:)))-0.00000001);
 if contains(name,'eigenvector')
-    lowerlim=-0.03;
-    upperlim=0.03;
+    lowerlim=-0.06;
+    upperlim=0.06;
 elseif contains(name,'svm')||contains(name,'SVM')
     lowerlim=-0.05;
     upperlim=0.05;

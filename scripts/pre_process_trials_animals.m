@@ -202,34 +202,31 @@ for ai = 1:length(animals)
     Ninc(ai, 3) = sum(high_pup_l.trialslabels.blinksummary==2);
 end
 n=length(animals);
-
-
 binsN = linspace(0,60,32);
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
 
-figure;subplot(3,2,1);
-hist(wheelvals.low_pup_q.correct, binsN);title('Low Q Correct');xlim([0 60]); xlabel('wheel')
-subplot(3,2,2);hist(wheelvals.low_pup_q.incorrect, binsN);title('Low Q incorrect');xlim([0 60]);xlabel('wheel') 
-
-subplot(3,2,3);
-hist(wheelvals.high_pup_q.correct, binsN);title('high Q Correct');xlim([0 60]); xlabel('wheel')
-subplot(3,2,4);hist(wheelvals.high_pup_q.incorrect, binsN);title('high Q incorrect');xlim([0 60]);xlabel('wheel') 
-subplot(3,2,5);
-hist(wheelvals.high_pup_l.correct, binsN);title('high loc Correct');xlim([0 60]); xlabel('wheel')
-subplot(3,2,6);hist(wheelvals.high_pup_l.incorrect, binsN);title('high loc incorrect');xlim([0 60]);xlabel('wheel') 
+figure;subplot(3,2,1);set(gcf,'renderer','Painters');
+histogram(wheelvals.low_pup_q.correct, binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none');title('Low Q Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,2);set(gcf,'renderer','Painters');histogram(wheelvals.low_pup_q.incorrect, binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none');title('Low Q incorrect');xlim([0 60]);xlabel('wheel') 
+subplot(3,2,3);set(gcf,'renderer','Painters');
+histogram(wheelvals.high_pup_q.correct, binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none');title('high Q Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,4);set(gcf,'renderer','Painters');histogram(wheelvals.high_pup_q.incorrect, binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none');title('high Q incorrect');xlim([0 60]);xlabel('wheel') 
+subplot(3,2,5);set(gcf,'renderer','Painters');
+histogram(wheelvals.high_pup_l.correct, binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none');title('high loc Correct');xlim([0 60]); xlabel('wheel')
+subplot(3,2,6);set(gcf,'renderer','Painters');histogram(wheelvals.high_pup_l.incorrect, binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none');title('high loc incorrect');xlim([0 60]);xlabel('wheel') 
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\trial_wheel_hist_3states');
 binsN = linspace(0,6e3,32);
 
-figure;subplot(3,2,1);
-hist(pupvals.low_pup_q.correct, binsN);title('Low Q Correct');xlim([0 6e3]); xlabel('wheel')
-subplot(3,2,2);hist(pupvals.low_pup_q.incorrect, binsN);title('Low Q incorrect');xlim([0 6e3]);xlabel('wheel') 
-
-subplot(3,2,3);
-hist(pupvals.high_pup_q.correct, binsN);title('high Q Correct');xlim([0 6e3]); xlabel('wheel')
-subplot(3,2,4);hist(pupvals.high_pup_q.incorrect, binsN);title('high Q incorrect');xlim([0 6e3]);xlabel('wheel') 
-subplot(3,2,5);
-hist(pupvals.high_pup_l.correct, binsN);title('high loc Correct');xlim([0 6e3]); xlabel('wheel')
-subplot(3,2,6);hist(pupvals.high_pup_l.incorrect, binsN);title('high loc incorrect');xlim([0 6e3]);xlabel('wheel') 
-mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\trial_pup_hist_3states');
+figure;subplot(3,2,1);set(gcf,'renderer','Painters');
+histogram(pupvals.low_pup_q.correct, binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none');title('Low Q Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,2);set(gcf,'renderer','Painters');histogram(pupvals.low_pup_q.incorrect, binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none');title('Low Q incorrect');xlim([0 6e3]);xlabel('wheel') 
+subplot(3,2,3);set(gcf,'renderer','Painters');
+histogram(pupvals.high_pup_q.correct, binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none');title('high Q Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,4);set(gcf,'renderer','Painters');histogram(pupvals.high_pup_q.incorrect, binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none');title('high Q incorrect');xlim([0 6e3]);xlabel('wheel') 
+subplot(3,2,5);set(gcf,'renderer','Painters');
+histogram(pupvals.high_pup_l.correct, binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none');title('high loc Correct');xlim([0 6e3]); xlabel('wheel')
+subplot(3,2,6);set(gcf,'renderer','Painters');histogram(pupvals.high_pup_l.incorrect, binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none');title('high loc incorrect');xlim([0 6e3]);xlabel('wheel') 
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\trial_pup_histogram_3states');
 
 
 

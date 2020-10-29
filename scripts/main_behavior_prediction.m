@@ -170,15 +170,25 @@ end
 
 parcels_names = get_allen_meta_parcels;
 n = length(animals); 
-
-figure;
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
 for state_i = 1:length(statenames)
-    subplot(3,1,state_i);
-M(:,1, state_i) = mean(slope_correct.(statenames{state_i}),2);
-M(:,2, state_i) = mean(slope_incorrect.(statenames{state_i}),2);
-S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
-S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
-barwitherr(S(:,:, state_i),M(:,:, state_i));title(statenames{state_i});
+    subplot(3,1,state_i);set(gcf,'renderer','Painters');
+    M(:,1, state_i) = mean(slope_correct.(statenames{state_i}),2);
+    M(:,2, state_i) = mean(slope_incorrect.(statenames{state_i}),2);
+    S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
+    S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
+    h=barwitherr(S(:,:, state_i),M(:,:, state_i));title(statenames{state_i});
+    h(1).EdgeColor = 'none';
+    h(2).EdgeColor = 'none';
+    set(h(1),'FaceColor','g');
+    set(h(2),'FaceColor','r'); 
+    set(h(1),'FaceAlpha',0.4);
+    set(h(2),'FaceAlpha',0.4); 
+    set(gca,'xtick',1:23)
+    set(gcf, 'Position',  [1,1, 700,1000]);    
+    set(gca,'xticklabel',parcels_names)
+    set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
+    set(gca,'XTickLabelRotation',45);
 end
 mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr]));
 
@@ -214,13 +224,16 @@ set(gcf,'renderer','Painters')
 M = nanmean(acc_per_parcel,3);
 S = nanstd(acc_per_parcel,[],3)/sqrt(n-1);
 h=barwitherr(S,M);
-CondColors=[0,0,0.8008;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
 h(1).EdgeColor = 'none';
 h(2).EdgeColor = 'none';
 h(3).EdgeColor = 'none';
 set(h(1),'FaceColor',CondColors(1,:));
 set(h(2),'FaceColor',CondColors(2,:));
 set(h(3),'FaceColor',CondColors(3,:));
+set(h(1),'FaceAlpha',0.8);
+set(h(2),'FaceAlpha',0.8);
+set(h(3),'FaceAlpha',0.8);
 set(gcf, 'Position',  [150,150, 1500,700]);
 legend(statenames)
 ylim([0.5 0.9]);
@@ -229,7 +242,7 @@ set(gca,'XTickLabel', parcels_names);
 
 set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
 set(gca,'XTickLabelRotation',45);
-set(gcf,'Position',[1          41        1920         963])
+set(gcf,'Position',[1          41        1500         700])
 mysave(gcf,fullfile(outputfiggolder, ['behavior_prediction_by_state_per_parcel' loosestr]));
 
 %%difference plots

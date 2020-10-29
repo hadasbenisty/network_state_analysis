@@ -14,9 +14,9 @@ statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 % end
 for ismidcontrast=0:1
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
-% [trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
-% [correct_states_notweighted, correct_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_correct');
-% [incorrect_states_notweighted, incorrect_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
+[trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
+[correct_states_notweighted, correct_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_correct');
+[incorrect_states_notweighted, incorrect_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
 close all;
 if isloose
     loosestr = 'loose';
@@ -31,7 +31,7 @@ end
 % save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
-%plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
 makeslopeamplitudeplots(animals, isloose,outputfiggolder)
 end
 end
@@ -403,9 +403,9 @@ x3 = 0.450; x4 = 0.500;
 fill([x3 x3 x4 x4],[y1 y2 y2 y1],[0.3020 0.7490 0.9294],'LineStyle','none')
 xlim([-0.5 2])
 hold on
-shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.corr,2),(std(x.corr,0,2)./(sqrt(size(x.corr,2)-1))),'lineprops','g');
+shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.corr,2),(std(x.corr,0,2)./(sqrt(size(x.corr,2)-1))),'lineprops','g','patchSaturation',0.4);
 hold on
-shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.incorr,2),(std(x.incorr,0,2)./(sqrt(size(x.incorr,2)-1))),'lineprops','r');
+shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.incorr,2),(std(x.incorr,0,2)./(sqrt(size(x.incorr,2)-1))),'lineprops','r','patchSaturation',0.4);
 xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg Correct vs Incorrect',statenames{state_i}));
 hold off
 mysave(gcf, fullfile(outputfiggolder,strcat('V1_corr_incorr_',statenames{state_i})), 'all');

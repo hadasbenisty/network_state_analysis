@@ -33,8 +33,14 @@ ylabel('Difference in Node Centrality');title(plottitle);
 %set(h, 'marker', 'none'); % remove marker
 hold all
 % plot(find(htest<=0.05), meandiff(htest<=0.05),'k*', 'MarkerSize',12);hold on;
-view([-90 90]);
+view([90 -90]);
+if contains(name,'svm')||contains(name,'SVM')
+ylabel('Acc Diff');title(plottitle); 
+set(gcf, 'Position',  [1,1, 500,1000]);
+else
+ylabel('Difference in Node Centrality');title(plottitle);    
 set(gcf, 'Position',  [150,150, 900,600]);
+end
 set(gca,'xtick',1:23)
 set(gca,'xticklabel',parcels_names)
 set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
