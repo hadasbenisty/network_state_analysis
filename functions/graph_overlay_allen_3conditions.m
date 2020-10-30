@@ -8,7 +8,7 @@ function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_ca
     
     condition3_meanvec_parcel=mean(cond3_cat,2);
     condition3_sevec_parcel=std(cond3_cat,0,2)./sqrt(num-1);
-    CondColors=[0,0,0;0.9961,0.5469,0;0.6953,0.1328,0.1328;0.9961,0.8398,0];
+    CondColors=[0,0,0;0.9961,0.5469,0;1,0,0];
     
     %get colors
     figure;
@@ -33,7 +33,7 @@ function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_ca
     set(gca,'XTickLabelRotation',45);
     ylabel('Node Centrality')
 
-    set(gcf, 'Position',  [150,150, 1500,700]);
+    set(gcf, 'Position',  [150,150, 2000,500]);
     set(gca,'xtick',1:23)
     set(gca,'xticklabel',parcels_names)
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
