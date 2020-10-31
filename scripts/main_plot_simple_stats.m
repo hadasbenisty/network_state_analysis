@@ -3,7 +3,7 @@ animals={'xs','xx','xz','xw','xt','xu'};
 %plot_vals_by_state(animals)
 %plot_time_spent_by_state_spont(animals)
 %plot_learning_sponblink(animals)
-plot_exampletimetraces(animals,1,2,102,110)
+%plot_exampletimetraces(animals,1,2,102,110)
 end
 
 

@@ -9,7 +9,7 @@ function pre_process_trials_animals
 % pupil: high pupil - pupil area > 40quentile for at least 10% of the time of trial
 
 %% parameters for running
-do_over = false; % if results exist, just replot them
+do_over = true; % if results exist, just replot them
 isloose = true;  % label every trial using the looser approach (see above)
 animals={'xs','xx','xz','xw','xt','xu'};
 
@@ -20,15 +20,15 @@ addpath(genpath('../../utils'));
 
 
 %% step 1 - label trials
-
-for ai = 1:length(animals)
-    extract_trials_imaging_by_state_loose(animals{ai}, do_over);
-end
+% 
+% for ai = 1:length(animals)
+%     extract_trials_imaging_by_state_loose(animals{ai}, do_over);
+% end
 
 concatenateTrialsPeriodsByState(animals, isloose, do_over);
 % makeslopeamplitudeplots(animals, isloose);
 
-plot_time_spent(animals, isloose)
+%plot_time_spent(animals, isloose)
 
 end
 function extract_trials_imaging_by_state_loose(animalName, do_over)
