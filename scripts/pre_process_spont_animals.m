@@ -9,7 +9,7 @@ addpath(genpath('../../utils'));
 animals={'xs','xx','xz','xw','xt','xu'};
 
 for ai = 1:length(animals)
-%     extract_spont_imaging_by_state(animals{ai});
+    extract_spont_imaging_by_state(animals{ai});
 end
 
 concatenateSpontPeriodsByState(animals);
