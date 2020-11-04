@@ -780,12 +780,31 @@ state_label = find(strcmp(trials_labels_arousal_pup_lut, statestr));
 inds = trialslabels.(labelsname) == state_label;
 inds=inds(1:size(imaging_time_traces.Allen,3));
 
-zscoredbytrial = normByPreActivity(imaging_time_traces.t, imaging_time_traces.Allen, -3, -1); %normalize activity per day
+%zscoredbytrial = normByPreActivity(imaging_time_traces.t, imaging_time_traces.Allen, -3, -1); %normalize activity per day
+zscoredbytrial = zscoretrialwise(imaging_time_traces.t, imaging_time_traces.Allen, -0.3, 0); %normalize activity per day
+
 trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,zscoredbytrial(:,:,inds));
 trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));
 trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contrastLabels, trialslabels.contrastLabels(inds));
 end
 
+function zscoredbytrial=zscoretrialwise(t,X,st,en)
+trialsize=size(X,3);
+zscoredbytrial=NaN(56,size(X,2),trialsize);
+stind = findClosestDouble(t, st);
+enind = findClosestDouble(t, en);
+for j=1:trialsize
+    zscored=NaN(56,size(X,2)); %initialize vector that will give signal for each parcel (for that trial)
+for i=1:56
+    trial_alldata=X(i,:,j); %for each trial and each parcel take a signal
+    tempmean=nanmean(trial_alldata(stind:enind)); %find mean of baseline 3 seconds before vis stim
+    tempstd=nanstd(trial_alldata(stind:enind)); %find sd of baseline 3 seconds before visual stim
+    tempdatazscored=(trial_alldata-tempmean)./tempstd; %vectorized equation taking away mean and dividing sd of the trial
+    zscored(i,:)=tempdatazscored; 
+end
+zscoredbytrial(:,:,j)=zscored;
+end
+end
 function Xnorm = normByPreActivity(t,X,st,en)
 stind = findClosestDouble(t, st);
 enind = findClosestDouble(t, en);

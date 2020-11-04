@@ -1,9 +1,9 @@
 function main_plot_simple_stats
 animals={'xs','xx','xz','xw','xt','xu'};
-%plot_vals_by_state(animals)
+plot_vals_by_state(animals)
 %plot_time_spent_by_state_spont(animals)
 %plot_learning_sponblink(animals)
-%plot_exampletimetraces(animals,1,2,102,110)
+plot_exampletimetraces(animals,1,2,102,110)
 end
 
 
@@ -14,7 +14,7 @@ addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 for animal_i = 1:length(animals)
     animal=animals{animal_i};
- res(animal_i) = load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_3states'),...
+    res(animal_i) = load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_3states'),...
         'low_pup_q','high_pup_q','high_pup_l',...
         'wheel_low_pup_q', 'pupil_low_pup_q',...
         'face_low_pup_q', 'wheel_high_pup_q', 'pupil_high_pup_q', 'face_high_pup_q', ...
@@ -26,18 +26,22 @@ binsN=32;
 figure;subplot(3,1,1);
 set(gcf,'renderer','Painters')
 x=[res.low_pup_q];x=x(finalindex,:);
-histogram(x(23,:), binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none'); title('Low Q');
+M(1,:)=nanmean(x,2);S(1,:)=nanstd(x,[],2)./sqrt(size(x,2)-1);
+histogram(x(1,:), binsN,'facecolor',CondColors(1,:),'facealpha',.8,'edgecolor','none'); title('Low Q');
 xlim([-100 100]);
 x=[res.high_pup_q];x=x(finalindex,:);
-subplot(3,1,2);set(gcf,'renderer','Painters');histogram(x(23,:), binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none'); title('High Q');
+M(2,:)=nanmean(x,2);S(2,:)=nanstd(x,[],2)./sqrt(size(x,2)-1);
+subplot(3,1,2);set(gcf,'renderer','Painters');histogram(x(1,:), binsN,'facecolor',CondColors(2,:),'facealpha',.8,'edgecolor','none'); title('High Q');
 xlim([-100 100]);
 x=[res.high_pup_l];x=x(finalindex,:);
-subplot(3,1,3);set(gcf,'renderer','Painters');histogram(x(23,:), binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none'); title('High Loc');
+M(3,:)=nanmean(x,2);S(3,:)=nanstd(x,[],2)./sqrt(size(x,2)-1);
+subplot(3,1,3);set(gcf,'renderer','Painters');histogram(x(1,:), binsN,'facecolor',CondColors(3,:),'facealpha',.8,'edgecolor','none'); title('High Loc');
 xlim([-100 100]);
 xlabel('V1');
 suptitle('V1 Distribution');
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\spont_v1_hist_3states');
 
+plot_mean_sd_per_3parcels(M, S, parcels_names, {'low_pup_q', 'high_pup_q', 'high_pup_l'})
 
 binsN = linspace(0,60,32);
 
@@ -311,15 +315,51 @@ firstindx_run=findClosestDouble(t_spike2,t_imaging(1));
 firstindx_pup=findClosestDouble(pupil_time,t_imaging(1));
 t_spike2(1:firstindx_run)=[];channels_data.wheel(1:firstindx_run)=[];
 pupil_time(1:firstindx_pup)=[];pupil_Norm(1:firstindx_pup)=[];
+[~,spatialindex]=getspatialindex;
 figure;
 set(gcf,'renderer','Painters')
-ax1=subplot(3,1,1)
-plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(2,t1*fsimaing:t2*fsimaing),'color','k');title('L-V1');
-ax2=subplot(3,1,2)
+ax1=subplot(5,1,1)
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(1),t1*fsimaing:t2*fsimaing),'color','k');title('L-V1');
+ax2=subplot(5,1,2)
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(2),t1*fsimaing:t2*fsimaing),'color','k');title('L-S1b');
+ax3=subplot(5,1,3)
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(3),t1*fsimaing:t2*fsimaing),'color','k');title('L-M2');
+ax4=subplot(5,1,4)
 plot(t_spike2(t1*fsspike2:t2*fsspike2),channels_data.wheelspeed(t1*fsspike2:t2*fsspike2).','color','r');title('wheel');
-ax3=subplot(3,1,3)
+ax5=subplot(5,1,5)
 plot(pupil_time(t1*30.3:t2*30.3),pupil_Norm(t1*30.3:t2*30.3).','color',[0.9290 0.6940 0.1250]);title('pupil');
-linkaxes([ax1, ax2, ax3],'x');
-
+linkaxes([ax1, ax2, ax3, ax4,ax5],'x');
 mysave(gcf,fullfile('X:\Lav\ProcessingDirectory\figure_1',strcat('timetraces_allen',char(animalNames(animal_i)),num2str(days(day_i)),'t',num2str(t1),'to',num2str(t2))),'all');
 end
+
+
+function plot_mean_sd_per_3parcels(M, S, parcels_names, statenames)
+spatialindex=getspatialindex;
+M1=M(:,spatialindex);
+S1=S(:,spatialindex);
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+figure;
+for parcel_i = 1:length(spatialindex)
+    subplot(3,1,parcel_i);
+    set(gcf,'renderer','Painters');
+    hold on
+    for b = 1:3
+        bg=bar(b, M1(b,parcel_i), 'FaceColor',  CondColors(b,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
+        bg.FaceAlpha = 0.8;
+    end
+    set(gca,'xtick',1:3)
+    set(gca,'xticklabel',statenames)
+    h = errorbar(1:3,M1(:,parcel_i), S1(:,parcel_i),'LineStyle','none','LineWidth',0.5,'color','k');
+    
+    title(char(parcels_names(spatialindex(parcel_i))));
+    h.Color='k';
+    set(gcf, 'Position',  [1,1, 700,1000]);
+    set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
+    set(gca,'XTickLabelRotation',45);
+end
+mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\mean_sd_spon_3states');
+end
+
+
+
+

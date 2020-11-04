@@ -36,7 +36,11 @@ end
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
 % plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
-makeslopeamplitudeplots(animals, isloose,outputfiggolder)
+[~,spatialindex]=getspatialindex;
+makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
+makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
+makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(3),'M2')
+
 plotCRF(isloose,animals)
 end
 function plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
@@ -460,7 +464,7 @@ for state_i = 1:length(statenames)
 end
 end
 
-function makeslopeamplitudeplots(animals, isloose,outputfiggolder)
+function makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex,parcelname)
 
 if isloose
 
@@ -470,6 +474,7 @@ else
 
     loostr = '';
 end
+cc=40;
 statenames = {'low_pup_q_zscored', 'high_pup_q_zscored', 'high_pup_l_zscored'};
 for state_i=1:length(statenames)
     fields = {'corr','incorr'}; 
@@ -479,12 +484,12 @@ for state_i=1:length(statenames)
         animal=char(animals(animal_i));
         res=load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{animal_i},'\',animals{animal_i},'trials_3states', loostr));
         %re = load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\',animal,'psych\spt'), strcat(animaltodays(animal),'imaging_time_traces_global.mat')));
-        indxcorr=res.(statenames{state_i}).trialslabels.blinksummary==1&res.(statenames{state_i}).trialslabels.contrastLabels==20;
-        indxincorr=res.(statenames{state_i}).trialslabels.blinksummary==2&res.(statenames{state_i}).trialslabels.contrastLabels==20;
+        indxcorr=res.(statenames{state_i}).trialslabels.blinksummary==1&res.(statenames{state_i}).trialslabels.contrastLabels==cc;
+        indxincorr=res.(statenames{state_i}).trialslabels.blinksummary==2&res.(statenames{state_i}).trialslabels.contrastLabels==cc;
 
-        curr_corr=res.(statenames{state_i}).imaging_time_traces(2,:,indxcorr);
+        curr_corr=res.(statenames{state_i}).imaging_time_traces(spatialindex,:,indxcorr);
         %zscoredbytrial_corr = normByPreActivity(re.imaging_time_traces.t, curr_corr, -3, -1); %normalize activity per day
-        curr_incorr=res.(statenames{state_i}).imaging_time_traces(2,:,indxincorr);
+        curr_incorr=res.(statenames{state_i}).imaging_time_traces(spatialindex,:,indxincorr);
 
         vectorcorr=mean(squeeze(curr_corr),2);
         vectorincorr=mean(squeeze(curr_incorr),2);
@@ -500,27 +505,27 @@ for state_i=1:length(statenames)
         st=findClosestDouble(t_10.imaging_time_traces.t,-0.5);ed=findClosestDouble(t_10.imaging_time_traces.t,2);
         x.corr=cat(2,x.corr,vectorcorr(st:ed));
         x.incorr=cat(2,x.incorr,vectorincorr(st:ed));
-        clearvars -except ir animals x t_10 loostr statenames state_i outputfiggolder
+        clearvars -except cc parcelname ir animals x t_10 loostr statenames state_i outputfiggolder spatialindex
     end
 t_10=load(fullfile(strcat('X:\Hadas\Meso-imaging\lan\','xz','psych\spt'), strcat(animaltodays('xz'),'imaging_time_traces_global.mat')));    
 stind=findClosestDouble(t_10.imaging_time_traces.t,-0.5);enind=findClosestDouble(t_10.imaging_time_traces.t,2);
 %% plot correct and incorrect
 x1 = 0.0; x2 = 0.500;
-y1 = -2; y2 = 3;
+y1 = -2; y2 = 12;
 figure;
 set(gcf,'renderer','painters');
 fill([x1 x1 x2 x2],[y1 y2 y2 y1],[0.8 0.8 0.8],'LineStyle','none')
 hold on
 x3 = 0.450; x4 = 0.500;
 fill([x3 x3 x4 x4],[y1 y2 y2 y1],[0.3020 0.7490 0.9294],'LineStyle','none')
-xlim([-0.5 2])
+xlim([-0.5 2]);ylim([-2 12])
 hold on
 shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.corr,2),(std(x.corr,0,2)./(sqrt(size(x.corr,2)-1))),'lineprops','g');
 hold on
 shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.incorr,2),(std(x.incorr,0,2)./(sqrt(size(x.incorr,2)-1))),'lineprops','r');
 xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg Correct vs Incorrect',statenames{state_i}));
 hold off
-mysave(gcf, fullfile(outputfiggolder,strcat('V1_corr_incorr_',statenames{state_i})), 'all');
+mysave(gcf, fullfile(outputfiggolder,strcat(parcelname,num2str(cc),'contrast_corr_incorr_',statenames{state_i})), 'all');
 clearvars x t_10
 end
 end
@@ -560,8 +565,8 @@ for animal_i=1:length(animals)
 end
 CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
 figure;
-hAx=axes;
-hAx.XScale='log';
+%hAx=axes;
+%hAx.XScale='log';
 xlim([0 100]);
 hold on
 for state_i=1:length(statenames)
@@ -570,7 +575,7 @@ for state_i=1:length(statenames)
     %[modelF,coefsF]=HyFit(contrasts.',nanmean(M,1));
     %fittedpredictedcurveF=nanmean(predint(modelF,0:0.01:100),2); 
     %semilogx(0:0.01:100,fittedpredictedcurveF,'color',CondColors(state_i,:)); %overlay early and late days psyc curve on semi log plo
-    errorbar(contrasts,nanmean(M,1),nanstd(M,1)./(sqrt(length(animals)-1)),'color',CondColors(state_i,:));
+    errorbar(contrasts,nanmean(M,1),nanstd(M,1)./(sqrt(length(animals)-1)),'color',CondColors(state_i,:),'LineWidth',1.5);
     hold on
 end
 New_XTickLabel = get(gca,'xtick');title('CRF per state');ylabel('Z-dF/F')
