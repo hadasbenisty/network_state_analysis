@@ -186,8 +186,13 @@ for state_i = 1:length(statenames)
     S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
     S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
 end
+spatialindex=getspatialindex;
+plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
+mysave(gcf,fullfile(outputfiggolder, ['3parcel_slope_by_state_by_behavior' loosestr]));
+
 plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
 mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr]));
+
 
 plot_bars_3colors(squeeze(M(:,1,:)), squeeze(S(:,1,:)), statenames, parcels_names)
 mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_correct' loosestr]));
@@ -432,6 +437,31 @@ mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\','figure_1',name), 'all');
 end
 
 
+function plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
+M1=M(spatialindex,:,:);
+S1=S(spatialindex,:,:);
+CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+figure;
+for parcel_i = 1:length(spatialindex)
+    subplot(3,1,parcel_i);
+    set(gcf,'renderer','Painters');
+    h=barwitherr(squeeze(S1(parcel_i,:,:)),squeeze(M1(parcel_i,:,:)));title(parcels_names{spatialindex(parcel_i)});
+    h(1).EdgeColor = 'none';
+    h(2).EdgeColor = 'none';
+    h(3).EdgeColor = 'none';
+    set(h(1),'FaceColor',CondColors(1,:));
+    set(h(2),'FaceColor',CondColors(2,:)); 
+    set(h(3),'FaceColor',CondColors(3,:));     
+    set(h(1),'FaceAlpha',0.8);
+    set(h(2),'FaceAlpha',0.8); 
+    set(h(3),'FaceAlpha',0.8);     
+    set(gca,'xtick',1:23)
+    set(gcf, 'Position',  [1,1, 700,1000]);    
+    set(gca,'xticklabel',{'Correct','Incorrect'})
+    set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
+    set(gca,'XTickLabelRotation',45);%ylim([0 400]);
+end
+end
 
 
 
