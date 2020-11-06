@@ -56,7 +56,7 @@ for ir=1:length(animals)
             % state 3: high pup + loc           
             high_pup_l=cat(2,high_pup_l,running_time_traces.puphigh_on_loc);
             high_pup_l_t=cat(1,high_pup_l_t,running_time_traces.t_puphigh_on_loc(:));
-            
+            r
             wheel_high_pup_l=cat(2,wheel_high_pup_l,wheelspeed.puphigh_on_loc);            
             pupil_high_pup_l=cat(2,pupil_high_pup_l,pupil.puphigh_on_loc);
             face_high_pup_l=cat(2,face_high_pup_l,face.puphigh_on_loc);

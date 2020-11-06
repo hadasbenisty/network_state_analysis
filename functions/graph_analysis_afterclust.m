@@ -1,5 +1,5 @@
 function [indic_weighted, indic_notweighted, cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W, str_labels, issim)
-
+addpath(genpath('../centrality_measures/'));
 %step 1
 %W=1-W./(mean(W(:)).^2);
 %W=1-W.^2;

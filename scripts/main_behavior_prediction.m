@@ -18,7 +18,7 @@ contrast_levels = [0 2 5 10 20 40 100];
 % plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
 
 plot_prediction(isloose, animals, statenames, outputfiggolder);
-plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
+%plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
 function plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
@@ -186,10 +186,6 @@ for state_i = 1:length(statenames)
     S(:,1, state_i) = std(slope_correct.(statenames{state_i}),[],2)/sqrt(n-1);
     S(:,2, state_i) = std(slope_incorrect.(statenames{state_i}),[],2)/sqrt(n-1);
 end
-spatialindex=getspatialindex;
-plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
-mysave(gcf,fullfile(outputfiggolder, ['3parcel_slope_by_state_by_behavior' loosestr]));
-
 plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
 mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr]));
 
@@ -314,11 +310,17 @@ for tonorm = 2
     plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
     mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_by_behavior' loosestr tonormstr]));
     
+    spatialindex=getspatialindex;
+    plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
+    mysave(gcf,fullfile(outputfiggolder, ['3parcel_slope_by_state_by_behavior' loosestr tonormstr]));
+
     plot_bars_3colors(squeeze(M(:,1,:)), squeeze(S(:,1,:)), statenames, parcels_names)
     mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_correct' loosestr tonormstr ]));
     plot_bars_3colors(squeeze(M(:,2,:)), squeeze(S(:,2,:)), statenames, parcels_names)
     mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_incorrect' loosestr tonormstr ]));
 end
+
+
 clear M;
 clear S;
 
