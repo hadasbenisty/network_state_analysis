@@ -1,6 +1,6 @@
 function main_plot_simple_stats
 animals={'xs','xx','xz','xw','xt','xu'};
-plot_vals_by_state(animals)
+%plot_vals_by_state(animals)
 %plot_time_spent_by_state_spont(animals)
 %plot_learning_sponblink(animals)
 plot_exampletimetraces(animals,1,2,102,110)
@@ -244,6 +244,7 @@ function plot_exampletimetraces(animalNames,animal_i,day_i,t1,t2)
 %animalNames = {'xs'};%'xu'   'xs'    };
 addpath(genpath('../parcellation/'));
 addpath(genpath('../correlation'));
+addpath(genpath('../functions/'));
 addpath(genpath('../LSSC-higley-master\LSSC-higley-master'));
 addpath(genpath('../../../utils/Questionnaire/'));
 addpath(genpath('../pre_processing_scripts'));
@@ -316,22 +317,45 @@ firstindx_pup=findClosestDouble(pupil_time,t_imaging(1));
 t_spike2(1:firstindx_run)=[];channels_data.wheel(1:firstindx_run)=[];
 pupil_time(1:firstindx_pup)=[];pupil_Norm(1:firstindx_pup)=[];
 [~,spatialindex]=getspatialindex;
+%X_Allen=zscore_session(X_Allen);
+
+X_Allen = bsxfun(@rdivide, X_Allen - min(X_Allen,[],2),max(X_Allen,[],2)-min(X_Allen,[],2));
+
 figure;
 set(gcf,'renderer','Painters')
 ax1=subplot(5,1,1)
-plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(1),t1*fsimaing:t2*fsimaing),'color','k');title('L-V1');
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(3),t1*fsimaing:t2*fsimaing),'color','k');title('L-M2');
+set(gca,'XColor','none')
 ax2=subplot(5,1,2)
 plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(2),t1*fsimaing:t2*fsimaing),'color','k');title('L-S1b');
+set(gca,'XColor','none')
+
 ax3=subplot(5,1,3)
-plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(3),t1*fsimaing:t2*fsimaing),'color','k');title('L-M2');
+plot(t_imaging(t1*fsimaing:t2*fsimaing).',X_Allen(spatialindex(1),t1*fsimaing:t2*fsimaing),'color','k');title('L-V1');
+set(gca,'XColor','none')
+
 ax4=subplot(5,1,4)
 plot(t_spike2(t1*fsspike2:t2*fsspike2),channels_data.wheelspeed(t1*fsspike2:t2*fsspike2).','color','r');title('wheel');
+set(gca,'XColor','none')
+
 ax5=subplot(5,1,5)
 plot(pupil_time(t1*30.3:t2*30.3),pupil_Norm(t1*30.3:t2*30.3).','color',[0.9290 0.6940 0.1250]);title('pupil');
+
 linkaxes([ax1, ax2, ax3, ax4,ax5],'x');
 mysave(gcf,fullfile('X:\Lav\ProcessingDirectory\figure_1',strcat('timetraces_allen',char(animalNames(animal_i)),num2str(days(day_i)),'t',num2str(t1),'to',num2str(t2))),'all');
 end
 
+function zscored=zscore_session(X)
+zscored=NaN(size(X,1),size(X,2));
+for i=1:size(X,1)
+    parcel_alldata=X(i,:); %for each trial and each parcel take a signal
+    parcel_mean=nanmean(parcel_alldata); %find mean of baseline 3 seconds before vis stim
+    parcel_std=nanstd(parcel_alldata); %find sd of baseline 3 seconds before visual stim
+    tempdataparcel_zscored=(parcel_alldata-parcel_mean)./parcel_std; %vectorized equation taking away mean and dividing sd of the trial
+    zscored(i,:)=tempdataparcel_zscored; 
+    clearvars parcel_alldata parcel_mean parcel_std tempdataparcel_zscored
+end
+end
 
 function plot_mean_sd_per_3parcels(M, S, parcels_names, statenames)
 spatialindex=getspatialindex;

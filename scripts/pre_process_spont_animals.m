@@ -59,9 +59,7 @@ for ir=1:length(animals)
             % state 3: high pup + loc           
             high_pup_l=cat(2,high_pup_l,running_time_traces.puphigh_on_loc);
             high_pup_l_t=cat(1,high_pup_l_t,running_time_traces.t_puphigh_on_loc(:));
-            high_pup_l_gal=cat(2,high_pup_l_gal,running_time_traces_gal.puphigh_on_loc);
-            
-            wheel_high_pup_l=cat(2,wheel_high_pup_l,wheelspeed.puphigh_on_loc);            
+            high_pup_l_gal=cat(2,high_pup_l_gal,running_time_traces_gal.puphigh_on_loc);            wheel_high_pup_l=cat(2,wheel_high_pup_l,wheelspeed.puphigh_on_loc);            
             pupil_high_pup_l=cat(2,pupil_high_pup_l,pupil.puphigh_on_loc);
             face_high_pup_l=cat(2,face_high_pup_l,face.puphigh_on_loc);
             
@@ -72,8 +70,7 @@ for ir=1:length(animals)
         'low_pup_q','low_pup_q_t','high_pup_q','high_pup_q_t','high_pup_l',...
         'high_pup_l_t','days_to_process', 'wheel_low_pup_q', 'pupil_low_pup_q',...
         'face_low_pup_q', 'wheel_high_pup_q', 'pupil_high_pup_q', 'face_high_pup_q', ...
-        'wheel_high_pup_l', 'pupil_high_pup_l', 'face_high_pup_l', 'low_pup_q_gal', ...
-        'high_pup_q_gal', 'high_pup_l_gal');
+        'wheel_high_pup_l', 'pupil_high_pup_l', 'face_high_pup_l', 'low_pup_q_gal','high_pup_q_gal', 'high_pup_l_gal');
 end
 
 

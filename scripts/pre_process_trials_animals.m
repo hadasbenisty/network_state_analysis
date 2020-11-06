@@ -781,7 +781,7 @@ inds = trialslabels.(labelsname) == state_label;
 inds=inds(1:size(imaging_time_traces.Allen,3));
 
 %zscoredbytrial = normByPreActivity(imaging_time_traces.t, imaging_time_traces.Allen, -3, -1); %normalize activity per day
-zscoredbytrial = zscoretrialwise(imaging_time_traces.t, imaging_time_traces.Allen, -0.3, 0); %normalize activity per day
+zscoredbytrial = zscoretrialwise(imaging_time_traces.t, imaging_time_traces.Allen, -3, 0); %normalize activity per day
 
 trials_data.imaging_time_traces=cat(3,trials_data.imaging_time_traces,zscoredbytrial(:,:,inds));
 trials_data.trialslabels.blinksummary = cat(1, trials_data.trialslabels.blinksummary, trialslabels.blinksummary(inds));

@@ -8,11 +8,13 @@ pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-for ai = 1:length(animals)
-%     eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end);
+for ai = 1%:length(animals)
+     %eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end);
+     eval_weights_and_cent_perm(isloose, animals{ai}, statenames,pre_trial_time_start, pre_trial_time_end)
 end
 ismidcontrast=false;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
+
 %% gal
 
 %plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames);
@@ -41,7 +43,7 @@ makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(3),'M2')
 
-plotCRF(isloose,animals)
+%plotCRF(isloose,animals)
 end
 function plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 
@@ -371,9 +373,9 @@ for state_i = 1:length(statenames)
     imaging_time_traces_cor_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary==1);
     imaging_time_traces_inc_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary==2);
     
-    
     data=[];data_inco=[];data_corr=[];
     data_gal=[];data_inco_gal=[];data_corr_gal=[];
+
     for T=1:size(imaging_time_traces_all,3)
         data = cat(2, data,  imaging_time_traces_all(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
     end
@@ -463,7 +465,68 @@ for state_i = 1:length(statenames)
     
 end
 end
+function eval_weights_and_cent_perm(isloose, animal, statenames,pre_trial_time_start, pre_trial_time_end)
+if isloose
+    loosestr = 'loose';
+else
+    loosestr = '';
+end
+outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animal,'\');
+mkNewDir(outputfolder);
+load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states' loosestr '.mat'],...
+    'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't'); %#ok<NASGU>
+[parcels_names, ~, finalindex] = get_allen_meta_parcels;
 
+disp(animal)
+for state_i = 1:length(statenames)
+    disp(statenames{state_i})
+    
+    data_3D = eval(statenames{state_i});
+
+    imaging_time_traces_cor = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary==1);
+    imaging_time_traces_inc = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary==2);
+    perm_data_corr=[];perm_data_incorr=[];
+    for perm_i=1:100
+        [corralldata,incorralldata]=permute_corrincorr_lan(imaging_time_traces_cor,imaging_time_traces_inc);
+        for T=1:size(corralldata,3)
+            perm_data_corr = cat(2, perm_data_corr,  corralldata(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+        end
+        for T=1:size(incorralldata,3)
+            perm_data_incorr = cat(2, perm_data_incorr,  incorralldata(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+        end
+    save(strcat(outputfolder,'\perm\',num2str(perm_i),statenames{state_i},'corrincorr_perm'),'perm_data_corr','perm_data_incorr')
+    data=load(strcat(outputfolder,'\perm\',num2str(perm_i),statenames{state_i},'corrincorr_perm'));
+
+    %change loading and saving
+    data_corr = data.perm_data_corr(:, all(~isnan(data.perm_data_corr)));
+    data_inco = data.perm_data_incorr(:, all(~isnan(data.perm_data_incorr)));
+   
+    if any(isnan(data_corr(:)))|any(isnan(data_inco(:)))
+        disp('nans in dataset')
+        continue;
+    end
+    %% measure weights
+    W_corr_cor = measure_weights_partial(data_corr, 'corr');
+    W_corr_inc = measure_weights_partial(data_inco, 'corr');
+    
+    disp('corweights done')
+    
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor, parcels_names);
+    save(strcat(outputfolder,num2str(perm_i),'network_analysis_corr_perm',statenames{state_i} ,'trials_correct', loosestr, '.mat'),'W_corr_cor',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names);
+    save(strcat(outputfolder,num2str(perm_i),'network_analysis_corr_perm',statenames{state_i} ,'trials_incorrect', loosestr, '.mat'),'W_corr_inc',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    disp('graph analysis saved')
+    end   
+end
+end
+    
+    
+    
 function makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex,parcelname)
 
 if isloose
@@ -474,7 +537,7 @@ else
 
     loostr = '';
 end
-cc=40;
+cc=20;
 statenames = {'low_pup_q_zscored', 'high_pup_q_zscored', 'high_pup_l_zscored'};
 for state_i=1:length(statenames)
     fields = {'corr','incorr'}; 
@@ -518,7 +581,7 @@ fill([x1 x1 x2 x2],[y1 y2 y2 y1],[0.8 0.8 0.8],'LineStyle','none')
 hold on
 x3 = 0.450; x4 = 0.500;
 fill([x3 x3 x4 x4],[y1 y2 y2 y1],[0.3020 0.7490 0.9294],'LineStyle','none')
-xlim([-0.5 2]);ylim([-2 12])
+xlim([-0.5 2]);ylim([-2 5])
 hold on
 shadedErrorBar(transpose(t_10.imaging_time_traces.t(stind:enind)),mean(x.corr,2),(std(x.corr,0,2)./(sqrt(size(x.corr,2)-1))),'lineprops','g');
 hold on
@@ -551,7 +614,7 @@ for animal_i=1:length(animals)
             indx=res.(statenames{state_i}).trialslabels.contrastLabels==contrasts(contrast_i)&res.(statenames{state_i}).trialslabels.blinksummary<3;
             v1_act=squeeze(res.(statenames{state_i}).imaging_time_traces(2,:,indx));
             %row wise zscoring
-            st_z=findClosestDouble(res.t,-0.3);ed_z=findClosestDouble(res.t,0);            
+            st_z=findClosestDouble(res.t,-3);ed_z=findClosestDouble(res.t,0);            
             v1_act_norm1 = bsxfun(@minus, v1_act, nanmean(v1_act(st_z:ed_z,:)));
             v1_act_norm2= bsxfun(@rdivide, v1_act_norm1, nanstd(v1_act(st_z:ed_z,:)));
             st=findClosestDouble(res.t,0);
@@ -583,4 +646,15 @@ set(gca,'XTickLabel',New_XTickLabel);
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\CRF_Zscored_perstate', 'all');
 end
 
+function [corralldata,incorralldata]=permute_corrincorr_lan(imaging_time_traces_cor,imaging_time_traces_inc)
+%concatenate conditions
+concatenated_dff=cat(3,imaging_time_traces_cor,imaging_time_traces_inc);
+%size of each condition and size of the entire dataset to permute
+samplesize=size(imaging_time_traces_cor,3);
+permutation = randperm(size(concatenated_dff,3));
+%save permutations
+corralldata=concatenated_dff(:,:,permutation(1:samplesize));
+incorralldata=concatenated_dff(:,:,permutation(samplesize+1:length(permutation)));
+%save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',num2str(i),animal,'perm_running_time_traces'),'runningalldata','runningalldata_t','notrunningalldata_t','notrunningalldata');
+end
 

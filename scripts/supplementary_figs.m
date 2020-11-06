@@ -1,6 +1,6 @@
 function supplementary_figs
 animals={'xt','xs','xx','xu','xz','xw'};
-hemodynamic_comparison(animals)
+%hemodynamic_comparison(animals)
 plotamplitudeplots(animals);
 end
 function hemodynamic_comparison(animals)
@@ -52,7 +52,7 @@ for cond_i=1:2
     end
 for ir=1:length(animals)
     animal=char(animals(ir));
-    all_traces=load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,strcat(fltstr,'trials_hemodynamics')),'AllTrials');
+    all_traces=load(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,strcat(fltstr,'trials_hemodynamics')),'AllTrials','corr','incorr');
     vector_alltrials=mean(squeeze(mean(all_traces.AllTrials(spatialindex,:,:),1)),2); %correct trials
     vector_corr=mean(squeeze(mean(all_traces.corr(spatialindex,:,:),1)),2); %correct trials
     vector_incorr=mean(squeeze(mean(all_traces.incorr(spatialindex,:,:),1)),2); %correct trials
@@ -69,7 +69,7 @@ for ir=1:length(animals)
     x.allvector=cat(2,x.allvector,vector_alltrials(st:ed));
     x.allvectorcorr=cat(2,x.allvectorcorr,vector_corr(st:ed));
     x.allvectorincorr=cat(2,x.allvectorincorr,vector_incorr(st:ed));   
-    clearvars -except ir animals x t_10 spatialindex condition fltstr cond_i spt pxl
+    clearvars -except ir animals x t_10 spatialindex condition fltstr cond_i spt pxl sptcorr pxlcorr sptincorr pxlincorr
 end
     if cond_i==1
         spt=x.allvector;
@@ -100,7 +100,7 @@ hold on
 shadedErrorBar(transpose(re.imaging_time_traces.t(stind:enind)),mean(pxl,2),(std(pxl,0,2)./(sqrt(size(pxl,2)-1))),'lineprops','r');
 xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg',{' '},condition,{' '},'Spt vs Pxl'));
 hold off
-mysave(gcf, fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',strcat('Avg','/',condition),'overall_performance_separated'), 'all');
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\supp_hemo',strcat(condition,'overall_performance_separated')), 'all');
 
 
 figure;
@@ -118,7 +118,7 @@ hold on
 shadedErrorBar(transpose(re.imaging_time_traces.t(stind:enind)),mean(pxlcorr,2),(std(pxlcorr,0,2)./(sqrt(size(pxlcorr,2)-1))),'lineprops','r');
 xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg',{' '},condition,{' '},'Corr Spt vs Pxl'));
 hold off
-mysave(gcf, fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',strcat('Avg','/',condition),'corr_performance_separated'), 'all');
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\supp_hemo',strcat(condition,'corr_performance_separated')), 'all');
 
 figure;
 x1 = 0.0; x2 = 0.500;
@@ -135,7 +135,7 @@ hold on
 shadedErrorBar(transpose(re.imaging_time_traces.t(stind:enind)),mean(pxlincorr,2),(std(pxlincorr,0,2)./(sqrt(size(pxlincorr,2)-1))),'lineprops','r');
 xlabel('Time [sec]');ylabel('Z-DF/F');title(strcat('Avg',{' '},condition,{' '},'Incorr Spt vs Pxl'));
 hold off
-mysave(gcf, fullfile('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude',strcat('Avg','/',condition),'incorr_performance_separated'), 'all');
+mysave(gcf, fullfile('X:\Lav\ProcessingDirectory\supp_hemo',strcat('incorr_performance_separated')), 'all');
 
 
 end
