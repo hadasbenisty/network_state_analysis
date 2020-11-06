@@ -6,12 +6,15 @@ addpath(genpath('../graphs_analysis'));
 saveplots = false;
 animals={'xs','xx','xz','xw','xt','xu'};
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
+statenames_gal = {'low_pup_q_gal', 'high_pup_q_gal', 'high_pup_l_gal'};
+
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 for ai = 1:length(animals)
-    eval_weights_and_cent(animals{ai}, saveplots, statenames);
+%     eval_weights_and_cent_gal(animals{ai}, saveplots, statenames_gal);
+%     eval_weights_and_cent(animals{ai}, saveplots, statenames);
 end
 % eval_diff_map(animals, statenames);
-
+plot_centrality_res_gal(animals, outputfiggolder, statenames_gal);
 plot_centrality_res(animals, outputfiggolder, statenames);
 end
 
@@ -37,6 +40,67 @@ M = mean(eigenvals, 3);
 S = std(eigenvals, [],3)/sqrt(size(eigenvals,3)-1);
 barwitherr(S,M)
 end
+function plot_centrality_res_gal(animals, outputfiggolder, statenames)
+[~, ~, finalindex] = get_allen_meta_parcels;
+cent_features = {'degree' 'closeness' 'betweenness' 'pagerank' 'eigenvector', 'participation', 'community'};
+for state_i = 1:length(statenames)
+    for cent_i = 1:length(cent_features)
+        spon_states_notweighted.(statenames{state_i}).(cent_features{cent_i}) = zeros(256,256,length(animals));
+    end
+end
+for i=1:length(animals)
+    animal=animals{i};
+    outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020',animal);
+    for state_i = 1:length(statenames)
+        load(fullfile(outputfolder,['network_analysis_corr',statenames{state_i}]));
+        cent_features = fieldnames(cent_corr_notweighted);
+        for cent_i = 1:length(cent_features)
+            P = scores_to_heatmap_gal(cent_corr_notweighted.(cent_features{cent_i}), animal);            
+            spon_states_notweighted.(statenames{state_i}).(cent_features{cent_i})(:, :, i) = P;            
+          
+        end
+        
+    end
+end
+mkNewDir(fullfile(outputfiggolder, 'not_weighted'))
+for ni = 1:length(cent_features)-1
+    
+   
+    %difference maps, not weighted, for each centrality measure
+    braininfo=load('X:\Lav\network_state_analysis\utils\brain_mask.mat');
+    parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+
+    diffmask = nanmean(spon_states_notweighted.high_pup_l_gal.(cent_features{ni}),3)-...
+        nanmean(spon_states_notweighted.low_pup_q_gal.(cent_features{ni}),3);
+
+    figure;imagesc(diffmask);
+set(gcf,'renderer','painters');
+myColorMap = colormap(redblue);
+colormap(myColorMap);c=colorbar;
+title(['Difference in Node Centrality ' cent_features{ni} 'high pup loc minus low pup q']);axis off
+diffmask(isnan(diffmask))=mean(c.Limits);imagesc(diffmask);
+hold on;axis off;colorbar
+plot_parcellation_boundaries(parcelsallen.parcells_new.indicators(:,:,finalindex));
+mysave(gcf, fullfile(outputfiggolder,'not_weighted','spon_run_pupillow',strcat(cent_features{ni},'_heatmap_gal')), 'all');
+
+
+diffmask = nanmean(spon_states_notweighted.high_pup_q_gal.(cent_features{ni}),3)-...
+        nanmean(spon_states_notweighted.low_pup_q_gal.(cent_features{ni}),3);
+
+    figure;imagesc(diffmask);
+set(gcf,'renderer','painters');
+myColorMap = colormap(redblue);
+colormap(myColorMap);c=colorbar;
+title(['Difference in Node Centrality ' cent_features{ni} 'high pup q minus low pup q']);axis off
+diffmask(isnan(diffmask))=mean(c.Limits);imagesc(diffmask);
+hold on;axis off;colorbar;
+plot_parcellation_boundaries(parcelsallen.parcells_new.indicators(:,:,finalindex));
+mysave(gcf, fullfile(outputfiggolder,'not_weighted','spon_pupilhigh_pupillow',strcat(cent_features{ni},'_heatmap_gal')), 'all');
+
+end
+
+end
+
 function plot_centrality_res(animals, outputfiggolder, statenames)
 [parcels_names] = get_allen_meta_parcels;
 cent_features = {'degree' 'closeness' 'betweenness' 'pagerank' 'eigenvector', 'participation', 'community'};
@@ -107,6 +171,80 @@ for ni = 1:length(cent_features)-1
     
 end
 
+end
+function eval_weights_and_cent_gal(animal, saveplots, statenames)
+outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animal,'\');
+mkNewDir(outputfolder);
+
+
+load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_3states.mat'],...
+    'low_pup_q_gal','low_pup_q_t','high_pup_q_gal','high_pup_q_t','high_pup_l_gal','high_pup_l_t','days_to_process'); %#ok<NASGU>
+
+
+[parcels_names, ~, finalindex] = get_allen_meta_parcels;
+[roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal] = get_gal_parcels_lables(animal);
+
+[parcels_names_gal, finalindex_gal, maskByGal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
+    roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
+
+
+
+disp(animal)
+for state_i = 1:length(statenames)
+    disp(statenames{state_i})
+    if 0&&exist(strcat(outputfolder,'network_analysis_corr',statenames{state_i} ,'.mat'),'file')
+        continue;
+    end
+    data = eval([statenames{state_i} ]);
+    
+    data = data(finalindex_gal, :);
+    data = data(:, all(~isnan(data)));
+    if any(isnan(data(:)))
+        disp('nans in dataset')
+        continue;
+    end
+    %% measure weights
+    W_corr = measure_weights_partial(data, 'corr');
+    disp('corweights done')
+    % Graph Analysis
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names);
+    save(strcat(outputfolder,'network_analysis_corr',statenames{state_i}),'W_corr',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    
+    disp('graph analysis saved')
+    if saveplots
+        %% Visualization
+        % plot graphs
+        plot_graph(G_corr, cent_corr_weighted, names_corr, parcels_region_labels);
+        suptitle('Correlation');
+        set(gcf, 'Position',  [150,150, 1000,500]);
+        mysave(gcf, strcat(outputfolder,'correlation_graph',statenames{state_i}), 'fig');
+        
+        figure;
+        for k = 1:length(names_corr)
+            subplot(2,4,k);
+            bar(cent_corr_weighted.(names_corr{k}));
+            set(gca, 'XTickLabel', parcels_names);
+            set(gca,'XTickLabelRotation',45);
+            set(gcf, 'Position',  [150,150, 1000,500]);
+            title(names_corr{k});
+        end
+        suptitle('Correlation');
+        mysave(gcf, strcat(outputfolder,'correlation_centrality',statenames{state_i}), 'fig');
+        disp('cntrality plotted and saved')
+        
+        % plot centrality by node population
+        figure;
+        subplot(2,1,1);
+        bar(sum(indic_corr_weighted,2)/size(indic_corr_weighted, 2));set(gca,'XTickLabel',names_corr);set(gca,'XTickLabelRotation',45);set(gcf, 'Position',  [150,150, 1000,500]);
+        title('Correlation');
+        
+        mysave(gcf, strcat(outputfolder,'centrality_by_node_pop',statenames{state_i}), 'fig');
+    end
+    
+    
+end
 end
 
 function eval_weights_and_cent(animal, saveplots, statenames)
