@@ -37,7 +37,7 @@ end
 % save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
-% plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
  plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 [~,spatialindex]=getspatialindex;
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')

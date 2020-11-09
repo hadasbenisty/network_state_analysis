@@ -14,7 +14,7 @@ for ai = 1:length(animals)
 %     eval_weights_and_cent(animals{ai}, saveplots, statenames);
 end
 % eval_diff_map(animals, statenames);
-plot_centrality_res_gal(animals, outputfiggolder, statenames_gal);
+% plot_centrality_res_gal(animals, outputfiggolder, statenames_gal);
 plot_centrality_res(animals, outputfiggolder, statenames);
 end
 

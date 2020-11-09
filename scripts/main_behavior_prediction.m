@@ -16,9 +16,9 @@ isloose = true;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
-plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
+% plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
 
-% plot_prediction(isloose, animals, statenames, outputfiggolder);
+plot_prediction(isloose, animals, statenames, outputfiggolder);
 %plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
@@ -518,24 +518,41 @@ end
 function plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
 M1=M(spatialindex,:,:);
 S1=S(spatialindex,:,:);
-CondColors=[0,0,0;0.9290 0.6940 0.1250;1,0,0];
+CondColors = get_3states_colors;
+for s=1:length(statenames)
+    statenames{s}(statenames{s}=='_') = ' ';
+end
 figure;
 for parcel_i = 1:length(spatialindex)
     subplot(3,1,parcel_i);
-    set(gcf,'renderer','Painters');
-    h=barwitherr(squeeze(S1(parcel_i,:,:)),squeeze(M1(parcel_i,:,:)));title(parcels_names{spatialindex(parcel_i)});
-    h(1).EdgeColor = 'none';
-    h(2).EdgeColor = 'none';
-    h(3).EdgeColor = 'none';
-    set(h(1),'FaceColor',CondColors(1,:));
-    set(h(2),'FaceColor',CondColors(2,:));
-    set(h(3),'FaceColor',CondColors(3,:));
-    set(h(1),'FaceAlpha',0.8);
-    set(h(2),'FaceAlpha',0.8);
-    set(h(3),'FaceAlpha',0.8);
+       h1=barwitherr(squeeze(S1(parcel_i,:,:))',squeeze(M1(parcel_i,:,:))');hold all;
+       h1(1).YData(2:3)=0;
+       h1(2).YData(2:3)=0;
+       h1(1).FaceColor=CondColors(1,:);
+       h1(2).FaceColor=CondColors(1,:);
+       h1(2).FaceAlpha=0.4;
+       h1(1).LineStyle='none';
+       h1(2).LineStyle='none';
+       h1=barwitherr(squeeze(S1(parcel_i,:,:))',squeeze(M1(parcel_i,:,:))');hold all;
+       h1(1).YData([1 3])=0;
+       h1(2).YData([1 3])=0;
+       h1(1).FaceColor=CondColors(2,:);
+       h1(2).FaceColor=CondColors(2,:);
+       h1(2).FaceAlpha=0.4;h1(1).LineStyle='none';
+       h1(2).LineStyle='none';
+       h1=barwitherr(squeeze(S1(parcel_i,:,:))',squeeze(M1(parcel_i,:,:))');
+       h1(1).YData([1 2])=0;
+       h1(2).YData([1 2])=0;
+       h1(1).FaceColor=CondColors(3,:);
+       h1(2).FaceColor=CondColors(3,:);
+       h1(2).FaceAlpha=0.4;h1(1).LineStyle='none';
+       h1(2).LineStyle='none';
+       
+    title(parcels_names{spatialindex(parcel_i)});
+   
     set(gca,'xtick',1:23)
     set(gcf, 'Position',  [1,1, 700,1000]);
-    set(gca,'xticklabel',{'Correct','Incorrect'})
+    set(gca,'xticklabel',statenames)
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
     set(gca,'XTickLabelRotation',45);%ylim([0 400]);
 end
