@@ -11,7 +11,7 @@ function pre_process_trials_animals
 %% parameters for running
 do_over = true; % if results exist, just replot them
 isloose = true;  % label every trial using the looser approach (see above)
-animals={'xs','xx','xz','xw','xt','xu'};
+animals={'xx','xz','xw','xt','xu' 'xs'};
 
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../../pre_processing'));
@@ -24,8 +24,9 @@ addpath(genpath('../../utils'));
 % for ai = 1:length(animals)
 %     extract_trials_imaging_by_state_loose(animals{ai}, do_over);
 % end
+% concatenateTrialsPeriodsByState(animals, isloose, do_over);
+concatenateTrialsPeriodsByState_grid(animals, isloose, do_over, [4 8 16]);
 
-concatenateTrialsPeriodsByState(animals, isloose, do_over);
 % makeslopeamplitudeplots(animals, isloose);
 
 %plot_time_spent(animals, isloose)
@@ -284,7 +285,111 @@ function s = initstrcut
     s.pupil_trace=[];
     s.wheel_trace=[];
     s.Gal = [];
+    s.grid_4 = [];
+    s.grid_8 = [];
+    s.grid_16 = [];
 end
+function concatenateTrialsPeriodsByState_grid(animals, isloose, do_over, G)
+%% Concatenates spontaneous state “trials” from the previous step over all days in psyc testing,
+%reshaped to be parcels over time (for running not running).
+fltstr='spt';
+addpath(genpath('../meta_data_processing'))
+respath = 'X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory';
+if ~exist('G','var')
+    G=[];
+end
+if isloose
+        lutvar = 'trials_labels_arousal_pup_loose_lut';
+        labelsvar = 'trials_labels_arousal_pup_loose';
+        loosestr = 'loose';
+        stateslabels = {'pupil_low_q' 'pupil_high_q' 'pupil_high_loc'};
+
+else
+         error('code assumes loose, please code strict option');
+        lutvar = 'trials_labels_arousal_pup_lut';
+        labelsvar = 'trials_labels_arousal_pup';
+        loosestr = '';
+end
+  
+for ir=1:length(animals)
+    animal=char(animals(ir));
+    datapath = ['X:\Hadas\Meso-imaging\lan\' animal 'psych\' fltstr '\'];
+    disp(animal)
+    resfile = strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states_grid', loosestr, '.mat');
+    if exist(resfile, 'file') && ~do_over
+        continue;
+    end
+    mkNewDir(fullfile(respath, 'allen_Slope_Amplitude',animal));
+    [~,days_to_process]=animaltodays(animal);
+    days_to_process = unique(days_to_process);
+    low_pup_q = initstrcut;
+    high_pup_q = initstrcut;
+    high_pup_l = initstrcut;
+ 
+   
+    vecofvars = {low_pup_q high_pup_q high_pup_l};
+    for dayy=1:length(days_to_process) %iterate over psychometric days
+        disp(days_to_process(dayy))
+        datafile = fullfile(datapath,[animal num2str(days_to_process(dayy)) 'imaging_time_traces_global.mat']);
+        
+        if exist(datafile,'file')
+            load(datafile, 'trialslabels','imaging_time_traces',...
+                lutvar);
+            tocont = false;
+            for g=1:length(G)
+                datafile_grid = fullfile(datapath,[animal num2str(days_to_process(dayy)) 'imaging_time_traces_grid' num2str(G(g)) '.mat']);
+                if exist(datafile_grid, 'file')
+                    grid_timetraces=load(datafile_grid, 'imaging_time_traces', 'par_inds');
+                    
+                    imaging_time_traces.(['grid_' num2str(G(g))]) = grid_timetraces.imaging_time_traces.grid;
+                    parinds{g, dayy} = grid_timetraces.par_inds;
+                else
+                    tocont = true;
+                    break;
+                end
+            end
+            if tocont
+                continue;
+            end
+           
+            for si=1:length(stateslabels)
+                vecofvars{si} = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, stateslabels{si}, eval(lutvar), vecofvars{si});
+            end
+            
+        end
+    end
+    t = imaging_time_traces.t;parindsall=parinds;
+    for g=1:length(G)
+        low_pup_q=[];
+        low_pup_q.grid = vecofvars{1}.(['grid_' num2str(G(g))]);
+        low_pup_q.trialslabels = vecofvars{1}.trialslabels;
+        low_pup_q.pupil_trace = vecofvars{1}.pupil_trace;
+        low_pup_q.wheel_trace = vecofvars{1}.wheel_trace;
+       
+        high_pup_q=[];
+        high_pup_q.grid = vecofvars{2}.(['grid_' num2str(G(g))]);
+        high_pup_q.trialslabels = vecofvars{2}.trialslabels;
+        high_pup_q.pupil_trace = vecofvars{2}.pupil_trace;
+        high_pup_q.wheel_trace = vecofvars{2}.wheel_trace;
+        
+        high_pup_l=[];
+        high_pup_l.grid = vecofvars{3}.(['grid_' num2str(G(g))]);
+        high_pup_l.trialslabels = vecofvars{3}.trialslabels;
+        high_pup_l.pupil_trace = vecofvars{3}.pupil_trace;
+        high_pup_l.wheel_trace = vecofvars{3}.wheel_trace;
+        resfile = strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states_grid',num2str(G(g)), loosestr, '.mat');
+            parinds = parindsall{g,1};
+         save(resfile,...
+        'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't', 'parinds');
+    end
+
+   
+   
+end
+
+
+end
+
 function concatenateTrialsPeriodsByState(animals, isloose, do_over)
 %% Concatenates spontaneous state “trials” from the previous step over all days in psyc testing,
 %reshaped to be parcels over time (for running not running).
@@ -333,6 +438,9 @@ for ir=1:length(animals)
         if exist(datafile,'file')
             load(datafile, 'trialslabels','imaging_time_traces',...
                 lutvar);
+            tocont = false;
+            
+           
             for si=1:length(stateslabels)
                 vecofvars{si} = get_trials_by_state(imaging_time_traces, trialslabels, labelsvar, stateslabels{si}, eval(lutvar), vecofvars{si});
                 vecofvarszscore{si} = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsvar, stateslabels{si}, eval(lutvar), vecofvarszscore{si});
@@ -760,6 +868,9 @@ end
 end
 
 function trials_data = get_trials_by_state(imaging_time_traces, trialslabels, labelsname, statestr, trials_labels_arousal_pup_lut, trials_data)
+names = fieldnames(imaging_time_traces);
+flocs=strfind(names, 'grid_');
+
 
 state_label = find(strcmp(trials_labels_arousal_pup_lut, statestr));
 inds = trialslabels.(labelsname) == state_label;
@@ -770,11 +881,19 @@ trials_data.trialslabels.contrastLabels = cat(1, trials_data.trialslabels.contra
 
 trials_data.pupil_trace=cat(3,trials_data.pupil_trace,imaging_time_traces.pupil_trace(:,:,inds));
 trials_data.wheel_trace=cat(3,trials_data.wheel_trace,imaging_time_traces.wheel_trace(:,:,inds));
+
 trials_data.Gal=cat(3,trials_data.Gal,imaging_time_traces.Gal(:,:,inds));
 
 
-end
+for i=1:length(flocs)
+    if ~isempty(flocs{i})
+    fname = names{i};
+    trials_data.(fname)=cat(3,trials_data.(fname),imaging_time_traces.(fname)(:,:,inds));
 
+
+    end
+end
+end
 function trials_data = get_trials_by_state_zscored(imaging_time_traces, trialslabels, labelsname, statestr, trials_labels_arousal_pup_lut, trials_data)
 state_label = find(strcmp(trials_labels_arousal_pup_lut, statestr));
 inds = trialslabels.(labelsname) == state_label;

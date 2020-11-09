@@ -6,10 +6,12 @@ toremove=setdiff(1:56,[21:26 53:56]);
 finalindex=intersect(isleftlabel,toremove);
 parcels_region_labels_bilateral=[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 5 5 5 5 5 5 0 0 0 0 3 3 4 4 2 2 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 7 7 7 7 0 0 0 0];
 parcels_region_labels=parcels_region_labels_bilateral(finalindex);
-[~,textt]=xlsread('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
-textt(1,:)=[];
-parcels_names=textt(finalindex,1);
-
+try
+T=readtable('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
+parcels_names=T.Label(finalindex);
+catch
+    parcels_names=[];
+end
 region_lut = {'visual','parietal','temporal','auditory','rs','somato','motor'};
 if ~exist('allen_map_final_index.mat','file')
     parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');

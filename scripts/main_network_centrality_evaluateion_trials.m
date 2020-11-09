@@ -10,7 +10,7 @@ isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for ai = 1%:length(animals)
      %eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end);
-     eval_weights_and_cent_perm(isloose, animals{ai}, statenames,pre_trial_time_start, pre_trial_time_end)
+%      eval_weights_and_cent_perm(isloose, animals{ai}, statenames,pre_trial_time_start, pre_trial_time_end)
 end
 ismidcontrast=false;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
@@ -38,6 +38,7 @@ end
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
 % plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+ plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 [~,spatialindex]=getspatialindex;
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
@@ -46,7 +47,11 @@ makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(3),'M2')
 %plotCRF(isloose,animals)
 end
 function plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
-
+if isloose
+    loosestr = 'loose';
+else
+    loosestr = '';
+end
 [correct_states_notweighted] = plot_centrality_res_gal(isloose, animals, outputfiggolder, statenames, 'trials_correct');
 [incorrect_states_notweighted] = plot_centrality_res_gal(isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
 
@@ -75,6 +80,7 @@ ylabel(h, 'Difference in Node Centrality');
 title([cent_features{ni} ' ' statenames{state_i}]);axis off
 hold on
 plot_parcellation_boundaries(parcelsallen.parcells_new.indicators(:,:,finalindex));
+mysave(gcf, fullfile(outputfiggolder, 'not_weighted', 'trials',[statenames{state_i} cent_features{ni} '_centrality_stats_pretrial_gal' loosestr '_heatmap']));
 
 end
    

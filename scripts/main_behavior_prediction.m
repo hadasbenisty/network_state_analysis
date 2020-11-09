@@ -3,21 +3,22 @@ addpath(genpath('../utils'));
 addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../svm'));
-animals={'xt','xu' 'xs','xx','xz','xw',};
+animals={'xx','xt','xu' 'xs','xz','xw',};
 slope_trial_time_start = 0.1;
 slope_trial_time_end = 0.33;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 isloose = true;
 
 % for ai = 1:length(animals)
+%     behavior_prediction_grid(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end,[4 8 16]);
 %     behavior_prediction(isloose, animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
 % end
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 contrast_levels = [0 2 5 10 20 40 100];
-% plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
+plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
 
-plot_prediction(isloose, animals, statenames, outputfiggolder);
+% plot_prediction(isloose, animals, statenames, outputfiggolder);
 %plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
@@ -279,8 +280,8 @@ for tonorm = 2
         case 0 % no normalization
             tonormstr = '';
             for state_i = 1:length(statenames)
-            slope_correct1.(statenames{state_i})=slope_correct.(statenames{state_i});
-            slope_incorrect1.(statenames{state_i})=slope_incorrect.(statenames{state_i});
+                slope_correct1.(statenames{state_i})=slope_correct.(statenames{state_i});
+                slope_incorrect1.(statenames{state_i})=slope_incorrect.(statenames{state_i});
             end
         case 2 % global normalization
             x=[];
@@ -313,7 +314,7 @@ for tonorm = 2
     spatialindex=getspatialindex;
     plot_correct_incorrect_per_3parcels(M, S, parcels_names, statenames,spatialindex)
     mysave(gcf,fullfile(outputfiggolder, ['3parcel_slope_by_state_by_behavior' loosestr tonormstr]));
-
+    
     plot_bars_3colors(squeeze(M(:,1,:)), squeeze(S(:,1,:)), statenames, parcels_names)
     mysave(gcf,fullfile(outputfiggolder, ['slope_by_state_correct' loosestr tonormstr ]));
     plot_bars_3colors(squeeze(M(:,2,:)), squeeze(S(:,2,:)), statenames, parcels_names)
@@ -353,7 +354,8 @@ graph_overlay_allen_paired([],fullfile(outputfiggolder, 'not_weighted'),M(:,3),M
 graph_heatmap([],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
     M(:,3),M(:,2),'trials/spon_run_pupilhigh/','accuracy_SVM_heatmap','run - pupil high (svm acc)');
 end
-function behavior_prediction(isloose, animal, statenames, slope_trial_time_start, slope_trial_time_end)
+
+function behavior_prediction_grid(isloose, animal, statenames, slope_trial_time_start, slope_trial_time_end, Gv)
 
 if isloose
     loosestr = 'loose';
@@ -363,7 +365,72 @@ end
 outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animal,'\');
 mkNewDir(outputfolder);
 [parcels_names, ~, finalindex] = get_allen_meta_parcels;
+
+
+for g=1:length(Gv)
+   
+    load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'trials_3states_grid' num2str(Gv(g)) loosestr '.mat'],...
+        'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't', 'parinds');
+     [parcels_names_grid, parcels_region_labels_grid, final_index_grid, region_lut,...
+        grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(parinds, Gv(g));
+    disp(animal);
+    foldsNum=5;
+    for state_i = 1:length(statenames)
+        disp(statenames{state_i})
+        
+        data_3D = eval(statenames{state_i});
+        inds = data_3D.trialslabels.blinksummary<3;
+        imaging_time_traces = data_3D.grid(:, :, inds);
+        labels = data_3D.trialslabels.blinksummary(inds);
+        imaging_time_traces = imaging_time_traces(final_index_grid, :, :);
+        slopeData=[];accuracy_mat=[];cvinds_mat=[];fa_mat=[];md_mat=[];
+        
+        for T=1:size(imaging_time_traces,3)
+            for pari = 1:size(imaging_time_traces,1)
+                p = polyfit(t(t>=slope_trial_time_start & t<slope_trial_time_end),imaging_time_traces(pari,t>=slope_trial_time_start & t<slope_trial_time_end,T),1);
+                slopeData(pari, T) = p(1);
+            end           
+        end
+        [accuracy_vec, cvinds, fa_vec, md_vec]  = svmClassify(slopeData.', labels, foldsNum, 0, 1, 'downsample', 0, 0, 0, 0);
+        if isempty(accuracy_vec)
+            continue;
+        end
+        
+        for par_i = 1:size(imaging_time_traces,1)
+            [accuracy_mat(:, par_i), cvinds_mat(:, par_i), fa_mat(:,:, par_i), md_mat(:, :,par_i)]  = svmClassify(slopeData(par_i,:).', labels, foldsNum, 0, 1, 'downsample', 0, 0, 0, 0);
+        end
+      
+        save(strcat(outputfolder,'behavior_prediction',statenames{state_i}, '_grid', num2str(Gv(g)), loosestr,'.mat'),'slopeData',...
+            'accuracy_vec','cvinds','fa_vec',...
+            'md_vec', 'accuracy_mat', 'cvinds_mat', 'fa_mat', 'md_mat');
+        c=unique(grid_map_final_index);
+        A=zeros(size(grid_map_final_index));
+        v=mean(accuracy_mat);
+        for i=2:length(c)
+            A(grid_map_final_index==c(i)) = v(i-1);
+            
+        end
+        figure;imagesc(A,[0.5 .8]);colormap(redblue)
+title(statenames{state_i})
+
+        clear accuracy_mat;clear md_vec;clear fa_mat;
+        clear cvinds;clear fa_vec;clear cvinds_mat;clear md_mat;
+    end
+end
+end
+
+function behavior_prediction(isloose, animal, statenames, slope_trial_time_start, slope_trial_time_end)
+
+if isloose
+    loosestr = 'loose';
+else
+    loosestr = '';
+end
+outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animal,'\');
+mkNewDir(outputfolder);
+[parcels_names, ~, finalindex, ~, allen_map_final_index] = get_allen_meta_parcels;
 [roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal] = get_gal_parcels_lables(animal);
+    parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
 
 [parcels_names_gal, finalindex_gal, maskByGal, regionLabel_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
     roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
@@ -411,8 +478,17 @@ for state_i = 1:length(statenames)
         'accuracy_vec','cvinds','fa_vec',...
         'md_vec', 'accuracy_mat', 'cvinds_mat', 'fa_mat', 'md_mat',...
         'slopeData_gal','accuracy_vec_gal','cvinds_gal','fa_vec_gal', 'md_vec_gal', 'accuracy_mat_gal', 'cvinds_mat_gal', 'fa_mat_gal', 'md_mat_gal');
-    
-    
+    c=unique(allen_map_final_index);
+        A=zeros(size(allen_map_final_index));
+        v=mean(accuracy_mat);
+        for i=2:length(c)
+            A(allen_map_final_index==c(i)) = v(i-1);
+            
+        end
+        figure;imagesc(A,[0.5 .8]);colormap(redblue)
+title(statenames{state_i});hold all;
+    plot_parcellation_boundaries(parcelsallen.parcells_new.indicators(:,:,finalindex));
+
     
 end
 end
@@ -452,13 +528,13 @@ for parcel_i = 1:length(spatialindex)
     h(2).EdgeColor = 'none';
     h(3).EdgeColor = 'none';
     set(h(1),'FaceColor',CondColors(1,:));
-    set(h(2),'FaceColor',CondColors(2,:)); 
-    set(h(3),'FaceColor',CondColors(3,:));     
+    set(h(2),'FaceColor',CondColors(2,:));
+    set(h(3),'FaceColor',CondColors(3,:));
     set(h(1),'FaceAlpha',0.8);
-    set(h(2),'FaceAlpha',0.8); 
-    set(h(3),'FaceAlpha',0.8);     
+    set(h(2),'FaceAlpha',0.8);
+    set(h(3),'FaceAlpha',0.8);
     set(gca,'xtick',1:23)
-    set(gcf, 'Position',  [1,1, 700,1000]);    
+    set(gcf, 'Position',  [1,1, 700,1000]);
     set(gca,'xticklabel',{'Correct','Incorrect'})
     set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
     set(gca,'XTickLabelRotation',45);%ylim([0 400]);
