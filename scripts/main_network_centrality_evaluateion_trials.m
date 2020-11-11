@@ -8,12 +8,21 @@ pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
+<<<<<<< HEAD
 % for ai = 1:length(animals)
 %     %eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
 %     for permi = 1:100
 %         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
 %     end
 % end
+=======
+for ai = 1%:length(animals)
+    eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
+    for permi = 1:100
+        eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
+    end
+end
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
 ismidcontrast=false;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
@@ -366,6 +375,7 @@ load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitu
 [parcels_names, ~, finalindex] = get_allen_meta_parcels;
 [~, finalindex_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
     roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
+<<<<<<< HEAD
 
 
 
@@ -416,6 +426,58 @@ data = data(:, all(~isnan(data)));
 data_corr = data_corr(:, all(~isnan(data_corr)));
 data_inco = data_inco(:, all(~isnan(data_inco)));
 
+=======
+
+
+
+data_3D = eval(statename);
+imaging_time_traces_all = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary<3);
+imaging_time_traces_all_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary<3);
+suc_fail_labels = data_3D.trialslabels.blinksummary(data_3D.trialslabels.blinksummary<3);
+if toperm
+    suc_fail_labels = suc_fail_labels(randperm(length(suc_fail_labels)));
+end
+imaging_time_traces_cor = imaging_time_traces_all(:, :, suc_fail_labels==1);
+imaging_time_traces_inc = imaging_time_traces_all(:, :, suc_fail_labels==2);
+
+imaging_time_traces_cor_gal = imaging_time_traces_all_gal(:, :, suc_fail_labels==1);
+imaging_time_traces_inc_gal = imaging_time_traces_all_gal(:, :, suc_fail_labels==2);
+
+data=[];data_inco=[];data_corr=[];
+data_gal=[];data_inco_gal=[];data_corr_gal=[];
+
+for T=1:size(imaging_time_traces_all,3)
+    data = cat(2, data,  imaging_time_traces_all(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_cor,3)
+    data_corr = cat(2, data_corr,  imaging_time_traces_cor(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_inc,3)
+    data_inco = cat(2, data_inco,  imaging_time_traces_inc(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_all_gal,3)
+    data_gal = cat(2, data_gal,  imaging_time_traces_all_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_cor_gal,3)
+    data_corr_gal = cat(2, data_corr_gal,  imaging_time_traces_cor_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_inc_gal,3)
+    data_inco_gal = cat(2, data_inco_gal,  imaging_time_traces_inc_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+
+data = data(finalindex, :);
+data_corr = data_corr(finalindex, :);
+data_inco = data_inco(finalindex, :);
+
+data_gal = data_gal(finalindex_gal, :);
+data_corr_gal = data_corr_gal(finalindex_gal, :);
+data_inco_gal = data_inco_gal(finalindex_gal, :);
+
+data = data(:, all(~isnan(data)));
+data_corr = data_corr(:, all(~isnan(data_corr)));
+data_inco = data_inco(:, all(~isnan(data_inco)));
+
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
 data_gal = data_gal(:, all(~isnan(data_gal)));
 data_corr_gal = data_corr_gal(:, all(~isnan(data_corr_gal)));
 data_inco_gal = data_inco_gal(:, all(~isnan(data_inco_gal)));
@@ -492,6 +554,7 @@ for state_i = 1:length(statenames)
      % incorrect
     [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names);
     save(incorrfile,'W_corr_inc',...
+<<<<<<< HEAD
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
     % correct gal  
@@ -506,6 +569,22 @@ for state_i = 1:length(statenames)
     save(incorrfilegal,'W_corr_inc',...
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
+=======
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    % correct gal  
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor_gal, parcels_names_gal);
+    W_corr_cor=W_corr_cor_gal;
+    save(corrfilegal,'W_corr_cor',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    % incorrect gal  
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc_gal, parcels_names_gal);
+    W_corr_inc=W_corr_inc_gal;
+    save(incorrfilegal,'W_corr_inc',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
  
     disp('graph analysis saved')
     
@@ -531,8 +610,13 @@ for state_i = 1:length(statenames)
     disp(statenames{state_i})
      [data, data_corr, data_inco, data_gal, data_corr_gal, data_inco_gal] = ...
     get_trial_data(animal, loosestr, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, true);
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
     data_3D = eval(statenames{state_i});
     
     imaging_time_traces_cor = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary==1);
