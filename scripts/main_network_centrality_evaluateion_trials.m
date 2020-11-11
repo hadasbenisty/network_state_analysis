@@ -8,19 +8,32 @@ pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
+<<<<<<< HEAD
+% for ai = 1:length(animals)
+%     %eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
+%     for permi = 1:100
+%         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
+%     end
+% end
+=======
 for ai = 1%:length(animals)
 %     eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
     for permi = 1:100
 %         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
     end
 end
+<<<<<<< HEAD
+=======
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
+ismidcontrast=false;
+>>>>>>> d2e1364f85d3a595e7b23da6781639cc09bccb83
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 %% gal
 %  plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 
 %% allen
-% [trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
+%[trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
 % [correct_states_notweighted, correct_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_correct');
 % [incorrect_states_notweighted, incorrect_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials_incorrect');
 close all;
@@ -34,12 +47,20 @@ end
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
 plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
+<<<<<<< HEAD
 [~,spatialindex]=getspatialindex;
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(3),'M2')
+=======
+% plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
+%[~,spatialindex]=getspatialindex;
+%makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
+%makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
+%makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(3),'M2')
+>>>>>>> d2e1364f85d3a595e7b23da6781639cc09bccb83
 
-%plotCRF(isloose,animals)
+plotCRF(isloose,animals)
 end
 function plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 if isloose
@@ -97,7 +118,8 @@ for l=1:length(centnames)
         S(:, 2, k) = nanstd(incorrect_states_notweighted.(statenames{k}).(centstr),[],2)/sqrt(N-1);
     end
     plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
-    mysave(gcf, fullfile(outputfiggolder, 'not_weighted', [centnames{l} '_centrality_stats_pretrial' loosestr midcontraststr]));
+    %mysave(gcf, fullfile(outputfiggolder, 'not_weighted', [centnames{l} '_centrality_stats_pretrial' loosestr midcontraststr]));
+    mysave(gcf, fullfile(outputfiggolder, 'not_weighted', [centnames{l} 'low_pup_q' '_centrality_stats_pretrial' loosestr midcontraststr]));
 end
 
 
@@ -156,8 +178,12 @@ for centt=1:length(centnames)
     for k=1:length(statenames)
         M1 = nanmean(correct_states_notweighted.(statenames{k}).(centstr),2);
         M2 = nanmean(incorrect_states_notweighted.(statenames{k}).(centstr),2);
-        
+        %load in permutations 
+        [perm_hubs,perm_spon_runnotrun_authorities]=load_permutedplots('run','notrun');
+
         %make graphs
+        graph_plot_with_permutation(
+        
         graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), M1,...
             M2,'trials',strcat(statenames{k},'_corrincorr_',centstr),['corr - incorr ' centstr ' Centrality (trials)' statenames{k}],parcels_names,N);
         
@@ -188,7 +214,7 @@ for i=1:length(animals)
     [parcels_names, ~, finalindex] = get_allen_meta_parcels;
     [roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal] = get_gal_parcels_lables(animal);
 
-[parcels_names_gal, finalindex_gal, maskByGal, regionLabel_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
+    [parcels_names_gal, finalindex_gal, maskByGal, regionLabel_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
     roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
 
     outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020',animal);
@@ -285,7 +311,6 @@ mkNewDir(fullfile(outputfiggolder, 'weighted'))
 mkNewDir(fullfile(outputfiggolder, 'not_weighted'))
 legstr = {'Low Q', 'High Q', 'Loc'};
 for ni = 1:length(cent_features)
-    
     graph_overlay_allen_3conditions([loosestr midcontraststr], fullfile(outputfiggolder, 'weighted'), spon_states_weighted.low_pup_q.(cent_features{ni}),...
         spon_states_weighted.high_pup_q.(cent_features{ni}), spon_states_weighted.high_pup_l.(cent_features{ni}),...
         suffix_files,cent_features{ni},['3 states ' cent_features{ni} ' Centrality (Trials)'], parcels_names,length(animals), legstr);
@@ -340,6 +365,7 @@ load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitu
 [parcels_names, ~, finalindex] = get_allen_meta_parcels;
 [~, finalindex_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
     roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
+<<<<<<< HEAD
 
 
 
@@ -390,6 +416,58 @@ data = data(:, all(~isnan(data)));
 data_corr = data_corr(:, all(~isnan(data_corr)));
 data_inco = data_inco(:, all(~isnan(data_inco)));
 
+=======
+
+
+
+data_3D = eval(statename);
+imaging_time_traces_all = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary<3);
+imaging_time_traces_all_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary<3);
+suc_fail_labels = data_3D.trialslabels.blinksummary(data_3D.trialslabels.blinksummary<3);
+if toperm
+    suc_fail_labels = suc_fail_labels(randperm(length(suc_fail_labels)));
+end
+imaging_time_traces_cor = imaging_time_traces_all(:, :, suc_fail_labels==1);
+imaging_time_traces_inc = imaging_time_traces_all(:, :, suc_fail_labels==2);
+
+imaging_time_traces_cor_gal = imaging_time_traces_all_gal(:, :, suc_fail_labels==1);
+imaging_time_traces_inc_gal = imaging_time_traces_all_gal(:, :, suc_fail_labels==2);
+
+data=[];data_inco=[];data_corr=[];
+data_gal=[];data_inco_gal=[];data_corr_gal=[];
+
+for T=1:size(imaging_time_traces_all,3)
+    data = cat(2, data,  imaging_time_traces_all(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_cor,3)
+    data_corr = cat(2, data_corr,  imaging_time_traces_cor(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_inc,3)
+    data_inco = cat(2, data_inco,  imaging_time_traces_inc(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_all_gal,3)
+    data_gal = cat(2, data_gal,  imaging_time_traces_all_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_cor_gal,3)
+    data_corr_gal = cat(2, data_corr_gal,  imaging_time_traces_cor_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+for T=1:size(imaging_time_traces_inc_gal,3)
+    data_inco_gal = cat(2, data_inco_gal,  imaging_time_traces_inc_gal(:,t>=pre_trial_time_start & t<pre_trial_time_end,T));
+end
+
+data = data(finalindex, :);
+data_corr = data_corr(finalindex, :);
+data_inco = data_inco(finalindex, :);
+
+data_gal = data_gal(finalindex_gal, :);
+data_corr_gal = data_corr_gal(finalindex_gal, :);
+data_inco_gal = data_inco_gal(finalindex_gal, :);
+
+data = data(:, all(~isnan(data)));
+data_corr = data_corr(:, all(~isnan(data_corr)));
+data_inco = data_inco(:, all(~isnan(data_inco)));
+
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
 data_gal = data_gal(:, all(~isnan(data_gal)));
 data_corr_gal = data_corr_gal(:, all(~isnan(data_corr_gal)));
 data_inco_gal = data_inco_gal(:, all(~isnan(data_inco_gal)));
@@ -466,6 +544,7 @@ for state_i = 1:length(statenames)
      % incorrect
     [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names);
     save(incorrfile,'W_corr_inc',...
+<<<<<<< HEAD
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
     % correct gal  
@@ -480,6 +559,22 @@ for state_i = 1:length(statenames)
     save(incorrfilegal,'W_corr_inc',...
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
+=======
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    % correct gal  
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor_gal, parcels_names_gal);
+    W_corr_cor=W_corr_cor_gal;
+    save(corrfilegal,'W_corr_cor',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+    % incorrect gal  
+    [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc_gal, parcels_names_gal);
+    W_corr_inc=W_corr_inc_gal;
+    save(incorrfilegal,'W_corr_inc',...
+        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
+        'cent_corr_notweighted', 'G_corr', 'names_corr');
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
  
     disp('graph analysis saved')
     
@@ -505,8 +600,13 @@ for state_i = 1:length(statenames)
     disp(statenames{state_i})
      [data, data_corr, data_inco, data_gal, data_corr_gal, data_inco_gal] = ...
     get_trial_data(animal, loosestr, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, true);
+<<<<<<< HEAD
 
 
+=======
+
+
+>>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
     data_3D = eval(statenames{state_i});
     
     imaging_time_traces_cor = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary==1);
@@ -666,15 +766,24 @@ figure;
 %hAx.XScale='log';
 xlim([0 100]);
 hold on
+
 for state_i=1:length(statenames)
     M=squeeze(acs_z(:,state_i,:));
     %errorbar(contrasts,nanmean(M,1),nanstd(M,1)./(sqrt(length(animals)-1)));
     %[modelF,coefsF]=HyFit(contrasts.',nanmean(M,1));
     %fittedpredictedcurveF=nanmean(predint(modelF,0:0.01:100),2); 
-    %semilogx(0:0.01:100,fittedpredictedcurveF,'color',CondColors(state_i,:)); %overlay early and late days psyc curve on semi log plo
-    errorbar(contrasts,nanmean(M,1),nanstd(M,1)./(sqrt(length(animals)-1)),'color',CondColors(state_i,:),'LineWidth',1.5);
+    %semilogx(0:0.01:100,fittedpredictedcurveF,'color',CondColors(state_i,:));
+    currmean=nanmean(M,1);%overlay early and late days psyc curve on semi log plo
+    currsem=(nanstd(M,[],1)./(sqrt(length(animals)-1)));
+    errorbar(contrasts,currmean,currsem,'color',CondColors(state_i,:),'LineWidth',1.5);
+    CRFinfo.mean_per_state.(statenames{state_i})=currmean(2:7);
+    CRFinfo.sem_per_state.(statenames{state_i})=currsem(2:7);
     hold on
+    clearvars currmean currsem
 end
+
+CRFinfo.contrasts=contrasts(2:7);
+save(strcat('X:\Lav\ProcessingDirectory\parcor_undirected\','data4mike'),'CRFinfo');
 New_XTickLabel = get(gca,'xtick');title('CRF per state');ylabel('Z-dF/F')
 set(gca,'XTickLabel',New_XTickLabel);
 mysave(gcf, 'X:\Lav\ProcessingDirectory\parcor_undirected\CRF_Zscored_perstate', 'all');
@@ -691,4 +800,3 @@ corralldata=concatenated_dff(:,:,permutation(1:samplesize));
 incorralldata=concatenated_dff(:,:,permutation(samplesize+1:length(permutation)));
 %save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',num2str(i),animal,'perm_running_time_traces'),'runningalldata','runningalldata_t','notrunningalldata_t','notrunningalldata');
 end
-
