@@ -9,17 +9,15 @@ pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for ai = 1%:length(animals)
-    eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
+%     eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
     for permi = 1:100
-        eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
+%         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
     end
 end
-ismidcontrast=false;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
 %% gal
-
-%plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames);
+%  plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 
 %% allen
 % [trials_states_notweighted, trials_states_weighted] = plot_centrality_res(ismidcontrast, isloose, animals, outputfiggolder, statenames, 'trials');
@@ -31,16 +29,11 @@ if isloose
 else
     loosestr = '';
 end
-if ismidcontrast
-    midcontraststr = 'mid_contrast';
-else
-    midcontraststr='';
-end
-% save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr midcontraststr '.mat']), 'trials_states_notweighted',...
+
+% save(fullfile(outputfiggolder, ['centrality_stats_pretrial' loosestr '.mat']), 'trials_states_notweighted',...
 %     'trials_states_weighted', 'correct_states_notweighted', 'correct_states_weighted',...
 %     'incorrect_states_notweighted', 'incorrect_states_weighted');
 plotSummaryCentrality(ismidcontrast, isloose, outputfiggolder, statenames);
- plotSummaryCentrality_gal(isloose, animals, outputfiggolder, statenames)
 [~,spatialindex]=getspatialindex;
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(1),'V1')
 makeslopeamplitudeplots(animals, isloose,outputfiggolder,spatialindex(2),'S1b')
@@ -62,28 +55,13 @@ cent_features = fieldnames(correct_states_notweighted.high_pup_l);
 parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
 for state_i=1:length(statenames)
 for ni = 1:length(cent_features)
-    figure;
-    
     %difference maps, not weighted, for each centrality measure
+    figure;        
      Ac=mean(correct_states_notweighted.(statenames{state_i}).(cent_features{ni}),3);
-     Ain=mean(incorrect_states_notweighted.(statenames{state_i}).(cent_features{ni}),3);
+     Ain=mean(incorrect_states_notweighted.(statenames{state_i}).(cent_features{ni}),3);     
      A=Ac-Ain;
-    imagesc(A);
-set(gcf,'renderer','painters');
-myColorMap = colormap(redblue);
-%myColorMap(1,:) = 1;
-colormap(myColorMap);
-h=colorbar;
-upperlim=max(A(:)); 
-    lowerlim=min(A(:));
-caxis([lowerlim upperlim]);
-%colormap(fireice);h=colorbar;
-ylabel(h, 'Difference in Node Centrality');
-title([cent_features{ni} ' ' statenames{state_i}]);axis off
-hold on
-plot_parcellation_boundaries(parcelsallen.parcells_new.indicators(:,:,finalindex));
-mysave(gcf, fullfile(outputfiggolder, 'not_weighted', 'trials',[statenames{state_i} cent_features{ni} '_centrality_stats_pretrial_gal' loosestr '_heatmap']));
-
+     plot_heatmap(A, -0.04, 0.04, [cent_features{ni} ' ' statenames{state_i}], parcelsallen.parcells_new.indicators(:,:,finalindex));
+  mysave(gcf, fullfile(outputfiggolder, 'not_weighted', 'trials',[statenames{state_i} cent_features{ni} '_centrality_stats_pretrial_gal' loosestr '_heatmap']));
 end
    
   
@@ -221,7 +199,7 @@ for i=1:length(animals)
             'cent_corr_weighted','cent_corr_notweighted');
         cent_features = fieldnames(cent_corr_weighted);
         for cent_i = 1:length(cent_features)
-            P=zeros(256);
+            P=nan(256);
             for parcel_i = 1:length(parcels_names_gal)
                  P(maskByGal==parcel_i) = cent_corr_notweighted.(cent_features{cent_i})(parcel_i);
             end
