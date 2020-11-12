@@ -1,12 +1,49 @@
 function main_plot_simple_stats
 animals={'xs','xx','xz','xw','xt','xu'};
+loosestr = 'loose';
 %plot_vals_by_state(animals)
 %plot_time_spent_by_state_spont(animals)
 %plot_learning_sponblink(animals)
+plot_resp_vs_contrast_single_parcel(animals, 1, loosestr);
 plot_exampletimetraces(animals,1,2,102,110)
+
+
 end
 
-
+% function plot_resp_vs_contrast_single_parcel(animals, parcel_ind, loosestr)
+% contrastvals = [2 5 10 20 40 100];
+% statesnames = {'low_pup_q','high_pup_q','high_pup_l'};
+% for ai=1:length(animals)
+%     m=inf;
+%     M=-inf;
+%     Lab = load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animals{ai},'\',animals{ai},'trials_3states' loosestr '.mat'],...
+%         'low_pup_q','high_pup_q','high_pup_l','days_to_process', 't'); 
+%        outputfolder=fullfile('X:\Lav\ProcessingDirectory_Oct2020\',animals{ai},'\');
+%     for si=1:length(statesnames)
+%     load(strcat(outputfolder,'behavior_prediction',statesnames{si}, loosestr ,'.mat'),'slopeData');
+%     inds = Lab.(statesnames{si}).trialslabels.blinksummary<3;
+%     contrastlabels.(statesnames{si}) = Lab.(statesnames{si}).trialslabels.contrastLabels(inds);
+%     allslopes.(statesnames{si}) = slopeData(parcel_ind, :);
+%     m = min(m, min(allslopes.(statesnames{si})(:)));
+%     M = max(M, max(allslopes.(statesnames{si})(:)));
+%     end
+%   for si=1:length(statesnames)
+%       allslopes1.(statesnames{si}) = bsxfun(@rdivide, allslopes.(statesnames{si}) - m,M-m);
+%   end
+%   
+%   for si=1:length(statesnames)
+%       for ci=1:length(contrastvals)
+%           psych_resp.(statesnames{si})(ci,ai) = mean(allslopes1.(statesnames{si})(contrastlabels.(statesnames{si}) == contrastvals(ci)));
+%       end
+%   end
+% end
+% M=[];
+% for si=1:length(statesnames)
+% M(:,si) = mean(psych_resp.(statesnames{si}),2);
+% S(:,si) = std(psych_resp.(statesnames{si}),[],2)/sqrt(length(animals)-1);
+% end
+% 
+% end
 function plot_vals_by_state(animals)
 binsN = 32;
 addpath(genpath('../utils'));

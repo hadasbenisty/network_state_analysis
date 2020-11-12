@@ -18,8 +18,8 @@ outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 contrast_levels = [0 2 5 10 20 40 100];
 % plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
 
-plot_prediction(isloose, animals, statenames, outputfiggolder);
-%plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
+% plot_prediction(isloose, animals, statenames, outputfiggolder);
+plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
 function plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
