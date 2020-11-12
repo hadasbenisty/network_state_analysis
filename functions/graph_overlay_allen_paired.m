@@ -21,7 +21,7 @@ for b = 1:23 %plot bars in loop to custom color scheme per parcel based on regio
     indx=parcels_region_labels(b);
     bar(b, meandiff(b), 'FaceColor',  RegionColors(indx,:), 'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
 end
-view([-90 90]);
+view([90 -90]);
 if contains(name,'eigenvector')
 ylim([-0.06 0.06]);
 end

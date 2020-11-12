@@ -1,5 +1,4 @@
 function plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
-
 CondColors=get_3states_colors;
 for state_i = 1%:length(statenames)
     %subplot(3,1,state_i);

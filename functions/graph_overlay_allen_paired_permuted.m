@@ -1,4 +1,4 @@
-function graph_overlay_allen_paired_permuted(condition_perm1,condition_perm2,outputpth,condition1,condition2,condition,name,plottitle,parcels_names,num)
+function graph_overlay_allen_paired_permuted(condition_perm1,condition_perm2,strsuffix,outputpth,condition1,condition2,condition,name,plottitle,parcels_names,num)
 isleftlabel=2:2:56;
 toremove=setdiff(1:56,[21:26 53:56]);
 finalindex=intersect(isleftlabel,toremove);
@@ -32,7 +32,7 @@ hold on
 for b = 1:23
     bar(b, -(perm_meandiff(b)), 'FaceColor',  ([17 17 17]/255), 'FaceAlpha',0.5,'EdgeColor', 'none', 'BarWidth', 0.6);hold on;
 end
-view([-90 90]);
+view([90 -90]);
 % show standard deviation on top
 % h = errorbar(1:23,meandiff, sediff,'LineStyle','none','LineWidth',0.5);
 ylabel('Difference inNode Centrality');title(plottitle);
@@ -42,7 +42,7 @@ ylabel('Difference inNode Centrality');title(plottitle);
 % plot(find(htest<=0.05), meandiff(htest<=0.05),'k*', 'MarkerSize',12);hold on;
 % h2 = errorbar(1:23,perm_meandiff, perm_sediff,'LineStyle','none','LineWidth',0.5);
 % hold on;
-view([-90 90]);
+view([90 -90]);
 if contains(name,'eigenvector')
 ylim([-0.06 0.06]);
 end
@@ -53,7 +53,7 @@ set(gca,'XTickLabel',get(gca,'XTickLabel'),'fontsize',15)
 %set(gca,'XTickLabelRotation',45);
 
 mkdir(condition);
-mysave(gcf, fullfile(outputpth,condition,name), 'all');
+mysave(gcf, fullfile(outputpth,condition,strcat(name,strsuffix)), 'all');
 end
 
 

@@ -18,8 +18,8 @@ outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 contrast_levels = [0 2 5 10 20 40 100];
 % plot_prediction_gal(isloose, animals, statenames, outputfiggolder);
 
-% plot_prediction(isloose, animals, statenames, outputfiggolder);
-plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
+plot_prediction(isloose, animals, statenames, outputfiggolder);
+%plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
 end
 
 function plot_psych_curve_per_state(isloose, animals, statenames, contrast_levels, outputfiggolder)
@@ -523,6 +523,7 @@ for s=1:length(statenames)
     statenames{s}(statenames{s}=='_') = ' ';
 end
 figure;
+set(gcf,'renderer','painters');
 for parcel_i = 1:length(spatialindex)
     subplot(3,1,parcel_i);
        h1=barwitherr(squeeze(S1(parcel_i,:,:))',squeeze(M1(parcel_i,:,:))');hold all;
