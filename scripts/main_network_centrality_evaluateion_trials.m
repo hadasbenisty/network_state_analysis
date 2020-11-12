@@ -8,21 +8,12 @@ pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 isloose = true;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-<<<<<<< HEAD
 % for ai = 1:length(animals)
 %     %eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
 %     for permi = 1:100
 %         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
 %     end
 % end
-=======
-for ai = 1%:length(animals)
-    eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
-    for permi = 1:100
-        eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
-    end
-end
->>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
 ismidcontrast=false;
 outputfiggolder = 'X:\Lav\ProcessingDirectory\parcor_undirected\';
 
@@ -188,15 +179,6 @@ for centt=1:length(centnames)
     for k=1:length(statenames)
         M1 = nanmean(correct_states_notweighted.(statenames{k}).(centstr),2);
         M2 = nanmean(incorrect_states_notweighted.(statenames{k}).(centstr),2);
-        %load in permutations 
-        [perm_hubs,perm_spon_runnotrun_authorities]=load_permutedplots('run','notrun');
-
-        %make graphs
-        graph_plot_with_permutation(
-        
-        graph_overlay_allen_paired([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'), M1,...
-            M2,'trials',strcat(statenames{k},'_corrincorr_',centstr),['corr - incorr ' centstr ' Centrality (trials)' statenames{k}],parcels_names,N);
-        
         graph_heatmap([loosestr midcontraststr],fullfile(outputfiggolder, 'not_weighted'),braininfo.brain_mask,parcelsallen.parcells_new.indicators,...
             M1,M2,'trials',strcat(statenames{k},'_corrincorr_',centstr),['corr - incorr ' centstr ' Centrality (trials)' statenames{k}]);
     end
@@ -375,10 +357,6 @@ load(['X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitu
 [parcels_names, ~, finalindex] = get_allen_meta_parcels;
 [~, finalindex_gal] = get_gal_meta_parcels_by_allen(parcels_names, finalindex,...
     roiLabelsbyAllen_gal, regionLabel_gal, maskByAllen_gal, maskByGal);
-<<<<<<< HEAD
-
-
-
 data_3D = eval(statename);
 imaging_time_traces_all = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary<3);
 imaging_time_traces_all_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary<3);
@@ -426,10 +404,6 @@ data = data(:, all(~isnan(data)));
 data_corr = data_corr(:, all(~isnan(data_corr)));
 data_inco = data_inco(:, all(~isnan(data_inco)));
 
-=======
-
-
-
 data_3D = eval(statename);
 imaging_time_traces_all = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary<3);
 imaging_time_traces_all_gal = data_3D.Gal(:, :, data_3D.trialslabels.blinksummary<3);
@@ -476,8 +450,6 @@ data_inco_gal = data_inco_gal(finalindex_gal, :);
 data = data(:, all(~isnan(data)));
 data_corr = data_corr(:, all(~isnan(data_corr)));
 data_inco = data_inco(:, all(~isnan(data_inco)));
-
->>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
 data_gal = data_gal(:, all(~isnan(data_gal)));
 data_corr_gal = data_corr_gal(:, all(~isnan(data_corr_gal)));
 data_inco_gal = data_inco_gal(:, all(~isnan(data_inco_gal)));
@@ -554,7 +526,6 @@ for state_i = 1:length(statenames)
      % incorrect
     [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names);
     save(incorrfile,'W_corr_inc',...
-<<<<<<< HEAD
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
     % correct gal  
@@ -569,9 +540,6 @@ for state_i = 1:length(statenames)
     save(incorrfilegal,'W_corr_inc',...
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
-=======
-        'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
-        'cent_corr_notweighted', 'G_corr', 'names_corr');
     % correct gal  
     [indic_corr_weighted, indic_corr_notweighted, cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor_gal, parcels_names_gal);
     W_corr_cor=W_corr_cor_gal;
@@ -584,7 +552,6 @@ for state_i = 1:length(statenames)
     save(incorrfilegal,'W_corr_inc',...
         'indic_corr_weighted','indic_corr_notweighted','cent_corr_weighted',...
         'cent_corr_notweighted', 'G_corr', 'names_corr');
->>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
  
     disp('graph analysis saved')
     
@@ -610,13 +577,7 @@ for state_i = 1:length(statenames)
     disp(statenames{state_i})
      [data, data_corr, data_inco, data_gal, data_corr_gal, data_inco_gal] = ...
     get_trial_data(animal, loosestr, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, true);
-<<<<<<< HEAD
 
-
-=======
-
-
->>>>>>> 46a9a8392fd36d6a3cfda6a013d57e79cfcd54dc
     data_3D = eval(statenames{state_i});
     
     imaging_time_traces_cor = data_3D.imaging_time_traces(:, :, data_3D.trialslabels.blinksummary==1);
