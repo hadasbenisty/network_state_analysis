@@ -1,7 +1,5 @@
 function plot_3_bars(M, S, statenames)
-figure;
 CondColors = get_3states_colors;
-subplot(1,1,1)
 set(gcf,'renderer','Painters')
 hold on
 for b = 1:3

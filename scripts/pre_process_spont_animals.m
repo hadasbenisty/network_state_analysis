@@ -1,13 +1,13 @@
 function pre_process_spont_animals
-%%Code to process the ITI period for all animals with extraction 
+%%Code to process the ITI period for all animals with extraction
 %of 3 arousal states: low pupil + quiescence, high pupil + quiescence, high pupil + locomotion
 
 
 addpath(genpath('../../pre_processing'));
 addpath(genpath('../../meta_data_processing'));
 addpath(genpath('../../utils'));
-animals={'xs','xx','xz','xw','xt','xu'};
-
+animals={'xt','xu'  'xs','xw','xx','xz'};%
+%% Detects 3 arousal states per animal per day
 % for ai = 1:length(animals)
 %     extract_spont_imaging_by_state(animals{ai});
 % end
@@ -22,55 +22,92 @@ function concatenateSpontPeriodsByState(animals)
 
 % addpath(genpath('X:\Hadas\Meso-imaging\lan\results\code\Functions'));
 % cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude');
-
+[~, allen_parcels] = getParcellsByLansAllansAtlas;
+[parcels_names.Allen, ~, finalindex.Allen, regionLabel.nameslegend, maskByAllen.Allen] = get_allen_meta_parcels;
+regionLabel.Allen = allen_parcels.regionNum;
+regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 % cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
-respath = 'X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory';
+statesnames = {'low_pup_q','high_pup_q','high_pup_l'};
 for ir=1:length(animals)
     animal=char(animals(ir));
-    mkNewDir(fullfile(respath, 'allen_Slope_Amplitude',animal));
+    disp(animal)
+    resfile = fullfile('X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\',  ...
+        [animal '_spont_data_3states_dfff.mat']);
+    if exist(resfile, 'file')&&0
+        continue;
+    end
+    spike2pth = fullfile('X:\Hadas\Meso-imaging\lan\spike2data', animal);
+    
     [~,days_to_process]=animaltodays(animal);
-    low_pup_q=[];low_pup_q_t=[];high_pup_q=[];high_pup_q_t=[];high_pup_l=[];high_pup_l_t=[];
-    wheel_low_pup_q=[];pupil_low_pup_q=[];face_low_pup_q=[];wheel_high_pup_q=[];pupil_high_pup_l=[];
-    pupil_high_pup_q=[];face_high_pup_q=[];wheel_high_pup_l=[];face_high_pup_l=[];
-    low_pup_q_gal=[];high_pup_q_gal=[];high_pup_l_gal=[];
-    for dayy=1:length(unique(days_to_process)) %iterate over psychometric days
-        datafile = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spike2Features', [animal num2str(days_to_process(dayy)) 'arousal_state_ITI.mat']);
-        if exist(datafile,'file')
-            load(datafile, 'running_time_traces', 'wheelspeed', 'pupil', 'face', 'running_time_traces_gal');
+    for si = 1:length(statesnames)
+        eval([statesnames{si} '.Allen = []']);
+        eval([statesnames{si} '.LSSC = []']);
+        eval([statesnames{si} '.t = []']);
+        eval([statesnames{si} '.days = []']);
+        
+    end
+    switch animal
+        case {'xu','xv','xt','xs'}
+            fsimaing=33;
+            delay_filt = 500;
+        otherwise
+            fsimaing=10;
+            delay_filt=150;
+    end
+    for dayy=1:length((days_to_process)) %iterate over psychometric days
+        disp(days_to_process(dayy));
+        datafile_allen = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spt', [animal '_' num2str(days_to_process(dayy)) '_allen_dfff.mat']);
+        datafile_gal = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spt', 'gal',[animal '_' num2str(days_to_process(dayy)) '_global_dfff.mat']);
+        load(fullfile(spike2pth, ['spike2data',animal num2str(days_to_process(dayy)) '.mat']),...
+            't_imaging');
+        if fsimaing < 33
+            t_imaging=t_imaging(1:2:end);
+        end
+        t_imaging = t_imaging(1:end-delay_filt);
+        
+        
+        segmentfile = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spike2Features', [animal num2str(days_to_process(dayy)) 'arousal_state_ITI_segemts.mat']);
+        if exist(datafile_allen,'file') && exist(datafile_gal,'file') && exist(segmentfile,'file')
+            load(segmentfile, 'segments_arousals');
+            a=load(datafile_allen);
+            g=load(datafile_gal);
+            if length(t_imaging) > size(g.parcels_time_trace,2)
+                t_imaging=t_imaging(1:size(g.parcels_time_trace,2));
+            end
             
-            % state 1: low pup + q           
-            low_pup_q=cat(2,low_pup_q,running_time_traces.puplow_on_q);
-            low_pup_q_t=cat(1,low_pup_q_t,running_time_traces.t_puplow_on_q(:));
-            low_pup_q_gal=cat(2,low_pup_q_gal,running_time_traces_gal.puplow_on_q);
             
-            wheel_low_pup_q=cat(2,wheel_low_pup_q,wheelspeed.puplow_on_q);            
-            pupil_low_pup_q=cat(2,pupil_low_pup_q,pupil.puplow_on_q);
-            face_low_pup_q=cat(2,face_low_pup_q,face.puplow_on_q);
-            
-            % state 2: high pup + q           
-            high_pup_q=cat(2,high_pup_q,running_time_traces.puphigh_on_q);
-            high_pup_q_t=cat(1,high_pup_q_t,running_time_traces.t_puphigh_on_q(:));
-            high_pup_q_gal=cat(2,high_pup_q_gal,running_time_traces_gal.puphigh_on_q);
-            
-            wheel_high_pup_q=cat(2,wheel_high_pup_q,wheelspeed.puphigh_on_q);            
-            pupil_high_pup_q=cat(2,pupil_high_pup_q,pupil.puphigh_on_q);
-            face_high_pup_q=cat(2,face_high_pup_q,face.puphigh_on_q);
-            
-            % state 3: high pup + loc           
-            high_pup_l=cat(2,high_pup_l,running_time_traces.puphigh_on_loc);
-            high_pup_l_t=cat(1,high_pup_l_t,running_time_traces.t_puphigh_on_loc(:));
-            high_pup_l_gal=cat(2,high_pup_l_gal,running_time_traces_gal.puphigh_on_loc);            wheel_high_pup_l=cat(2,wheel_high_pup_l,wheelspeed.puphigh_on_loc);            
-            pupil_high_pup_l=cat(2,pupil_high_pup_l,pupil.puphigh_on_loc);
-            face_high_pup_l=cat(2,face_high_pup_l,face.puphigh_on_loc);
+            % [roiLabelsbyAllen_gal, regionLabel.LSSC, maskByAllen_gal, maskByAllen.LSSC] = get_gal_parcels_lables(animal);
+            [parcels_names.LSSC, finalindex.LSSC, maskByAllen.LSSC, regionLabel.LSSC, roiLabelsbyAllen.LSSC] = get_gal_meta_parcels_by_allen(parcels_names.Allen, maskByAllen.Allen, ...
+                regionLabel.Allen, animal);
+            Xa  =a.parcels_time_trace(finalindex.Allen,:);
+            Xg  =g.parcels_time_trace(finalindex.LSSC,:);
+            for si = 1:length(statesnames)
+                if isfield(segments_arousals, statesnames{si})
+                    data = eval(statesnames{si});
+                    
+                    for seg_i = 1:size(segments_arousals.(statesnames{si}),1)
+                        
+                        seg = segments_arousals.(statesnames{si})(seg_i,:);
+                        ind1 = findClosestDouble(t_imaging, seg(1));
+                        ind2 = findClosestDouble(t_imaging, seg(2));
+                        tt=ind1:ind2;
+                        finalinds = tt(~isnan(sum(Xa(:, tt))));
+                        data.Allen = cat(2, data.Allen, Xa(:, finalinds));
+                        data.LSSC = cat(2, data.LSSC, Xg(:, finalinds));
+                        data.t=cat(1,data.t,t_imaging(ind1:ind2));
+                        data.days = cat(1, data.days, ones(length(t_imaging(ind1:ind2)),1)*days_to_process(dayy));
+                    end
+                end
+                eval([statesnames{si} '= data;']);
+            end
             
            
+            
         end
     end
-    save(strcat('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory\allen_Slope_Amplitude\',animal,'\',animal,'spon_3states'),...
-        'low_pup_q','low_pup_q_t','high_pup_q','high_pup_q_t','high_pup_l',...
-        'high_pup_l_t','days_to_process', 'wheel_low_pup_q', 'pupil_low_pup_q',...
-        'face_low_pup_q', 'wheel_high_pup_q', 'pupil_high_pup_q', 'face_high_pup_q', ...
-        'wheel_high_pup_l', 'pupil_high_pup_l', 'face_high_pup_l', 'low_pup_q_gal','high_pup_q_gal', 'high_pup_l_gal');
+    
+    save(resfile,'low_pup_q',    'high_pup_q','high_pup_l');
+   
 end
 
 
@@ -78,10 +115,10 @@ end
 
 function extract_spont_imaging_by_state(animalName)
 switch animalName
-        case {'xu','xv','xt','xs'}
-            params.fsimaging=33;
-        otherwise
-            params.fsimaging=10;
+    case {'xu','xv','xt','xs'}
+        params.fsimaging=33;
+    otherwise
+        params.fsimaging=10;
 end
 params.fspupilcam=30; %pupil sampling rate
 params.fsspike2=5000;% spike2 sampling rate
@@ -102,23 +139,24 @@ spike2pth = fullfile('X:\Hadas\Meso-imaging\lan\spike2data', animalName);
 
 %% for each mouse, load spont and airpuff folders and perform correlations
 for day_i=1:length(days2process)
-    load(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global_ITI.mat']),...
-        'imaging_time_traces');
+    %     load(fullfile(datapath,[animalName num2str(days2process(day_i)) 'imaging_time_traces_global_ITI.mat']),...
+    %         'imaging_time_traces');
     load(fullfile(spike2pth, ['spike2data',animalName num2str(days2process(day_i)) '.mat']),'channels_data',...
         'timing', 't_imaging');
     %     X:\Hadas\Meso-imaging\lan\facemap\Current_Processing\xu\xu_D20_proc.mat
     
+    
     facemap_data_file=dir(strcat('X:\Hadas\Meso-imaging\lan\facemap\Current_Processing\', animalName, ['\*' animalName '_D' ...
-    num2str(days2process(day_i)) '*_proc.mat']));
-    facemapfile=(fullfile(strcat('X:\Hadas\Meso-imaging\lan\facemap\Current_Processing\', animalName),facemap_data_file.name));    
+        num2str(days2process(day_i)) '*_proc.mat']));
+    facemapfile=(fullfile(strcat('X:\Hadas\Meso-imaging\lan\facemap\Current_Processing\', animalName),facemap_data_file.name));
     %facemapfile = ['X:\Hadas\Meso-imaging\lan\facemap\Current_Processing\' animalName ...
     %   '\' animalName '_D' num2str(days2process(day_i)) '_proc.mat'];
-    if exist(facemapfile, 'file')
-        q=load(facemapfile);
-        face_Norm = q.proc.motSVD{1,1}(:,1);
-    else
-        face_Norm = [];
-    end
+    %     if exist(facemapfile, 'file')
+    %         q=load(facemapfile);
+    %         face_Norm = q.proc.motSVD{1,1}(:,1);
+    %     else
+    face_Norm = [];
+    %     end
     [pupil_time, pupil_Norm] = load_pupil_data(animalName, days2process(day_i), channels_data.pupil_frame, params.fsspike2);
     wheel_speed = channels_data.wheelspeed;
     wheel_time = (1:length(wheel_speed))/params.fsspike2;
@@ -329,19 +367,19 @@ for day_i=1:length(days2process)
         Pupil_LowArousal_OnT_int, Pupil_LowArousal_OffT_int);
     
     if ~isempty(face_Norm)
-    %% facemap on/off for locomotion
-    % get pupil on and face on times if both on and off times occur entirely
-    %during sustained locomotion states identified in the previous step
-    [Face_HighArousal_On_final_loc,Face_HighArousal_Off_final_loc,...
-        Face_LowArousal_On_final_loc, Face_LowArousal_Off_final_loc] = ...
-        getHighLowonOf4Locomotion(wheelOn_final, wheelOff_final, t_imaging, ...
-        Face_HighArousal_OnT_int, Face_HighArousal_OffT_int, ...
-        Face_LowArousal_OnT_int, Face_LowArousal_OffT_int);
-    
-    
-    
-    %% facemap
-    
+        %% facemap on/off for locomotion
+        % get pupil on and face on times if both on and off times occur entirely
+        %during sustained locomotion states identified in the previous step
+        [Face_HighArousal_On_final_loc,Face_HighArousal_Off_final_loc,...
+            Face_LowArousal_On_final_loc, Face_LowArousal_Off_final_loc] = ...
+            getHighLowonOf4Locomotion(wheelOn_final, wheelOff_final, t_imaging, ...
+            Face_HighArousal_OnT_int, Face_HighArousal_OffT_int, ...
+            Face_LowArousal_OnT_int, Face_LowArousal_OffT_int);
+        
+        
+        
+        %% facemap
+        
         toDelete=ones(1,length(Face_HighArousal_OnT_int));
         for rj=1:length(Face_HighArousal_OnT_int)
             tmp = find (Face_HighArousal_OnT_int(rj)>=sitOn_final & Face_HighArousal_OffT_int(rj)<=sitOff_final);
@@ -430,54 +468,67 @@ for day_i=1:length(days2process)
         end
         
     end
+    
     linkaxes([ax1, ax2, ax3,ax4,ax5,ax6],'x');
-    [running_time_traces.t_wheelon, running_time_traces.locomotionperiods] = extract_imaging_per_state(wheelOn_final,wheelOff_final,imaging_time_traces.t, imaging_time_traces.Allen);
-    [running_time_traces.t_wheeloff, running_time_traces.quiescenceperiods] = extract_imaging_per_state(sitOn_final,sitOff_final,imaging_time_traces.t, imaging_time_traces.Allen);
-    
-    [running_time_traces.t_puplow_on_q, running_time_traces.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Allen);
-    [running_time_traces.t_puphigh_on_q, running_time_traces.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Allen);
-    
-    [running_time_traces.t_puplow_on_loc, running_time_traces.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
-    [running_time_traces.t_puphigh_on_loc, running_time_traces.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
-    
-    [running_time_traces_gal.t_puplow_on_q, running_time_traces_gal.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Gal);
-    [running_time_traces_gal.t_puphigh_on_q, running_time_traces_gal.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Gal);
-    
-    [running_time_traces_gal.t_puplow_on_loc, running_time_traces_gal.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Gal);
-    [running_time_traces_gal.t_puphigh_on_loc, running_time_traces_gal.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Gal);
-    
-    
-    wheel_interp = interp1(wheel_time, wheel_speed, pupil_time);
-    [wheelspeed.t_puplow_on_q, wheelspeed.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, wheel_interp.');
-    [wheelspeed.t_puphigh_on_q, wheelspeed.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, wheel_interp.');
-    
-    [wheelspeed.t_puplow_on_loc, wheelspeed.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, wheel_interp.');
-    [wheelspeed.t_puphigh_on_loc, wheelspeed.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, wheel_interp.');
-    
-    [pupil.t_puplow_on_q, pupil.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, pupil_Norm.');
-    [pupil.t_puphigh_on_q, pupil.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, pupil_Norm.');
-    
-    [pupil.t_puplow_on_loc, pupil.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, pupil_Norm.');
-    [pupil.t_puphigh_on_loc, pupil.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, pupil_Norm.');
-    
-    if ~isempty(face_Norm)
-        [face.t_puplow_on_q, face.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, face_Norm.');
-    [face.t_puphigh_on_q, face.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, face_Norm.');
-    
-    [face.t_puplow_on_loc, face.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, face_Norm.');
-    [face.t_puphigh_on_loc, face.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, face_Norm.');
-    
-    
-        [running_time_traces.t_facelow_on_q, running_time_traces.facelow_on_q] = extract_imaging_per_state(Face_LowArousal_On_final_q,Face_LowArousal_Off_final_q,imaging_time_traces.t, imaging_time_traces.Allen);
-        [running_time_traces.t_facehigh_on_q, running_time_traces.facehigh_on_q] = extract_imaging_per_state(Face_HighArousal_On_final_q,Face_HighArousal_Off_final_q,imaging_time_traces.t, imaging_time_traces.Allen);
-        
-        [running_time_traces.t_facelow_on_loc, running_time_traces.facelow_on_loc] = extract_imaging_per_state(Face_LowArousal_On_final_loc,Face_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
-        [running_time_traces.t_facehigh_on_loc, running_time_traces.facehigh_on_loc] = extract_imaging_per_state(Face_HighArousal_On_final_loc,Face_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
-    end
     close all;
+    segments_arousals.low_pup_q = [Pupil_LowArousal_On_final_qu Pupil_LowArousal_Off_final_qu];
+    segments_arousals.high_pup_q = [Pupil_HighArousal_On_final_qu Pupil_HighArousal_Off_final_qu];
+    segments_arousals.high_pup_l = [Pupil_HighArousal_On_final_loc Pupil_HighArousal_Off_final_loc];
     save(fullfile('X:\Hadas\Meso-imaging\lan\', [animalName 'psych'],...
-        'spike2Features', [animalName num2str(days2process(day_i)) 'arousal_state_ITI.mat']),...
-        'wheelspeed','pupil','face','running_time_traces', 'running_time_traces_gal');
+        'spike2Features', [animalName num2str(days2process(day_i)) 'arousal_state_ITI_segemts.mat']),...
+        'segments_arousals');
+    %     if ~exist(fullfile('X:\Hadas\Meso-imaging\lan\', [animalName 'psych'],...
+    %         'spike2Features', [animalName num2str(days2process(day_i)) 'arousal_state_ITI.mat']), 'file')
+    %     [running_time_traces.t_wheelon, running_time_traces.locomotionperiods] = extract_imaging_per_state(wheelOn_final,wheelOff_final,imaging_time_traces.t, imaging_time_traces.Allen);
+    %     [running_time_traces.t_wheeloff, running_time_traces.quiescenceperiods] = extract_imaging_per_state(sitOn_final,sitOff_final,imaging_time_traces.t, imaging_time_traces.Allen);
+    %
+    %     [running_time_traces.t_puplow_on_q, running_time_traces.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Allen);
+    %     [running_time_traces.t_puphigh_on_q, running_time_traces.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.Allen);
+    %
+    %     [running_time_traces.t_puplow_on_loc, running_time_traces.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
+    %     [running_time_traces.t_puphigh_on_loc, running_time_traces.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
+    %
+    %     [running_time_traces_gal.t_puplow_on_q, running_time_traces_gal.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.LSSC);
+    %     [running_time_traces_gal.t_puphigh_on_q, running_time_traces_gal.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,imaging_time_traces.t, imaging_time_traces.LSSC);
+    %
+    %     [running_time_traces_gal.t_puplow_on_loc, running_time_traces_gal.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.LSSC);
+    %     [running_time_traces_gal.t_puphigh_on_loc, running_time_traces_gal.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.LSSC);
+    %
+    %
+    %     wheel_interp = interp1(wheel_time, wheel_speed, pupil_time);
+    %     [wheelspeed.t_puplow_on_q, wheelspeed.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, wheel_interp.');
+    %     [wheelspeed.t_puphigh_on_q, wheelspeed.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, wheel_interp.');
+    %
+    %     [wheelspeed.t_puplow_on_loc, wheelspeed.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, wheel_interp.');
+    %     [wheelspeed.t_puphigh_on_loc, wheelspeed.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, wheel_interp.');
+    %
+    %     [pupil.t_puplow_on_q, pupil.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, pupil_Norm.');
+    %     [pupil.t_puphigh_on_q, pupil.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, pupil_Norm.');
+    %
+    %     [pupil.t_puplow_on_loc, pupil.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, pupil_Norm.');
+    %     [pupil.t_puphigh_on_loc, pupil.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, pupil_Norm.');
+    %
+    %     if ~isempty(face_Norm)
+    %         [face.t_puplow_on_q, face.puplow_on_q] = extract_imaging_per_state(Pupil_LowArousal_On_final_qu,Pupil_LowArousal_Off_final_qu,pupil_time, face_Norm.');
+    %     [face.t_puphigh_on_q, face.puphigh_on_q] = extract_imaging_per_state(Pupil_HighArousal_On_final_qu,Pupil_HighArousal_Off_final_qu,pupil_time, face_Norm.');
+    %
+    %     [face.t_puplow_on_loc, face.puplow_on_loc] = extract_imaging_per_state(Pupil_LowArousal_On_final_loc,Pupil_LowArousal_Off_final_loc,pupil_time, face_Norm.');
+    %     [face.t_puphigh_on_loc, face.puphigh_on_loc] = extract_imaging_per_state(Pupil_HighArousal_On_final_loc,Pupil_HighArousal_Off_final_loc,pupil_time, face_Norm.');
+    %
+    %
+    %         [running_time_traces.t_facelow_on_q, running_time_traces.facelow_on_q] = extract_imaging_per_state(Face_LowArousal_On_final_q,Face_LowArousal_Off_final_q,imaging_time_traces.t, imaging_time_traces.Allen);
+    %         [running_time_traces.t_facehigh_on_q, running_time_traces.facehigh_on_q] = extract_imaging_per_state(Face_HighArousal_On_final_q,Face_HighArousal_Off_final_q,imaging_time_traces.t, imaging_time_traces.Allen);
+    %
+    %         [running_time_traces.t_facelow_on_loc, running_time_traces.facelow_on_loc] = extract_imaging_per_state(Face_LowArousal_On_final_loc,Face_LowArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
+    %         [running_time_traces.t_facehigh_on_loc, running_time_traces.facehigh_on_loc] = extract_imaging_per_state(Face_HighArousal_On_final_loc,Face_HighArousal_Off_final_loc,imaging_time_traces.t, imaging_time_traces.Allen);
+    %     else
+    %         face=[];
+    %     end
+    %
+    %     save(fullfile('X:\Hadas\Meso-imaging\lan\', [animalName 'psych'],...
+    %         'spike2Features', [animalName num2str(days2process(day_i)) 'arousal_state_ITI.mat']),...
+    %         'wheelspeed','pupil','face','running_time_traces', 'running_time_traces_gal');
+    %     end
 end
 
 end

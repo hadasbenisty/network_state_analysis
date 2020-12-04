@@ -1,4 +1,4 @@
-function [parcels_names, parcels_region_labels, finalindex, region_lut, allen_map_final_index] = get_allen_meta_parcels
+function [parcels_names, parcels_region_labels, finalindex, region_lut, allen_map_final_index, parcels_namesall] = get_allen_meta_parcels
 
 
 isleftlabel=2:2:56;
@@ -8,6 +8,7 @@ parcels_region_labels_bilateral=[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 5 5 5 5 5 5 0 0
 parcels_region_labels=parcels_region_labels_bilateral(finalindex);
 try
 T=readtable('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
+parcels_namesall = T.Label;
 parcels_names=T.Label(finalindex);
 catch
     parcels_names=[];

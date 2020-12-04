@@ -1,11 +1,9 @@
-function [indic_weighted, indic_notweighted, cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W, str_labels, issim)
+function [cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W1, str_labels, communitylabels, issim)
 addpath(genpath('../centrality_measures/'));
-%step 1
-%W=1-W./(mean(W(:)).^2);
-%W=1-W.^2;
-%step 2
-%nn_dist = sort(W.').';
-W = threshold_cor_matrix(W);
+addpath(genpath('..\gspbox'));
+
+W = process_sim(W1);
+
 if ~exist('issim','var')
     issim=1;
 end
@@ -44,21 +42,23 @@ else
     wnums = {abs(G.Edges.Weight) exp(-G.Edges.Weight) exp(-G.Edges.Weight)...
         abs(G.Edges.Weight) abs(G.Edges.Weight)};
 end
-indic_weighted = zeros(length(c), size(W, 1));
-indic_notweighted = zeros(length(c), size(W, 1));
 
 for k=1:length(c)    
     cent_weighted.(c{k}) = centrality(G, c{k}, wstr{k}, wnums{k});    
     cent_notweighted.(c{k}) = centrality(G, c{k});
 end
-indic_weighted(k,(cent_weighted.(c{k})> median(cent_weighted.(c{k}))))=1;
-indic_notweighted(k,(cent_notweighted.(c{k})> median(cent_notweighted.(c{k}))))=1;
 
-M=community_louvain(W~=0);
-cent_notweighted.participation=participation_coef((W~=0),M,0);
-cent_notweighted.community = M;
+cent_notweighted.participation=participation_coef((W~=0),communitylabels,0);
+cent_notweighted.community = communitylabels;
 
-M=community_louvain(W,1,[],'negative_sym');
-cent_weighted.participation=participation_coef(W,M,0);
-cent_weighted.community = M;
+cent_weighted.participation=participation_coef(W,communitylabels,0);
+cent_weighted.community = communitylabels;
+configParams.maxInd=10;
+[diffusion_map, Lambda] = calcDiffusionMapDW(W,configParams);
+cent_weighted.diffmap = diffusion_map(1,:)';
+cent_weighted.second_eigval = Lambda(2);
+[diffusion_map, Lambda] = calcDiffusionMapDW(W>0,configParams);
+cent_notweighted.diffmap = diffusion_map(1,:)';
+cent_notweighted.second_eigval = Lambda(2);
+
 end

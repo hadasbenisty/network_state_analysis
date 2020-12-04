@@ -14,7 +14,10 @@
 
 
 function [W, well_modeled_nodes] = measure_weights_partial(data, method, params)
-
+if isempty(data)
+W=[];
+return;
+end
 well_modeled_nodes = [];
 if ~exist('method', 'var')
     method = 'corr';
@@ -39,10 +42,19 @@ if ~exist('param', 'var')
             params.zero_diag = true;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
+            case 'fullcorr'
+            params.is_symmetric = true;
+            params.zero_diag = true;
+            params.how_to_normalize = false;
+            params.how_to_normalize = 'rows';
     end
 end
 
 switch method
+    case 'fullcorr'
+        W = corr(data');
+       
+
     case 'corr'
         %W = abs(corr(data'));
         pairs = nchoosek(1:size(data, 1), 2);

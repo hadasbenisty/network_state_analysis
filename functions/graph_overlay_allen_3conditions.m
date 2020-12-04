@@ -40,8 +40,6 @@ function graph_overlay_allen_3conditions(strsuffix, outputpth,cond1_cat,cond2_ca
     set(gca,'XTickLabelRotation',45);
     ylabel('Node Centrality');title(plottitle);
     legend(legstr);
-    mkNewDir(fullfile(outputpth,condition));
-    mysave(gcf, fullfile(outputpth,condition,strcat(name,'3conditions', strsuffix)), 'all');
 end
 
 

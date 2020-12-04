@@ -1,4 +1,4 @@
-function graph_heatmap(strsuffix,outputpth,brain_mask,parcels,condition1,condition2,condition,name,plotitle)
+function graph_heatmap(brain_mask,parcels,condition1,condition2,name,plotitle)
 isleftlabel=2:2:56;
 toremove=setdiff(1:56,[21:26 53:56]);
 finalindex=intersect(isleftlabel,toremove);
@@ -7,7 +7,7 @@ difference_cond1_cond2=condition1-condition2;
 meandiff=mean(difference_cond1_cond2,2).';
 %upperlim=max(meandiff(:)); 
 %lowerlim=(min(min(meandiff(:)))); %(min(min(meandiff(:)))-0.00000001);
-if contains(name,'eigenvector')
+if contains(name,'eigenvector')&&0
     lowerlim=-0.06;
     upperlim=0.06;
 elseif contains(name,'svm')||contains(name,'SVM')
@@ -40,6 +40,5 @@ caxis([lowerlim upperlim]);
 ylabel(h, 'Difference in Node Centrality');title(plotitle);axis off
 hold on
 plot_parcellation_boundaries(parcels(:,:,finalindex));
-mysave(gcf, fullfile(outputpth,condition,strcat(name,strsuffix,'_heatmap')), 'all');
 end
 
