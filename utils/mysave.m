@@ -7,7 +7,7 @@ if isempty(f)
 end
 switch est
     case 'all'
-%         saveas(f,[filename '.fig'],'fig');
+        saveas(f,[filename '.fig'],'fig');
         saveas(f,[filename '.tif'],'tif');
         % s=getframe(f);imwrite(s.cdata, filename,'Compression','none', 'Resolution',300 );
 %         print( f, '-depsc', [filename '.eps']);

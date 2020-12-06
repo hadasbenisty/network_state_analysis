@@ -92,6 +92,9 @@ end
 %         case 'cols'
 %             W = bsxfun(@rdivide, W, sum(W,1));
 %     end
+if any(isnan(W(:)))
+W=[];
+end
 end
 
 

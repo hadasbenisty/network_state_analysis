@@ -44,7 +44,7 @@ else
 end
 
 for k=1:length(c)    
-    cent_weighted.(c{k}) = centrality(G, c{k}, wstr{k}, wnums{k});    
+    cent_weighted.(c{k}) = centrality(G, c{k}, wstr{k}, wnums{k}+eps);    
     cent_notweighted.(c{k}) = centrality(G, c{k});
 end
 

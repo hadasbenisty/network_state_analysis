@@ -3,7 +3,7 @@ addpath(genpath('../utils'));
 addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
-animals={'xt','xu' 'xs' 'xx','xz','xw'};% 
+animals={'xu' 'xs' 'xx','xw','xz' 'xt',};%,%
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 similarity_name = { 'corr', 'fullcorr'};%
 for sim_i = 1:length(similarity_name)

@@ -15,9 +15,9 @@ for kk=1:size(Xvec,2)
 P=nan(256);
 for parcel_i = 1:length(parcels_names.Gal)
     if tonorm
-    P(maskByAllen.Gal==parcel_i) = Xvec(parcel_i)/sqrt(length(Xvec));
+    P(maskByAllen.Gal==parcel_i) = Xvec(parcel_i,kk)/sqrt(length(Xvec));
     else
-        P(maskByAllen.Gal==parcel_i) = Xvec(parcel_i);
+        P(maskByAllen.Gal==parcel_i) = Xvec(parcel_i,kk);
     end
 end
 Pmat(:,:,kk) = P;
