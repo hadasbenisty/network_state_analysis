@@ -7,13 +7,14 @@ addpath(genpath('../network_state_analysis\gspbox'));
 animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
-similarity_name = {'corr', 'fullcorr'};%'fullcorr'
+doover=0;maxdays=30;
+similarity_name = {'fullcorr'  };%'fullcorr''corr',
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for sim_i = 1:length(similarity_name)
 for ai = 1:length(animals)
 %    eval_weights_and_cent_per_day(animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
 
-     eval_weights_and_cent(similarity_name{sim_i}, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
+     eval_weights_and_cent(maxdays, doover, similarity_name{sim_i}, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, 0);
     %     for permi = 1:100
     %         eval_weights_and_cent(isloose, animals{ai}, statenames, pre_trial_time_start, pre_trial_time_end, permi);
     %     end
@@ -21,11 +22,11 @@ end
 end
 end
 function [data, data_corr, data_inco, roi_names, region_labels] = ...
-    get_trial_data(signame, animal, statename, pre_trial_time_start, pre_trial_time_end, toperm, daynum)
-
+    get_trial_data(signame, animal, statename, pre_trial_time_start, pre_trial_time_end, toperm, maxdays, daynum)
+roi_names=[];
 load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_meta_data.mat'], ...
     'behavior_labels', 'arousal_labels', 'days_labels');
-sel_trials = behavior_labels < 3 & arousal_labels == statename2num( statename);
+sel_trials = behavior_labels < 3 & arousal_labels == statename2num( statename)&days_labels<=maxdays;
 if exist('daynum','var')
     sel_trials = sel_trials & days_labels == daynum;
 end
@@ -116,11 +117,11 @@ for day_i = 1:length(days_list)
     end
 end
 end
-function eval_weights_and_cent(simname, animal, statenames, pre_trial_time_start, pre_trial_time_end, topermind)
+function eval_weights_and_cent(maxdays, doover, simname, animal, statenames, pre_trial_time_start, pre_trial_time_end, topermind)
 
 outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality_' simname];
 mkNewDir(outputfolder);
-signalnames = {'Allen','LSSC'};
+signalnames = {'grid4' 'Allen','LSSC'};
 disp(animal)
 for sig_i = 1:length(signalnames)
     for state_i = 1:length(statenames)
@@ -133,25 +134,26 @@ for sig_i = 1:length(signalnames)
             corrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'trials_correct_' signalnames{sig_i} 'perm' num2str(topermind) '.mat']);
             incorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'trials_incorrect_' signalnames{sig_i} 'perm' num2str(topermind) '.mat']);
         end
-        if exist(corrfile, 'file') && exist(incorrfile, 'file')
+        if exist(corrfile, 'file') && exist(incorrfile, 'file')&&~doover
             load(corrfile, 'W_corr_cor');
             load(incorrfile,'W_corr_inc');
-            [~, ~, ~, parcels_names, regionLabel] = ...
-                get_trial_data(signalnames{sig_i}, animal, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, topermind);
-            
+            roi_names=[];
+            load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_imaging_time_traces_global_' signalnames{sig_i} '_dfff.mat'], ...
+                'roi_names','region_labels');
+            parcels_names=roi_names;
         else
-            [~, data_corr, data_inco, parcels_names, regionLabel] = ...
-                get_trial_data(signalnames{sig_i}, animal, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, topermind);
+            [~, data_corr, data_inco, parcels_names, region_labels] = ...
+                get_trial_data(signalnames{sig_i}, animal, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, topermind, maxdays);
             W_corr_cor = measure_weights_partial(data_corr, simname);
             W_corr_inc = measure_weights_partial(data_inco, simname);
         end
         % correct
-        [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor, parcels_names, regionLabel);
+        [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_cor, parcels_names, region_labels);
         save(corrfile,'W_corr_cor',...
             'cent_corr_weighted',...
             'cent_corr_notweighted', 'G_corr', 'names_corr');
         % incorrect
-        [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names, regionLabel);
+        [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr_inc, parcels_names, region_labels);
         save(incorrfile,'W_corr_inc',...
             'cent_corr_weighted',...
             'cent_corr_notweighted', 'G_corr', 'names_corr');

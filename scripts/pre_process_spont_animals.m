@@ -6,17 +6,17 @@ function pre_process_spont_animals
 addpath(genpath('../../pre_processing'));
 addpath(genpath('../../meta_data_processing'));
 addpath(genpath('../../utils'));
-animals={'xt','xu'  'xs','xw','xx','xz'};%
+animals={'xx' 'xt' 'xu'   'xs' 'xw'  'xz' };%
 %% Detects 3 arousal states per animal per day
 % for ai = 1:length(animals)
 %     extract_spont_imaging_by_state(animals{ai});
 % end
-
-concatenateSpontPeriodsByState(animals);
+dover=true;
+concatenateSpontPeriodsByState(dover, animals);
 end
 
 
-function concatenateSpontPeriodsByState(animals)
+function concatenateSpontPeriodsByState(dover, animals)
 %% Concatenates spontaneous state “trials” from the previous step over all days in psyc testing,
 %reshaped to be parcels over time (for running not running).
 
@@ -33,7 +33,7 @@ for ir=1:length(animals)
     disp(animal)
     resfile = fullfile('X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\',  ...
         [animal '_spont_data_3states_dfff.mat']);
-    if exist(resfile, 'file')&&0
+    if exist(resfile, 'file')&&~dover
         continue;
     end
     spike2pth = fullfile('X:\Hadas\Meso-imaging\lan\spike2data', animal);
@@ -42,6 +42,7 @@ for ir=1:length(animals)
     for si = 1:length(statesnames)
         eval([statesnames{si} '.Allen = []']);
         eval([statesnames{si} '.LSSC = []']);
+eval([statesnames{si} '.Grid4 = []']);
         eval([statesnames{si} '.t = []']);
         eval([statesnames{si} '.days = []']);
         
@@ -58,7 +59,9 @@ for ir=1:length(animals)
         disp(days_to_process(dayy));
         datafile_allen = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spt', [animal '_' num2str(days_to_process(dayy)) '_allen_dfff.mat']);
         datafile_gal = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spt', 'gal',[animal '_' num2str(days_to_process(dayy)) '_global_dfff.mat']);
-        load(fullfile(spike2pth, ['spike2data',animal num2str(days_to_process(dayy)) '.mat']),...
+datafile_grid4 = fullfile('X:\Hadas\Meso-imaging\lan\',[animal,'psych'], 'spt', [animal '_' num2str(days_to_process(dayy)) '_grid4_dfff.mat']);
+                
+load(fullfile(spike2pth, ['spike2data',animal num2str(days_to_process(dayy)) '.mat']),...
             't_imaging');
         if fsimaing < 33
             t_imaging=t_imaging(1:2:end);
@@ -71,6 +74,7 @@ for ir=1:length(animals)
             load(segmentfile, 'segments_arousals');
             a=load(datafile_allen);
             g=load(datafile_gal);
+            g4=load(datafile_grid4);
             if length(t_imaging) > size(g.parcels_time_trace,2)
                 t_imaging=t_imaging(1:size(g.parcels_time_trace,2));
             end
@@ -79,8 +83,13 @@ for ir=1:length(animals)
             % [roiLabelsbyAllen_gal, regionLabel.LSSC, maskByAllen_gal, maskByAllen.LSSC] = get_gal_parcels_lables(animal);
             [parcels_names.LSSC, finalindex.LSSC, maskByAllen.LSSC, regionLabel.LSSC, roiLabelsbyAllen.LSSC] = get_gal_meta_parcels_by_allen(parcels_names.Allen, maskByAllen.Allen, ...
                 regionLabel.Allen, animal);
+
+ [parcels_names.grid4, regionLabel.grid4, finalindex.grid4, ~, maskByAllen.grid4, roiLabelsbyAllen.grid4] = getAllenClusteringLabelsGrid(g4.par_inds, 4);
+
+
             Xa  =a.parcels_time_trace(finalindex.Allen,:);
             Xg  =g.parcels_time_trace(finalindex.LSSC,:);
+Xg4  =g4.parcels_time_trace(finalindex.grid4,:);
             for si = 1:length(statesnames)
                 if isfield(segments_arousals, statesnames{si})
                     data = eval(statesnames{si});
@@ -94,8 +103,9 @@ for ir=1:length(animals)
                         finalinds = tt(~isnan(sum(Xa(:, tt))));
                         data.Allen = cat(2, data.Allen, Xa(:, finalinds));
                         data.LSSC = cat(2, data.LSSC, Xg(:, finalinds));
+data.Grid4 = cat(2, data.Grid4, Xg4(:, finalinds));
                         data.t=cat(1,data.t,t_imaging(ind1:ind2));
-                        data.days = cat(1, data.days, ones(length(t_imaging(ind1:ind2)),1)*days_to_process(dayy));
+                        data.days = cat(1, data.days, ones(length(t_imaging(finalinds)),1)*days_to_process(dayy));
                     end
                 end
                 eval([statesnames{si} '= data;']);

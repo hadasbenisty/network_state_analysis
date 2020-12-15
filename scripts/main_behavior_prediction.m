@@ -1,3 +1,4 @@
+% Figure 3
 function main_behavior_prediction
 addpath(genpath('../utils'));
 addpath(genpath('../functions/'));
@@ -7,22 +8,22 @@ animals={'xw','xx','xt','xu' 'xs','xz',};
 slope_trial_time_start = 0.1;
 slope_trial_time_end = 0.33;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-
+daysmax=30;
 for ai = 1:length(animals)
-    behavior_prediction(animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end);
+    behavior_prediction(animals{ai}, statenames, slope_trial_time_start, slope_trial_time_end,daysmax);
 end
 end
-function behavior_prediction(animal, statenames, slope_trial_time_start, slope_trial_time_end)
+function behavior_prediction(animal, statenames, slope_trial_time_start, slope_trial_time_end,daysmax)
 
 
 outputfolder='X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\behavior_prediction';
 mkNewDir(outputfolder);
 signalsnames = {'Allen','LSSC','Grid4'};
 load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_meta_data.mat'], ...
-    'behavior_labels', 'arousal_labels');
+    'behavior_labels', 'arousal_labels', 'days_labels');
 
 for sig_i = 1:length(signalsnames)
-load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_imaging_time_traces_global_' signalsnames{sig_i} '.mat'], ...
+load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_imaging_time_traces_global_' signalsnames{sig_i} '_dfff.mat'], ...
     'imaging_time_traces', 't' , 'roi_location', 'region_labels', 'roi_names');
   
 disp(animal);
@@ -31,7 +32,7 @@ for state_i = 1:length(statenames)
     disp(statenames{state_i})
     
    
-    inds = behavior_labels<3 & arousal_labels == state_i;
+    inds = behavior_labels<3 & arousal_labels == state_i&days_labels<=daysmax;
     curr_imaging_time_traces = imaging_time_traces(:, :, inds);
     labels = behavior_labels(inds);
     

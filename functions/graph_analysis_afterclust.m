@@ -1,8 +1,14 @@
-function [cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W1, str_labels, communitylabels, issim)
+function [cent_weighted, cent_notweighted, G, c] = graph_analysis_afterclust(W1, str_labels, communitylabels,processWfun, th, issim)
 addpath(genpath('../centrality_measures/'));
 addpath(genpath('..\gspbox'));
+if ~exist('processWfun','var')
+processWfun = @process_sim;
+end
+if ~exist('th','var')
+th = 5;
+end
+W = feval(processWfun, W1, th);
 
-W = process_sim(W1);
 
 if ~exist('issim','var')
     issim=1;
@@ -33,13 +39,13 @@ if isdirected
     c = {'indegree',             'outdegree',        'incloseness','outcloseness',...
         'betweenness','pagerank','hubs','authorities'};
     wstr = {'Importance'   'Importance'               'Cost'      'Cost'    'Cost'      'Importance'   'Importance' 'Importance'};
-    wnums = {abs(G.Edges.Weight) abs(G.Edges.Weight) exp(-G.Edges.Weight) exp(-G.Edges.Weight)...
-         exp(-G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight)};
+    wnums = {abs(G.Edges.Weight) abs(G.Edges.Weight) 1./abs(G.Edges.Weight) 1./abs(G.Edges.Weight)...
+         1./abs(G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight) abs(G.Edges.Weight)};
 else
     G = graph(W);
     c = {'degree',         'closeness','betweenness','pagerank', 'eigenvector'};
     wstr = {'Importance'   'Cost'      'Cost'         'Importance'   'Importance'};
-    wnums = {abs(G.Edges.Weight) exp(-G.Edges.Weight) exp(-G.Edges.Weight)...
+    wnums = {abs(G.Edges.Weight) 1./abs(G.Edges.Weight) 1./abs(G.Edges.Weight)...
         abs(G.Edges.Weight) abs(G.Edges.Weight)};
 end
 
@@ -55,10 +61,10 @@ cent_weighted.participation=participation_coef(W,communitylabels,0);
 cent_weighted.community = communitylabels;
 configParams.maxInd=10;
 [diffusion_map, Lambda] = calcDiffusionMapDW(W,configParams);
-cent_weighted.diffmap = diffusion_map(1,:)';
+cent_weighted.diffmap = diffusion_map(find(Lambda>1e-5,1)-1,:)';
 cent_weighted.second_eigval = Lambda(2);
 [diffusion_map, Lambda] = calcDiffusionMapDW(W>0,configParams);
-cent_notweighted.diffmap = diffusion_map(1,:)';
+cent_notweighted.diffmap = diffusion_map(find(Lambda>1e-5,1)-1,:)';
 cent_notweighted.second_eigval = Lambda(2);
 
 end

@@ -9,6 +9,7 @@ switch est
     case 'all'
         saveas(f,[filename '.fig'],'fig');
         saveas(f,[filename '.tif'],'tif');
+saveas(f,[filename '.jpg'],'jpg');
         % s=getframe(f);imwrite(s.cdata, filename,'Compression','none', 'Resolution',300 );
 %         print( f, '-depsc', [filename '.eps']);
         % print(f,[filename '.pdf'],'-dpdf');
