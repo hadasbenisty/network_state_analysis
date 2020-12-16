@@ -60,11 +60,11 @@ cent_notweighted.community = communitylabels;
 cent_weighted.participation=participation_coef(W,communitylabels,0);
 cent_weighted.community = communitylabels;
 configParams.maxInd=10;
-[diffusion_map, Lambda] = calcDiffusionMapDW(W,configParams);
-cent_weighted.diffmap = diffusion_map(find(Lambda>1e-5,1)-1,:)';
-cent_weighted.second_eigval = Lambda(2);
-[diffusion_map, Lambda] = calcDiffusionMapDW(W>0,configParams);
-cent_notweighted.diffmap = diffusion_map(find(Lambda>1e-5,1)-1,:)';
-cent_notweighted.second_eigval = Lambda(2);
+[diffusion_map, Lambda] = calcDiffusionMap(W,configParams);
+cent_weighted.diffmap = diffusion_map(1,:)';
+cent_weighted.second_eigval = 1-Lambda(2);
+[diffusion_map, Lambda] = calcDiffusionMap(W>0,configParams);
+cent_notweighted.diffmap = diffusion_map(1,:)';
+cent_notweighted.second_eigval = 1-Lambda(2);
 
 end

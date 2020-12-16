@@ -5,7 +5,7 @@ load(fullfile(files(1).folder, files(1).name), 'par_inds');
 [~, ~, ~, ~,grid_map_final_index] = getAllenClusteringLabelsGrid(par_inds, G);
 
 c=unique(grid_map_final_index);
-
+c=c(discard_inds+1);
 for k=1:size(Xvec,2)
 P=nan(size(grid_map_final_index));
 for i=2:length(c)

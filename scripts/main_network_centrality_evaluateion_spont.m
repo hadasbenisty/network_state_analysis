@@ -1,12 +1,13 @@
 function main_network_centrality_evaluateion_spont
 addpath(genpath('../utils'));
+addpath(genpath('D:/utils/affinity/'))
 addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
-animals={'xx', 'xt' 'xu' 'xs' 'xw' 'xz'};%,%
+animals={'xt' 'xu' 'xs'  'xw' 'xx', 'xz'};%,%
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-similarity_name = {  'fullcorr'};%'corr',
-signames = {'Grid4' 'Allen','LSSC'};
+similarity_name = {'L2','pearson_corr', 'cov'};%'corr',,  'fullcorr'
+signames = {'Grid4' };% ,'LSSC'};
 
 for sim_i = 1:length(similarity_name)
     
@@ -63,10 +64,10 @@ for state_i = 1:length(statenames)
                     currdata = currdata(:,tt);
                 end
             end
-            if exist(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '_day' num2str(days2process(dd)) '.mat']),'file')
-                load(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '_day' num2str(days2process(dd)) '.mat']),'W_corr')
+            if exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '_day' num2str(days2process(dd)) '.mat']),'file')
+                load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '_day' num2str(days2process(dd)) '.mat']),'W_corr')
             else
-                W_corr = measure_weights_partial(currdata, simname);
+                W_corr = measure_weights(currdata, simname);
             end
             [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
             save(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '_day' num2str(days2process(dd)) '.mat']),'W_corr',...
@@ -99,7 +100,10 @@ for s=1:length(signames)
         case 'Grid4'
             load('X:\Hadas\Meso-imaging\lan\xspsych\spt\xs_31_grid4_dfff.mat','par_inds');
             [parcels_names.Grid4, regionLabel.Grid4, finalindex.Grid4, regionLabel.nameslegend, maskByAllen.Grid4, labelsbyallen.Grid4] = getAllenClusteringLabelsGrid(par_inds, 4);
-
+ii = discard_inds;
+        
+        parcels_names.Grid4=parcels_names.Grid4(ii);
+        regionLabel.Grid4=regionLabel.Grid4(ii);
     end
 end
 load(['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\',animal,'_spont_data_3states_dfff.mat'],...
@@ -125,13 +129,20 @@ for state_i = 1:length(statenames)
                 data.(signames{sig_i}) = data.(signames{sig_i})(:,tt);
             end
         end
-        if exist(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
-            load(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
-        else
-            W_corr = measure_weights_partial(data.(signames{sig_i}), simname);
+        
+        
+        if strcmp(signames{sig_i}, 'Grid4')
+        data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
         end
-        [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
-        save(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr',...
+        if exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
+            load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
+        else
+            W_corr = measure_weights(data.(signames{sig_i}), simname);
+        end
+[cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @id);
+        
+%         [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
+        save(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr',...
             'cent_corr_weighted',...
             'cent_corr_notweighted', 'G_corr', 'names_corr');
         

@@ -13,7 +13,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [W, well_modeled_nodes] = measure_weights_partial(data, method, params)
+function [W, well_modeled_nodes] = measure_weights(data, method, params)
 if isempty(data)
 W=[];
 return;
@@ -42,20 +42,25 @@ if ~exist('param', 'var')
             params.zero_diag = true;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
-            case 'fullcorr'
+            case {'fullcorr'}
             params.is_symmetric = true;
-            params.zero_diag = true;
+            params.zero_diag = false;
+            params.how_to_normalize = false;
+            params.how_to_normalize = 'rows';
+case {'L2'}
+            params.is_symmetric = true;
+            params.zero_diag = false;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
     end
 end
 
 switch method
-    case 'fullcorr'
-        W = corr(data');
-       
+    case 'pearson_corr'
+        [W,pval] = corr(data');
+    case 'cov'
 
-    case 'corr'
+    case 'partial_corr'
         %W = abs(corr(data'));
         pairs = nchoosek(1:size(data, 1), 2);
         rho=[];
@@ -75,6 +80,13 @@ switch method
         well_modeled_nodes = find(R2_full > params.modeled_energy_th);
         R2_partial = train_partial_model(data, params);
         W = calc_contribution(R2_full, R2_partial, params.modeled_energy_th);
+case 'L2'
+dParams.kNN = 50;
+dParams.self_tune = 0;
+dParams.verbose = false;
+dParams.isuper = 1; %whether to perform supercharging in rann32 (0 = no)
+
+W = calcAffinityMat(data.', dParams);
 end
 
 if params.is_symmetric
