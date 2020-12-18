@@ -213,7 +213,7 @@ sitOff_int1=sitOff_int(idx1);
 %finalize the times to get sustained state only
 sitOn_final=sitOn_int1+params.TimeSinceSitOn;
 sitOff_final=sitOff_int1-params.TimeBeforeSitOff;
-if 0
+
     %% do change point detection on pupil and face to get pupil high/low arousal or face high/low movement times during sustained quiescence state
     %get Z-thresholds based on pupil data during quiescence, when mouse
     %isn't moving and when aripuffs are not given
@@ -274,7 +274,7 @@ if 0
         Pupil_HighArousal_OnT_int, Pupil_HighArousal_OffT_int, ...
         Pupil_LowArousal_OnT_int, Pupil_LowArousal_OffT_int);
     
-end
+
 %% plot on and off times for sanity check
 %plot locomotion state on off times
 h=figure; %initialize a figure that will contain subplots of behavior with on/off times markers for identified states
@@ -307,7 +307,7 @@ if exist('allEvts','var')
 end
 plot([t_imaging(1),t_imaging(1)], ylimits, 'm');
 plot([t_imaging(end),t_imaging(end)], ylimits, 'm');
-if 0
+
     %plot pupil and face state on off times
     set(0,'CurrentFigure',h);ax3=subplot(6,1,3);plot(pupil_time,pupil_Norm);ylimits=ylim; hold on; title('PupilHighState+q');
     for tt=1:length(Pupil_HighArousal_On_final_qu)
@@ -333,20 +333,34 @@ if 0
         plot([Pupil_LowArousal_Off_final_loc(tt),Pupil_LowArousal_Off_final_loc(tt)], ylimits, 'r');
     end
     linkaxes([ax1, ax2, ax3,ax4,ax5,ax6],'x');
-end
+
 
 close all;
-% Hadas/lav, change this once we get pupil data
 
-segments_arousals.low_pup_q = [sitOn_final; sitOff_final]';
-segments_arousals.high_pup_q = [];
-segments_arousals.low_pup_q = [wheelOn_final; wheelOff_final]';
-
-%     segments_arousals.low_pup_q = [Pupil_LowArousal_On_final_qu Pupil_LowArousal_Off_final_qu];
-%     segments_arousals.high_pup_q = [Pupil_HighArousal_On_final_qu Pupil_HighArousal_Off_final_qu];
-%     segments_arousals.high_pup_l = [Pupil_HighArousal_On_final_loc Pupil_HighArousal_Off_final_loc];
-save(fullfile(procdatapath, animalpath, 'arousal_state_ITI_segemts.mat'),...
-    'segments_arousals');
+    segments_arousals.low_pup_q = [Pupil_LowArousal_On_final_qu Pupil_LowArousal_Off_final_qu];
+    segments_arousals.high_pup_q = [Pupil_HighArousal_On_final_qu Pupil_HighArousal_Off_final_qu];
+    segments_arousals.high_pup_l = [Pupil_HighArousal_On_final_loc Pupil_HighArousal_Off_final_loc];
+    
+    % extract pupil traces by state and concatenate  
+    statesnames = fieldnames(segments_arousals);
+    for statei=1:length(statesnames)
+        pupvals.(statesnames{statei})=[];
+        wheelvals.(statesnames{statei})=[];
+        for k=1:size(segments_arousals.(statesnames{statei}),1)
+            t1=findClosestDouble(segments_arousals.low_pup_q(k,1), pupil_time);
+            t2=findClosestDouble(segments_arousals.low_pup_q(k,2), pupil_time);
+            pupvals.(statesnames{statei}) = cat(1, pupvals.(statesnames{statei}), ...
+                pupil_Norm(t1:t2));
+            
+            t1=findClosestDouble(segments_arousals.low_pup_q(k,1), wheel_time);
+            t2=findClosestDouble(segments_arousals.low_pup_q(k,2), wheel_time);
+            wheelvals.(statesnames{statei}) = cat(1, wheelvals.(statesnames{statei}), ...
+                wheel_speed(t1:t2));
+            
+        end
+    end
+    save(fullfile(procdatapath, animalpath, 'arousal_state_ITI_segemts.mat'),...
+        'segments_arousals','pupvals','wheelvals');
 
 
 
