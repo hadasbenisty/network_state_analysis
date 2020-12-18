@@ -41,5 +41,5 @@ newWheelOffTimes=wheelOff_t1(1:end-1);
 idx2=(find((newWheelOnTimes-newWheelOffTimes)>=minSitDuration))+1;
 idx3=intersect(idx1,idx2);
 
-wheelOn_int=wheelOn_t1(idx3,1);
-wheelOff_int=wheelOff_t1(idx3,1);
+wheelOn_int=wheelOn_t1(idx3);
+wheelOff_int=wheelOff_t1(idx3);
