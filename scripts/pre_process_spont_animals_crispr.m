@@ -11,7 +11,7 @@ spike2path = 'X:\CardinLab\Antara\AnalyzedData\';
 animals_db = get_animals_meta_data_by_csv;
 procdatapath = 'X:\Hadas\Meso-imaging\crispr\meso_results\ProcessingDirectory';
 %% Detects 3 arousal states per animal
-for k=1:length(animals_db.folder_list)
+for k=3%1:length(animals_db.folder_list)
     extract_sustained_state(datapath, procdatapath, spike2path, animals_db.folder_list{k});
 end
 end
@@ -19,7 +19,7 @@ end
 
 
 function extract_sustained_state(datapath, procdatapath, spike2path, animalpath)
-params.fspupilcam=30; %pupil sampling rate
+params.fspupilcam=10; %pupil sampling rate
 params.fsspike2=5000;% spike2 sampling rate
 params.TimeSinceLocOn=3;%for locomotion state, minimum time since locomotion onset
 params.TimeBeforeLocOff=3;%for locomotion state, minimum time before locomotion offset
@@ -33,7 +33,9 @@ params.minSitDuration=3;%minimum sit duration during quiescnece state
 mkNewDir(fullfile(procdatapath, animalpath));
 disp(animalpath);
 spike2path = fullfile(spike2path, animalpath);
-pupilfile = dir(fullfile(spike2path, '*_proc.mat'));
+%change this
+
+pupilfile = dir(fullfile(datapath,animalpath, 'pupil_clean.mat'));
 if  isempty(pupilfile)
     disp('no pupil file');
     return;
@@ -61,18 +63,33 @@ if ~isfield(timing, 'airpuffstart')
 end
 t_imaging = timing.bluestart;
 dat=load(fullfile(pupilfile.folder, pupilfile.name));
-if ~isfield(dat.proc, 'pupil')
+
+
+if ~isfield(dat, 'areaii')
     warning('No Pupil on face map');
     return;
 end
-pupil_Norm = dat.proc.pupil.area;
+
+pupil_Norm = dat.areaii;
 pupil_Norm = pupil_Norm - mean(pupil_Norm);
 pupil_Norm = pupil_Norm/std(pupil_Norm);
-pupil_time = timing.pupilcamstart;
-if length(pupil_time) ~= length(pupil_Norm)
-    warning('Pupil cam ticks are bad');
-    return;
+
+if size(pupil_Norm,1)==length(timing.pupilcamstart(1:end))
+    timing.pupilcamstart=timing.pupilcamstart(1:end);
+elseif size(pupil_Norm,1)<length(timing.pupilcamstart(1:end))
+    timing.pupilcamstart=timing.pupilcamstart(1:size(pupil_Norm,1));
+    timing.pupilcamend=timing.pupilcamend(1:size(pupil_Norm,1));
+elseif size(pupil_Norm,1)>length(timing.pupilcamstart(1:end))
+    pupil_Norm=pupil_Norm(1:length(timing.pupilcamstart),:);
 end
+pupil_time=timing.pupilcamstart;
+
+% if length(pupil_time) ~= length(pupil_Norm)
+%     warning('Pupil cam ticks are bad');
+%     return;
+% end
+disp('pupil cam ticks are good')
+
 wheel_speed = channels_data.wheelspeed;
 wheel_time = (1:length(wheel_speed))/params.fsspike2;
 
@@ -81,7 +98,8 @@ wheel_time = (1:length(wheel_speed))/params.fsspike2;
 %onset, some criterion s before locomotion offset, excluding any events (airpuff/stim)
 
 
-[~, ~, ~, wheelOn, wheelOff] = get_wheel_on_off(raw_channels.data(:,5).', params.fsspike2, wheel_time, timing);
+wheelOn=timing.wheelOn;
+wheelOff = timing.wheelOff;
 
 %find wheel on and wheel off times during imaging period only
 minRunDur=params.minRunDuration+params.TimeSinceLocOn+params.TimeBeforeLocOff; %minimum actual locomotion duration including time since locomotion onset, time before locomotion offset and the minimum time period for data analysis
@@ -140,7 +158,7 @@ wheelOff_final=wheelOff_int1-params.TimeBeforeLocOff;
 
 %% queiscence should be at least some criterion s long with some criterion s since locomotion offset
 %and some criterion s before subsequent locomotion onset,excluding any events (airpuff/stim)
-sitOn=[0;wheelOff(1:end-1)']; %use 0 as the first sit on time;
+sitOn=([0;wheelOff(1:end-1)])'; %use 0 as the first sit on time;
 sitOff=wheelOn';%use wheelOn times as sit off times;
 
 %find sit on and sit off times during imaging period only
@@ -217,7 +235,7 @@ sitOff_final=sitOff_int1-params.TimeBeforeSitOff;
     %% do change point detection on pupil and face to get pupil high/low arousal or face high/low movement times during sustained quiescence state
     %get Z-thresholds based on pupil data during quiescence, when mouse
     %isn't moving and when aripuffs are not given
-    b1DoPlot=1; blDoPlotDuration=1:4000; smoothWin=1;
+    b1DoPlot=1; blDoPlotDuration=1:800; smoothWin=1;
     pupilTime_Idx=cell(1,length(sitOn_int));
     for st=1:length(sitOn_int)
         pupilTime_Idx{st}=find(pupil_time>sitOn_int(st) & pupil_time <sitOff_int(st));
@@ -232,7 +250,7 @@ sitOff_final=sitOff_int1-params.TimeBeforeSitOff;
     [h1,Pupil_HighArousal_OnTStamp,Pupil_HighArousal_OffTStamp ] =changepoints1(pupil_Norm', zthres_High,pupil_time,params.fspupilcam,smoothWin, b1DoPlot,blDoPlotDuration,0);
     [h2,Pupil_LowArousal_OnTStamp,Pupil_LowArousal_OffTStamp ] =changepoints1(-pupil_Norm', -zthres_Low,pupil_time,params.fspupilcam,smoothWin, b1DoPlot,blDoPlotDuration,1);
     %get z thresholds based on face data during quiescence only
-    if ~isempty(face_Norm)
+    if 0%~isempty(face_Norm)&exist(fullfile(procdatapath, animalpath, '*proc.mat'), 'file')
         b1DoPlot=1; blDoPlotDuration=1:4000; smoothWin=1;
         face_quiescence=face_Norm(pupilTime_quiescence);
         zthres_High=quantile(face_quiescence,0.60);
@@ -335,7 +353,7 @@ plot([t_imaging(end),t_imaging(end)], ylimits, 'm');
     linkaxes([ax1, ax2, ax3,ax4,ax5,ax6],'x');
 
 
-close all;
+
 
     segments_arousals.low_pup_q = [Pupil_LowArousal_On_final_qu Pupil_LowArousal_Off_final_qu];
     segments_arousals.high_pup_q = [Pupil_HighArousal_On_final_qu Pupil_HighArousal_Off_final_qu];
@@ -355,7 +373,7 @@ close all;
             t1=findClosestDouble(segments_arousals.low_pup_q(k,1), wheel_time);
             t2=findClosestDouble(segments_arousals.low_pup_q(k,2), wheel_time);
             wheelvals.(statesnames{statei}) = cat(1, wheelvals.(statesnames{statei}), ...
-                wheel_speed(t1:t2));
+                wheel_speed(t1:t2)');
             
         end
     end
