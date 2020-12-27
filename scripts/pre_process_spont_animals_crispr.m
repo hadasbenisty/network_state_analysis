@@ -53,15 +53,18 @@ end
 %% for each mouse, load spont and airpuff folders and perform correlations
 load(fullfile(datapath, animalpath, 'smrx_signals_v2.mat'),'channels_data',...
     'timing');
-if ~isfield(timing, 'airpuffstart')
-    if isfield(timing, 'stimstart') % if this is a vis session, save vis as airpuff so we'll know to avoid these segmenents
-        timing.airpuffstart = timing.stimstart;
-        timing.airpuffend = timing.stimend;
-    else
-        timing.airpuffstart = [];
-        timing.airpuffend = [];
-    end
+timing.events2ignorestart = [];
+timing.events2ignoreend = [];
+if isfield(timing, 'stimstart') % if this is a vis session
+     timing.events2ignorestart = reshape(timing.stimstart, 1, []);
+     timing.events2ignoreend = reshape(timing.stimend, 1, []);
 end
+
+if isfield(timing, 'airpuffstart')
+    timing.events2ignorestart = cat(2, timing.events2ignorestart,reshape(timing.airpuffstart, 1, [])); 
+    timing.events2ignoreend = cat(2, timing.events2ignoreend,reshape(timing.airpuffend, 1, [])); 
+end
+  
 t_imaging = timing.bluestart;
 dat=load(fullfile(pupilfile.folder, pupilfile.name));
 
@@ -126,8 +129,8 @@ if isempty(wheelOn_t1)
     disp('no wheel on');
     return;
 end
-allEvtsStart=sort(timing.airpuffstart,'ascend')';
-allEvtsEnd=sort(timing.airpuffend,'ascend')';
+allEvtsStart=sort(timing.events2ignorestart,'ascend')';
+allEvtsEnd=sort(timing.events2ignoreend,'ascend')';
 
 allEvtsPre=allEvtsStart-params.TimeSinceEvent;
 allEvtsPost=allEvtsEnd+params.TimeSinceEvent;
@@ -200,8 +203,8 @@ sitOn_t1=(tmpOn(:))'; sitOff_t1=(tmpOff(:))';
 
 %find sit on off  times when airpuffs are not given
 
-allEvtsStart=sort(timing.airpuffstart,'ascend')';
-allEvtsEnd=sort(timing.airpuffend,'ascend')';
+allEvtsStart=sort(timing.events2ignorestart,'ascend')';
+allEvtsEnd=sort(timing.events2ignoreend,'ascend')';
 
 allEvtsPre=allEvtsStart-params.TimeSinceEvent;
 allEvtsPost=allEvtsEnd+params.TimeSinceEvent;
