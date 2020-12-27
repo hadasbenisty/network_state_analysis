@@ -9,7 +9,8 @@ addpath(genpath('../../utils'));
 datapath = 'X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
 spike2path = 'X:\CardinLab\Antara\AnalyzedData\';
 animals_db = get_animals_meta_data_by_csv;
-procdatapath = 'X:\Hadas\Meso-imaging\crispr\meso_results\ProcessingDirectory';
+procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr';
+mkNewDir(procdatapath);
 %% Detects 3 arousal states per animal
 for k=3%1:length(animals_db.folder_list)
     extract_sustained_state(datapath, procdatapath, spike2path, animals_db.folder_list{k});
@@ -365,13 +366,13 @@ plot([t_imaging(end),t_imaging(end)], ylimits, 'm');
         pupvals.(statesnames{statei})=[];
         wheelvals.(statesnames{statei})=[];
         for k=1:size(segments_arousals.(statesnames{statei}),1)
-            t1=findClosestDouble(segments_arousals.low_pup_q(k,1), pupil_time);
-            t2=findClosestDouble(segments_arousals.low_pup_q(k,2), pupil_time);
+            t1=findClosestDouble(segments_arousals.(statesnames{statei})(k,1), pupil_time);
+            t2=findClosestDouble(segments_arousals.(statesnames{statei})(k,2), pupil_time);
             pupvals.(statesnames{statei}) = cat(1, pupvals.(statesnames{statei}), ...
                 pupil_Norm(t1:t2));
             
-            t1=findClosestDouble(segments_arousals.low_pup_q(k,1), wheel_time);
-            t2=findClosestDouble(segments_arousals.low_pup_q(k,2), wheel_time);
+            t1=findClosestDouble(segments_arousals.(statesnames{statei})(k,1), wheel_time);
+            t2=findClosestDouble(segments_arousals.(statesnames{statei})(k,2), wheel_time);
             wheelvals.(statesnames{statei}) = cat(1, wheelvals.(statesnames{statei}), ...
                 wheel_speed(t1:t2)');
             
