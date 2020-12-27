@@ -3,9 +3,10 @@ addpath(genpath('../centrality_measures/'));
 addpath(genpath('..\gspbox'));
 if ~exist('processWfun','var')
 processWfun = @process_sim;
+% processWfun = @id;
 end
 if ~exist('th','var')
-th = 5;
+th = 7;
 end
 W = feval(processWfun, W1, th);
 
@@ -53,12 +54,13 @@ for k=1:length(c)
     cent_weighted.(c{k}) = centrality(G, c{k}, wstr{k}, wnums{k}+eps);    
     cent_notweighted.(c{k}) = centrality(G, c{k});
 end
-
+if ~isempty(communitylabels)
 cent_notweighted.participation=participation_coef((W~=0),communitylabels,0);
 cent_notweighted.community = communitylabels;
 
 cent_weighted.participation=participation_coef(W,communitylabels,0);
 cent_weighted.community = communitylabels;
+end
 configParams.maxInd=10;
 [diffusion_map, Lambda] = calcDiffusionMap(W,configParams);
 cent_weighted.diffmap = diffusion_map(1,:)';

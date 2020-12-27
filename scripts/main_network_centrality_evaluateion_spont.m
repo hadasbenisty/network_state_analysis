@@ -6,8 +6,8 @@ addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 animals={'xt' 'xu' 'xs'  'xw' 'xx', 'xz'};%,%
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-similarity_name = {'L2','pearson_corr', 'cov'};%'corr',,  'fullcorr'
-signames = {'Grid4' };% ,'LSSC'};
+similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
+signames = {'Grid4'  };% ,'LSSC'};'Allen'
 
 for sim_i = 1:length(similarity_name)
     
@@ -111,13 +111,14 @@ load(['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\',animal,'_spo
 disp(animal);
 for state_i = 1:length(statenames)
     disp(statenames{state_i})
-    if 0&&exist(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,'Allen.mat']),'file') &&...
-            exist(fullfile(outputfolder,[animal '_partial_corr_',statenames{state_i} ,'LSSC.mat']),'file')
-        continue;
-    end
     
     data = eval(statenames{state_i});
     for sig_i = 1:length(signames)
+        if 0&exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
+        continue;
+        end
+    
+    
         data.(signames{sig_i}) = data.(signames{sig_i})(:, all(~isnan(data.(signames{sig_i}))));
         if any(isnan(data.(signames{sig_i})(:)))
             tt = ~isnan(sum(data.(signames{sig_i})));
@@ -134,18 +135,19 @@ for state_i = 1:length(statenames)
         if strcmp(signames{sig_i}, 'Grid4')
         data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
         end
-        if exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
+        if 0& exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
         else
             W_corr = measure_weights(data.(signames{sig_i}), simname);
         end
-[cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @id);
+        for th=100:50:850
+[cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @process_sim, th);
         
 %         [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
-        save(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr',...
+        save(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '_' num2str(th) '.mat']),'W_corr',...
             'cent_corr_weighted',...
             'cent_corr_notweighted', 'G_corr', 'names_corr');
-        
+        end
     end
     
 end

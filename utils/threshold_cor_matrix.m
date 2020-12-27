@@ -1,17 +1,17 @@
-function aff_mat = threshold_cor_matrix(W)
+function aff_mat = threshold_cor_matrix(W,k)
 
-
-if size(W,1)>100
-    params.knn =100;
-    nn_dist = sort(abs(W.'),'ascend').';
+params.knn =k;
+% if size(W,1)>100
+% %     params.knn =100;
+%     nn_dist = sort(abs(W.'),'descend').';
+%     v = nn_dist(:, 1:params.knn);
+%     th= 3*median(v(:));
+% else
+    
+    nn_dist = sort(abs(W.'),'descend').';
     v = nn_dist(:, 1:params.knn);
-    th= 3*median(v(:));
-else
-    params.knn =10;
-    nn_dist = sort(abs(W.'),'ascend').';
-    v = nn_dist(:, 1:params.knn);
-    th= 2*median(v(:));
-end
+    th= median(v(:));
+% end
 aff_mat=abs(W);
 aff_mat(abs(W)<th)=0;
 % params.knn =round(size(W,1)/3);

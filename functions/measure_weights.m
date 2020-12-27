@@ -44,12 +44,12 @@ if ~exist('param', 'var')
             params.how_to_normalize = 'rows';
         case {'pearson_corr','cov'}
             params.is_symmetric = true;
-            params.zero_diag = false;
+            params.zero_diag = true;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
         case {'L2'}
             params.is_symmetric = true;
-            params.zero_diag = false;
+            params.zero_diag = true;
             params.how_to_normalize = false;
             params.how_to_normalize = 'rows';
     end

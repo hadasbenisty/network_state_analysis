@@ -1,8 +1,8 @@
-function plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
+function ha = plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
 CondColors=get_3states_colors;
 figure;
 for state_i = 1:length(statenames)
-    subplot(3,1,state_i);
+    ha(state_i) = subplot(3,1,state_i);
     
     set(gcf,'renderer','Painters');
     h=barwitherr(S(:,:, state_i),M(:,:, state_i));title(statenames{state_i});
