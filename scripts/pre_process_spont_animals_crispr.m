@@ -11,9 +11,11 @@ animals_db = get_animals_meta_data_by_csv;
 procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr';
 mkNewDir(procdatapath);
 %% Detects 3 arousal states per animal
-% for k=1:length(animals_db.folder_list)
-%     extract_sustained_state(spike2path, procdatapath, animals_db.folder_list{k});
-% end
+for k=1:length(animals_db.folder_list)
+if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
+    extract_sustained_state(spike2path, procdatapath, animals_db.folder_list{k});
+end
+end
 dover=false;
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
 concatenateSpontPeriodsByState(dover, animals_db, dffpath, spike2path, procdatapath)
@@ -26,20 +28,20 @@ regionLabel.Allen = allen_parcels.regionNum;
 regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 % cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
 statesnames = {'low_pup_q','high_pup_q','high_pup_l'};
-for ir=2:length(animals_db.animal_list)
+for ir=1:length(animals_db.animal_list)
     animal=animals_db.folder_list{ir};
     disp(animal)
     resfile = fullfile(procdatapath,  animal, 'spont_data_3states_dfff.mat');
-    if exist(resfile, 'file')&&~dover
+    if (exist(resfile, 'file')&&~dover) || animals_db.isgoodpupil_list(ir)==find(strcmp(animals_db.isgoodpupil_lut, 'BAD'))
         continue;
     end
     spike2pth = fullfile(spike2path, animal);
     
     
     for si = 1:length(statesnames)
-        eval([statesnames{si} '.Allen = []']);
-        eval([statesnames{si} '.Grid4 = []']);
-        eval([statesnames{si} '.t = []']);
+        eval([statesnames{si} '.Allen = [];']);
+        eval([statesnames{si} '.Grid4 = [];']);
+        eval([statesnames{si} '.t = [];']);
     end
     
     %     fsimaing=10;
