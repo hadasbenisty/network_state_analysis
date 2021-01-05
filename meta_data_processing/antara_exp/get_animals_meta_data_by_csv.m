@@ -17,6 +17,9 @@ else
     cohort_list = zeros(N,1);
     folder_list = cell(N,1);
     type_list = zeros(N,1);
+    isgoodpupil_list = ones(size(T.ispupilgood));
+    isgoodpupil_list(T.ispupilgood==0) = 2;
+    isgoodpupil_lut = {'GOOD','BAD'};
     for k = 1:N
         animal_list(k) = find(strcmp(animal_lut, T.animal{k}));
         sessionsid_list(k) = find(strcmp(sessionsids_lut, T.sessid{k}));
@@ -34,5 +37,8 @@ else
     animals_db.sessionsids_lut=sessionsids_lut;
     animals_db.cohort_lut=cohort_lut;
     animals_db.type_lut=type_lut;
+
+animals_db.isgoodpupil_lut=isgoodpupil_lut;
+animals_db.isgoodpupil_list=isgoodpupil_list;
     save('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
 end
