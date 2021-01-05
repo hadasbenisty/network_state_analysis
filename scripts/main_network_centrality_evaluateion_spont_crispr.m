@@ -7,11 +7,14 @@ addpath(genpath('../graphs_analysis'));
 animals_db = get_animals_meta_data_by_csv;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
-signames = {'Allen' 'Grid4'  };% ,'LSSC'};'Allen'
+signames = {'Grid4'  };% ;'Allen'
 
 for sim_i = 1:length(similarity_name)
     
     for ai = 1:length(animals_db.folder_list)
+        if animals_db.isgoodpupil_list(ai)==find(strcmp(animals_db.isgoodpupil_lut, 'BAD'))
+            continue;
+        end
         %         eval_weights_and_cent_perday(similarity_name{sim_i}, animals{ai}, statenames);
         eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames);
     end
@@ -135,16 +138,16 @@ for state_i = 1:length(statenames)
         
         if strcmp(signames{sig_i}, 'Grid4')
             data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
-            thT=150;
+            thT=50:50:400;
         else
-            thT=7;
+            thT=5:2:23;
         end
-        if 0& exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
-            load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
-        else
+%         if  exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
+%             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
+%         else
             W_corr = measure_weights(data.(signames{sig_i}), simname);
-        end
-        for th=thT%100:50:850
+%         end
+        for th=thT
             [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @process_sim, th);
             
             %         [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
