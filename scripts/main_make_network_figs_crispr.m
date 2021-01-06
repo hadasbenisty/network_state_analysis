@@ -418,7 +418,7 @@ files = dir(['X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
 signals_names = { 'Grid4' };%'Allen' 
-thvals = [7 150];
+thvals = [7 200];
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
     mkNewDir(fullfile(outputfiggolder,cent_features{l}));

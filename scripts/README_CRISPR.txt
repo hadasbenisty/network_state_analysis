@@ -26,7 +26,7 @@ Figure 1 - behavior - main_make_behavior_figs_crispr.m
                       Uses arousal_state_ITI_segemts files (step 1 of analysis)
 
 !!Figure 2 - activity            - main_make_activity_figs.m
-!!Figure 4 - Network             - main_make_network_figs.m
+Figure 4 - Network             - main_make_network_figs.m
 
 
 

@@ -1,5 +1,5 @@
 function A = scores_to_heatmap_grid(Xvec, animal, G)
-files = dir(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '*_grid4.mat']);
+files = dir(['X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx*_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
 [~, ~, ~, ~,grid_map_final_index] = getAllenClusteringLabelsGrid(par_inds, G);

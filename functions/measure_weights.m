@@ -37,7 +37,7 @@ if ~exist('param', 'var')
             params.folds_num = 5;
             params.model = 'lasso';
             params.modeled_energy_th = 0.1;
-        case 'partial_corr'
+        case {'partial_corr','partial_corr_mean_pop'}
             params.is_symmetric = true;
             params.zero_diag = true;
             params.how_to_normalize = false;
@@ -64,6 +64,22 @@ switch method
         [ij_norm, ji_norm] = meshgrid( diag(inner_products) );
         W            = inner_products ./ (sqrt(ij_norm .* ji_norm)+eps);
            
+
+case 'partial_corr_mean_pop'
+        %W = abs(corr(data'));
+        pairs = nchoosek(1:size(data, 1), 2);
+        rho=[];
+        for i=1:size(pairs,1)
+            X=data(pairs(i,1),:).';
+            Y=data(pairs(i,2),:).';
+            Z=data(setdiff(1:size(data,1),[pairs(i,1),pairs(i,2)]),:).'; %for partial correlation, all parcels outside of the pair to control for
+            rho(i)=partialcorr(X,Y,nanmean(Z,2));
+            clear vars X Y Z
+        end
+        %        C=corr(xet');
+        %         C = C.*(C>th);
+        W=squareform(rho);
+        W(eye(size(W)) == 1) = 1;
 
     case 'partial_corr'
         %W = abs(corr(data'));

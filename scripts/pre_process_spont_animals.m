@@ -8,9 +8,9 @@ addpath(genpath('../../meta_data_processing'));
 addpath(genpath('../../utils'));
 animals={'xx' 'xt' 'xu'   'xs' 'xw'  'xz' };%
 %% Detects 3 arousal states per animal per day
-% for ai = 1:length(animals)
-%     extract_spont_imaging_by_state(animals{ai});
-% end
+for ai = 1:length(animals)
+    extract_spont_imaging_by_state(animals{ai});
+end
 dover=true;
 concatenateSpontPeriodsByState(dover, animals);
 end

@@ -4,8 +4,8 @@ addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 stateslabels = { 'low_pup_q', 'high_pup_q', 'high_pup_l'};
-cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector' 
-similarity_name = {'pearson_corr',    };%'corr',,  'fullcorr' 'cov''partial_corr' 
+cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
+similarity_name = {'partial_corr'   };%'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
 doover=false;
 %% Fig 4 - network
 % plot_centrality_res_per_day(animals, outputfiggolder, stateslabels);
@@ -15,7 +15,7 @@ for sim_i = 1:length(similarity_name)
     %     plot_similarity_res(similarity_name{sim_i}, animals, outputfiggolder, stateslabels);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels, doover);
-   
+    
 end
 end
 
@@ -453,16 +453,35 @@ end
 function plot_centrality_res(cent_features, simname, animals, outputfiggolder, statenames, doover)
 
 outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality_' simname];
+files = dir(['X:\Hadas\Meso-imaging\lan\' animals{1} 'psych\spt\' animals{1} '*_grid4.mat']);
+load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
-signals_names = { 'Grid4'};%'LSSC''Allen'
+signals_names = {  'Allen'};%'LSSC' 'Grid4'
+
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
     mkNewDir(fullfile(outputfiggolder,cent_features{l}));
 end
 
 for sig_i = 1:length(signals_names)
+  
+        
+    switch signals_names{sig_i}
+        case 'Allen'
+            [parcels_names, parcels_region_labels, final_index, region_lut, grid_map_final_index, labelsbyallen] = get_allen_meta_parcels;
+            visualinds = 1;
+            somatoinds = 14;
+            visualinds = find(parcels_region_labels==1);
+            somatoinds = find(parcels_region_labels==6);
+             thT=7:2:23;
+        case 'Grid4'
+            [parcels_names, parcels_region_labels, final_index_grid, region_lut, grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(par_inds, 4);
+            visualinds = find(parcels_region_labels==1);
+            somatoinds = find(parcels_region_labels==6);
+            thT=200;%50:50:400;
+    end
     for isweigted = 1:length(isweigtedstr)
-        for th=100:50:850
+        for th=thT
             sumfile = fullfile(outputfolder, ['summary_centrality_', signals_names{sig_i}, '_' isweigtedstr{isweigted} 'th' num2str(th) '.mat']);
             if  ~doover&&exist(sumfile, 'file')
                 load(sumfile);
@@ -488,6 +507,40 @@ for sig_i = 1:length(signals_names)
             end
             
             legstr = {'Low Q', 'High Q', 'Loc'};
+            if ~strcmp(signals_names{sig_i}, 'LSSC')
+                for l=find(~strcmp(cent_features, 'second_eigval'))
+                    diffspont = spon_states(:, :, 3, l) - spon_states(:,:,1,l);
+                    difftrial = correct_states(:,:,:,l) - incorrect_states(:,:,:,l);
+                    figure;
+                    for state_i = 1:length(statenames)
+                        subplot(1,3,state_i);
+                        x=mean(difftrial([visualinds somatoinds], :, state_i),2);
+                        y=mean(diffspont([visualinds somatoinds], :),2);
+                        lmodel = fitlm(x(:), y(:));
+                        
+                        hold all;
+                        for ri = 1:7
+                            nds = find(parcels_region_labels==ri);
+                            x=mean(difftrial(nds, :, state_i),2);
+                        y=mean(diffspont(nds, :),2);
+                        plot(x,y,'.', 'MarkerSize',12);
+                        end
+                        p=plot(lmodel);
+                        p(1).Visible='off';
+                        legend(region_lut)
+                        ylabel([legstr{3} ' minus ' legstr{1} ' spont']);
+                        xlabel(['corr-inc on ' legstr{state_i}]);
+                       
+                        title(sprintf('%s R2=%2.2f', legstr{state_i},  lmodel.Rsquared.Ordinary));
+%                         leg = get(gca,'Legend');leg.Visible='off';
+                        
+                    end
+                    suptitle(['Trend of diffs for ' cent_features{l} ' visual and somato'])
+                    set(gcf, 'Position',[176         177        1598         627]);
+                    mysave(gcf, fullfile(outputfiggolder,cent_features{l}, ['diffs_',cent_features{l},'_'  isweigtedstr{isweigted}  '_' signals_names{sig_i} '_th' num2str(th)]));
+
+                end
+            end
             if strcmp(signals_names{sig_i},'Allen')
                 parcels_names = get_allen_meta_parcels;
                 N = size(correct_states,2);

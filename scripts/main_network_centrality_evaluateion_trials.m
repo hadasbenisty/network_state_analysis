@@ -8,7 +8,7 @@ animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 doover=0;maxdays=30;
-similarity_name = { 'pearson_corr'  };%'corr',,  'fullcorr' 'cov','partial_corr'
+similarity_name = {'partial_corr_mean_pop'  };%'partial_corr''pearson_corr' 'corr',,  'fullcorr' 'cov','partial_corr'
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for sim_i = 1:length(similarity_name)
 for ai = 1:length(animals)
@@ -121,23 +121,34 @@ function eval_weights_and_cent(maxdays, doover, simname, animal, statenames, pre
 
 outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality_' simname];
 mkNewDir(outputfolder);
-signalnames = {'Grid4' };%'grid4' ,'LSSC''Allen'
+signalnames = {'Allen' 'Grid4'  };%
 disp(animal)
 for sig_i = 1:length(signalnames)
+    switch signalnames{sig_i} 
+        case 'Allen'
+            thvals = 5:2:23;
+        case 'Grid4'
+            thvals = 150:50:400;
+    end
     for state_i = 1:length(statenames)
         disp(statenames{state_i})
-        for th= 100:50:850
+        for th= thvals
         if topermind == 0
+            Wcorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_correct_' signalnames{sig_i} '_W.mat']);
+            Wincorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_incorrect_' signalnames{sig_i} '_W.mat']);
             corrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_correct_' signalnames{sig_i} '_' num2str(th) '.mat']);
             incorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_incorrect_' signalnames{sig_i} '_' num2str(th) '.mat']);
             
         else
-            corrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_correct_' signalnames{sig_i} 'perm' num2str(topermind) '_' num2str(th) '.mat']);
-            incorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_incorrect_' signalnames{sig_i} 'perm' num2str(topermind) '_' num2str(th) '.mat']);
+            Wcorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_correct_' signalnames{sig_i} 'perm' num2str(topermind) '_W.mat']);
+            Wincorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_incorrect_' signalnames{sig_i} 'perm' num2str(topermind) '_W.mat']);
+            corrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_correct_' signalnames{sig_i} '_' num2str(th) '.mat']);
+            incorrfile = fullfile(outputfolder,[animal '_' statenames{state_i} ,'_trials_incorrect_' signalnames{sig_i} '_' num2str(th) '.mat']);
+            
         end
-        if exist(corrfile, 'file') && exist(incorrfile, 'file')&&~doover
-            load(corrfile, 'W_corr_cor');
-            load(incorrfile,'W_corr_inc');
+        if exist(Wcorrfile, 'file') && exist(Wincorrfile, 'file')&&~doover
+            load(Wcorrfile, 'W_corr_cor');
+            load(Wincorrfile,'W_corr_inc');
             roi_names=[];
             load(['X:\Hadas\Meso-imaging\lan\' animal 'psych\spt\' animal '_trial_imaging_time_traces_global_' signalnames{sig_i} '_dfff.mat'], ...
                 'roi_names','region_labels');
@@ -147,6 +158,8 @@ for sig_i = 1:length(signalnames)
                 get_trial_data(signalnames{sig_i}, animal, statenames{state_i}, pre_trial_time_start, pre_trial_time_end, topermind, maxdays);
             W_corr_cor = measure_weights(data_corr, simname);
             W_corr_inc = measure_weights(data_inco, simname);
+            save(Wcorrfile, 'W_corr_cor');
+            save(Wincorrfile,'W_corr_inc');
         end
         
             % correct
