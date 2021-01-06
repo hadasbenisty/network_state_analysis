@@ -3,20 +3,20 @@ function pre_process_spont_animals_crispr
 %of 3 arousal states: low pupil + quiescence, high pupil + quiescence, high pupil + locomotion
 
 
-addpath(genpath('../pre_processing'));
-addpath(genpath('../meta_data_processing'));
-addpath(genpath('../../utils'));
+addpath(genpath('..\pre_processing'));
+addpath(genpath('..\meta_data_processing'));
+addpath(genpath('..\..\utils'));
 spike2path = 'X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
 animals_db = get_animals_meta_data_by_csv;
 procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr';
-mkNewDir(procdatapath);
+%mkNewDir(procdatapath);
 %% Detects 3 arousal states per animal
 for k=1:length(animals_db.folder_list)
 if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
     extract_sustained_state(spike2path, procdatapath, animals_db.folder_list{k});
 end
 end
-dover=false;
+dover=true;
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
 concatenateSpontPeriodsByState(dover, animals_db, dffpath, spike2path, procdatapath)
 end

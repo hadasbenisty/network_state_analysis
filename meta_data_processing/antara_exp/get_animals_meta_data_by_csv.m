@@ -17,8 +17,10 @@ else
     cohort_list = zeros(N,1);
     folder_list = cell(N,1);
     type_list = zeros(N,1);
+    
     isgoodpupil_list = ones(size(T.ispupilgood));
-    isgoodpupil_list(T.ispupilgood==0) = 2;
+    isgoodpupil_list(T.ispupilgood>1) = 2;
+    isgoodpupil_list(T.ispupilgood<=1) = 1;
     isgoodpupil_lut = {'GOOD','BAD'};
     for k = 1:N
         animal_list(k) = find(strcmp(animal_lut, T.animal{k}));
