@@ -7,7 +7,7 @@ addpath(genpath('../graphs_analysis'));
 animals_db = get_animals_meta_data_by_csv;
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
-signames = {'Grid4'  };% ;'Allen'
+signames = {'Grid4' 'Allen' };% ;
 
 for sim_i = 1:length(similarity_name)
     
