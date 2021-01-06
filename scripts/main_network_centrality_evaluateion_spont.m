@@ -6,8 +6,8 @@ addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 animals={'xt' 'xu' 'xs'  'xw' 'xx', 'xz'};%,%
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-similarity_name = {'partial_corr_mean_pop'  };%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
-signames = {'Allen' 'Grid4'  };% ,'LSSC'};
+similarity_name = {'pearson_corr'  'partial_corr_mean_pop'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
+signames = {'LSSC' 'Allen'  };% ,};'Grid4'  
 
 for sim_i = 1:length(similarity_name)
     
@@ -33,6 +33,11 @@ for s=1:length(signames)
             regionLabel.Allen = allen_parcels.regionNum;
             regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
         case 'LSSC'
+             [~, allen_parcels] = getParcellsByLansAllansAtlas;
+            [parcels_names.Allen, ~, finalindex.Allen, regionLabel.nameslegend, maskByAllen.Allen] = get_allen_meta_parcels;
+            
+            regionLabel.Allen = allen_parcels.regionNum;
+            regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
             % [roiLabelsbyAllen_gal, regionLabel.Gal, maskByAllen_gal, maskByAllen.Gal] = get_gal_parcels_lables(animal);
             [parcels_names.LSSC, ~, ~, regionLabel.LSSC] = get_gal_meta_parcels_by_allen(parcels_names.Allen, maskByAllen.Allen, ...
                 regionLabel.Allen, animal);

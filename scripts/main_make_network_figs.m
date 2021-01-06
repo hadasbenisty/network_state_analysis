@@ -5,7 +5,9 @@ addpath(genpath('../meta_data_processing/'));
 animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 stateslabels = { 'low_pup_q', 'high_pup_q', 'high_pup_l'};
 cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
-similarity_name = {'partial_corr'   };%'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
+% similarity_name = {'partial_corr_mean_pop'  };%'partial_corr' 'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
+similarity_name = {'pearson_corr'  'partial_corr_mean_pop'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
+
 doover=false;
 %% Fig 4 - network
 % plot_centrality_res_per_day(animals, outputfiggolder, stateslabels);
@@ -456,7 +458,7 @@ outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\networ
 files = dir(['X:\Hadas\Meso-imaging\lan\' animals{1} 'psych\spt\' animals{1} '*_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
-signals_names = {  'Allen'};%'LSSC' 'Grid4'
+signals_names = {'Allen' 'LSSC' };%'LSSC' 'Grid4'
 
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
@@ -474,6 +476,12 @@ for sig_i = 1:length(signals_names)
             visualinds = find(parcels_region_labels==1);
             somatoinds = find(parcels_region_labels==6);
              thT=7:2:23;
+             case 'LSSC'
+%                  [parcels_names, finalindex_gal, maskByGal, regionLabel_gal, roiLabelsbyAllen_gal] = get_gal_meta_parcels_by_allen(parcels_names, maskByAllen, ...
+%     regionLabel, animals);
+             visualinds = [];
+            somatoinds = [];
+            thT=7:2:23;%50:50:400;
         case 'Grid4'
             [parcels_names, parcels_region_labels, final_index_grid, region_lut, grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(par_inds, 4);
             visualinds = find(parcels_region_labels==1);
@@ -491,20 +499,20 @@ for sig_i = 1:length(signals_names)
                 save(sumfile, 'correct_states', 'incorrect_states', 'spon_states',...
                     'correct_heatmap', 'incorrect_heatmap', 'spont_heatmap');
             end
-            diffmapind = find(strcmp(cent_features, 'diffmap'));
-            if ~isempty(diffmapind)
-                for j=1:length(statenames)
-                    if sig_i==1
-                        spon_states(:, :, j, diffmapind) = sign(diffmap2clusters(spon_states(:, :, j, diffmapind)));
-                        correct_states(:, :, j, diffmapind) = sign(diffmap2clusters(correct_states(:, :, j, diffmapind)));
-                        incorrect_states(:, :, j, diffmapind) = sign(diffmap2clusters(incorrect_states(:, :, j, diffmapind)));
-                    end
-                    
-                    spont_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(spont_heatmap(:,:,:,j,diffmapind)));
-                    correct_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(correct_heatmap(:,:,:,j,diffmapind)));
-                    incorrect_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(incorrect_heatmap(:,:,:,j,diffmapind)));
-                end
-            end
+%             diffmapind = find(strcmp(cent_features, 'diffmap'));
+%             if ~isempty(diffmapind)
+%                 for j=1:length(statenames)
+%                     if sig_i==1
+%                         spon_states(:, :, j, diffmapind) = sign(diffmap2clusters(spon_states(:, :, j, diffmapind)));
+%                         correct_states(:, :, j, diffmapind) = sign(diffmap2clusters(correct_states(:, :, j, diffmapind)));
+%                         incorrect_states(:, :, j, diffmapind) = sign(diffmap2clusters(incorrect_states(:, :, j, diffmapind)));
+%                     end
+%                     
+%                     spont_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(spont_heatmap(:,:,:,j,diffmapind)));
+%                     correct_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(correct_heatmap(:,:,:,j,diffmapind)));
+%                     incorrect_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(incorrect_heatmap(:,:,:,j,diffmapind)));
+%                 end
+%             end
             
             legstr = {'Low Q', 'High Q', 'Loc'};
             if ~strcmp(signals_names{sig_i}, 'LSSC')
