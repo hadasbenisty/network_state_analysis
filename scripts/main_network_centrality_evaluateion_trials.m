@@ -8,9 +8,7 @@ animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 pre_trial_time_start = -3;
 pre_trial_time_end = -.1;
 doover=0;maxdays=30;
-similarity_name = {'pearson_corr'  'partial_corr_mean_pop'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
-
-% similarity_name = {'partial_corr_mean_pop'  };%'partial_corr''pearson_corr' 'corr',,  'fullcorr' 'cov','partial_corr'
+similarity_name = { 'pearson_corr'};
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for sim_i = 1:length(similarity_name)
 for ai = 1:length(animals)
@@ -123,14 +121,14 @@ function eval_weights_and_cent(maxdays, doover, simname, animal, statenames, pre
 
 outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality_' simname];
 mkNewDir(outputfolder);
-signalnames = {'Allen' 'LSSC'};%'Allen' 'Grid4'  
+signalnames = {'Allen' 'LSSC' 'Grid4'  };%'Allen' 
 disp(animal)
 for sig_i = 1:length(signalnames)
     switch signalnames{sig_i} 
         case {'Allen','LSSC'}
-            thvals = 5:2:23;
+            thvals =[inf 5:2:23];
         case 'Grid4'
-            thvals = 150:50:400;
+            thvals = [inf 150:50:400];
     end
     for state_i = 1:length(statenames)
         disp(statenames{state_i})

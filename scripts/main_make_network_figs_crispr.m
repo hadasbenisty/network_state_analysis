@@ -417,7 +417,7 @@ outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_cris
 files = dir(['X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
-signals_names = { 'Grid4' };%'Allen' 
+signals_names = { 'Grid4' 'Allen' };%
 thvals = [7 200];
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
@@ -432,12 +432,12 @@ for sig_i = 1:length(signals_names)
             somatoinds = 14;
             visualinds = find(parcels_region_labels==1);
             somatoinds = find(parcels_region_labels==6);
-            thT=5:2:23;
+            thT=[Inf 5:2:23];
         case 'Grid4'
             [parcels_names, parcels_region_labels, final_index_grid, region_lut, grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(par_inds, 4);
             visualinds = find(parcels_region_labels==1);
             somatoinds = find(parcels_region_labels==6);
-            thT=50:50:400;
+            thT=[Inf 50:50:400];
     end
     typesvals = unique(animals.type_list);
     for ti = 1:length(typesvals)
@@ -453,6 +453,16 @@ for sig_i = 1:length(signals_names)
                     save(sumfile, 'spon_states',...
                         'spont_heatmap');
                 end
+                
+                %% corr matrices
+        N=plot_corr_matrices_allen_crispr(outputfolder, animals.folder_list(animalsinds),statenames, th, parcels_names, parcels_region_labels);
+        simnames=simname;
+        simnames(simname=='_')=' ';
+        suptitle(['N=' num2str(N) ' ' simnames ' by states k=' num2str(th)]); 
+        set(gcf,'Position',[680         104        1107         874]);
+          mysave(gcf, fullfile(outputfiggolder,['W_'   signals_names{sig_i} '_th' num2str(th) '_' curtype]));
+    
+          
                 diffmapind = find(strcmp(cent_features, 'diffmap'));
                 if ~isempty(diffmapind)
                     for j=1:length(statenames)

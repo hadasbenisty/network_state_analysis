@@ -12,29 +12,18 @@
 
 function [data] = process_spike2_smr2mat(datapath, outputpath, data_time_stamp_filename, channels_num)
 
-
-
 display(strcat('loading in smr: ',data_time_stamp_filename));
-if ~exist(fullfile(datapath, strcat(data_time_stamp_filename)),'file')
-        warning('Could not find file');
-        data=[];
-        return
+if ~exist(char(data_time_stamp_filename),'file')
+        error('Could not find file');
 end
-fhand = CEDS64Open(fullfile(datapath, strcat(data_time_stamp_filename,'.smr')));
+fhand = CEDS64Open(fullfile(strcat(data_time_stamp_filename)));
 if fhand == -1
-    fhand = CEDS64Open(fullfile(datapath, strcat(data_time_stamp_filename,'.smrx')));
-    if fhand == -1
-        fhand = CEDS64Open(fullfile(datapath, strcat(data_time_stamp_filename)));
-        if fhand == -1
-        error('Could not open file');
-        end
-    end
+    error('Could not open file');
 end
 ichannum = min(CEDS64MaxChan(fhand),channels_num);
-dsec=CEDS64TimeBase(fhand); % sec per time tick
 [~, filename] = fileparts(data_time_stamp_filename);
 
-if ~exist(fullfile(outputpath, strcat(filename,'.mat')), 'file')
+if ~exist(char(fullfile(outputpath, strcat(filename,'.mat'))),'file')
     maxTimeTicks = CEDS64ChanMaxTime(fhand,1);
     data=nan(maxTimeTicks./20+1,ichannum);
     
@@ -43,20 +32,17 @@ if ~exist(fullfile(outputpath, strcat(filename,'.mat')), 'file')
         %file name, channel num, max num of points, start and end time in ticks
         [fRead,fVals,fTime] = CEDS64ReadWaveF(fhand,ichan,maxTimeTicks,0,maxTimeTicks);
         if fRead > 0
-        data(fTime+1:fRead+fTime,ichan)=fVals;
+        data(1:fRead,ichan)=fVals;
         readF(ichan) = fRead;
         end
     end
-   
-    data=data(1:readF(1)+fTime,:);
-    timestamp=(1:20:maxTimeTicks)'*dsec;
-    totallength=min(size(data,1),length(timestamp));
-    data=data(1:totallength,:);
-    timestamp=timestamp(1:totallength);
-    save(fullfile(outputpath, strcat(filename,'.mat')),'data','timestamp','-v7.3');
+    if length(unique(readF))~=1
+        error('Not all channels have the same length!');
+    end
+    save(char(fullfile(outputpath, strcat(filename,'.mat'))),'data','-v7.3');
 else
-    load(fullfile(outputpath, strcat(filename,'.mat')),'data','timestamp');
+    load(char(fullfile(outputpath, strcat(filename,'.mat'))),'data');
 end
 CEDS64CloseAll();
 
-% binarize raw data from smr file
+

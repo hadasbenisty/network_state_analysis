@@ -5,10 +5,10 @@ addpath(genpath('../meta_data_processing/'));
 animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 stateslabels = { 'low_pup_q', 'high_pup_q', 'high_pup_l'};
 cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
-% similarity_name = {'partial_corr_mean_pop'  };%'partial_corr' 'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
-similarity_name = {'pearson_corr'  'partial_corr_mean_pop'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
+% similarity_name = {'partial_corr_mean_pop'  };% 'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
+similarity_name = {'partial_corr_mean_pop' 'partial_corr'   'pearson_corr'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
 
-doover=false;
+doover=true;
 %% Fig 4 - network
 % plot_centrality_res_per_day(animals, outputfiggolder, stateslabels);
 for sim_i = 1:length(similarity_name)
@@ -116,42 +116,29 @@ for i=1:length(animals)
 end
 end
 
-function [correct_states, incorrect_states, spon_states, correct_heatmap, incorrect_heatmap, spont_heatmap]  = load_centrality_results(cent_features, signame, outputfolder, animals, statenames, isweigtedstr, th)
-switch signame
-    case 'Allen'
-        
-        spon_states = nan(23, length(animals), length(statenames), length(cent_features));
-        correct_states = nan(23, length(animals), length(statenames), length(cent_features));
-        incorrect_states = nan(23, length(animals), length(statenames), length(cent_features));
-    case 'LSSC'
-        for ai=1:length(animals)
-            q=load(['X:\Hadas\Meso-imaging\lan\' animals{ai} 'psych\spt\gal\' animals{ai} '_finalparcellation_Gal.mat'], 'final_par_mask');
-            mask=q.final_par_mask;
-            mask(:,1:128,:) = 0;
-            N=0;
-            for n=1:size(mask,3)
-                if any(any(mask(:,:,n)>0))
-                    N=N+1;
-                end
-            end
-            spon_states{ai} = nan(N,  length(statenames), length(cent_features));
-            correct_states{ai} = nan(N,  length(statenames), length(cent_features));
-            incorrect_states{ai} = nan(N,  length(statenames), length(cent_features));
-        end
-    case 'Grid4'
-        ii=discard_inds;
-        spon_states = nan(length(ii), length(animals), length(statenames), length(cent_features));
-        correct_states = nan(length(ii), length(animals), length(statenames), length(cent_features));
-        incorrect_states = nan(length(ii), length(animals), length(statenames), length(cent_features));
-        
-end
+function [correct_states, incorrect_states, spon_states, correct_heatmap, ...
+    incorrect_heatmap, spont_heatmap, spon_states_grid4, correct_states_grid4, ...
+    incorrect_states_grid4]  = load_centrality_results(cent_features, signame, outputfolder, animals, statenames, isweigtedstr, th)
+
+spon_states = nan(23, length(animals), length(statenames), length(cent_features));
+correct_states = nan(23, length(animals), length(statenames), length(cent_features));
+incorrect_states = nan(23, length(animals), length(statenames), length(cent_features));
+
+
 spont_heatmap = nan(256,256, length(animals),length(statenames), length(cent_features));
 correct_heatmap = nan(256,256, length(animals),length(statenames), length(cent_features));
 incorrect_heatmap = nan(256,256, length(animals),length(statenames), length(cent_features));
 
-
-
-
+if strcmp(signame, 'Grid4')
+    spon_states_grid4 = nan(921, length(animals), length(statenames), length(cent_features));
+    correct_states_grid4 = nan(921, length(animals), length(statenames), length(cent_features));
+    incorrect_states_grid4 = nan(921, length(animals), length(statenames), length(cent_features));
+    
+else
+    spon_states_grid4=[];
+    correct_states_grid4=[];
+    incorrect_states_grid4=[];
+end
 
 
 for i=1:length(animals)
@@ -164,16 +151,13 @@ for i=1:length(animals)
         xx=[];
         for cent_i = 1:length(cent_features)
             xx(:, cent_i) = centvals.(cent_features{cent_i});
-            if strcmp(signame,'Allen')||strcmp(signame,'Grid4')
-                correct_states(:, i, state_i, cent_i) = centvals.(cent_features{cent_i});
-            else
-                correct_states{i}(:, state_i, cent_i) = centvals.(cent_features{cent_i});
+            if strcmp(signame, 'Grid4')
+                correct_states_grid4(:, i, state_i, cent_i) =  xx(:, cent_i);
             end
         end
         Pvec = scores_to_heatmap(xx, 0,signame, animal);
-        for cent_i = 1:length(cent_features)
-            correct_heatmap(:,:,i, state_i,cent_i)=Pvec(:,:,cent_i);
-        end
+        correct_states(:,i,state_i,:) = heatmap2score_allen(Pvec);
+        
         % trial incorrect
         load(fullfile(outputfolder,[animal '_',statenames{state_i} ,'_trials_incorrect_' signame '_' num2str(th)]), ...
             ['cent_corr_' isweigtedstr ]);
@@ -181,13 +165,14 @@ for i=1:length(animals)
         xx=[];
         for cent_i = 1:length(cent_features)
             xx(:, cent_i) = centvals.(cent_features{cent_i});
-            if strcmp(signame,'Allen')||strcmp(signame,'Grid4')
-                incorrect_states(:, i, state_i, cent_i) = centvals.(cent_features{cent_i});
-            else
-                incorrect_states{i}(:, state_i, cent_i) = centvals.(cent_features{cent_i});
+            if strcmp(signame, 'Grid4')
+                incorrect_states_grid4(:, i, state_i, cent_i) =  xx(:, cent_i);
             end
         end
         Pvec = scores_to_heatmap(xx, 0,signame, animal);
+        incorrect_states(:,i,state_i,:) = heatmap2score_allen(Pvec);
+        
+        
         for cent_i = 1:length(cent_features)
             incorrect_heatmap(:,:,i, state_i,cent_i)=Pvec(:,:,cent_i);
         end
@@ -202,13 +187,12 @@ for i=1:length(animals)
         xx=[];
         for cent_i = 1:length(cent_features)
             xx(:, cent_i) = centvals.(cent_features{cent_i});
-            if strcmp(signame,'Allen')||strcmp(signame,'Grid4')
-                spon_states(:, i, state_i, cent_i) = centvals.(cent_features{cent_i});
-            else
-                spon_states{i}(:, state_i, cent_i) = centvals.(cent_features{cent_i});
+            if strcmp(signame, 'Grid4')
+                spon_states_grid4(:, i, state_i, cent_i) =  xx(:, cent_i);
             end
         end
         Pvec = scores_to_heatmap(xx, 0,signame, animal);
+        spon_states(:, i, state_i, :) = heatmap2score_allen(Pvec);
         for cent_i = 1:length(cent_features)
             spont_heatmap(:,:,i, state_i,cent_i)=Pvec(:,:,cent_i);
         end
@@ -458,7 +442,7 @@ outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\networ
 files = dir(['X:\Hadas\Meso-imaging\lan\' animals{1} 'psych\spt\' animals{1} '*_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
-signals_names = {'Allen' 'LSSC' };%'LSSC' 'Grid4'
+signals_names = {'Grid4' 'LSSC' 'Allen' };%'LSSC'
 
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
@@ -466,124 +450,167 @@ for l = 1:length(cent_features)
 end
 
 for sig_i = 1:length(signals_names)
-  
-        
+    
+    [parcels_names, parcels_region_labels, final_index, region_lut, grid_map_final_index, labelsbyallen] = get_allen_meta_parcels;
+    visualinds = 1;
+    somatoinds = 14;
+    visualinds = find(parcels_region_labels==1);
+    somatoinds = find(parcels_region_labels==6);
     switch signals_names{sig_i}
         case 'Allen'
-            [parcels_names, parcels_region_labels, final_index, region_lut, grid_map_final_index, labelsbyallen] = get_allen_meta_parcels;
-            visualinds = 1;
-            somatoinds = 14;
-            visualinds = find(parcels_region_labels==1);
-            somatoinds = find(parcels_region_labels==6);
-             thT=7:2:23;
-             case 'LSSC'
-%                  [parcels_names, finalindex_gal, maskByGal, regionLabel_gal, roiLabelsbyAllen_gal] = get_gal_meta_parcels_by_allen(parcels_names, maskByAllen, ...
-%     regionLabel, animals);
-             visualinds = [];
-            somatoinds = [];
-            thT=7:2:23;%50:50:400;
+            
+            thT=[inf 5:2:23];
+        case 'LSSC'
+            %                  [parcels_names, finalindex_gal, maskByGal, regionLabel_gal, roiLabelsbyAllen_gal] = get_gal_meta_parcels_by_allen(parcels_names, maskByAllen, ...
+            %     regionLabel, animals);
+            
+            thT=[inf 5:2:23];
         case 'Grid4'
-            [parcels_names, parcels_region_labels, final_index_grid, region_lut, grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(par_inds, 4);
-            visualinds = find(parcels_region_labels==1);
-            somatoinds = find(parcels_region_labels==6);
-            thT=200;%50:50:400;
+            
+            [~, parcels_region_labels_grid4] = getAllenClusteringLabelsGrid(par_inds, 4);
+            visualinds_grid4 = find(parcels_region_labels_grid4==1);
+            somatoinds_grid4 = find(parcels_region_labels_grid4==6);
+            thT=[inf 200 150 250:50:400];%50:50:400;
     end
-    for isweigted = 1:length(isweigtedstr)
-        for th=thT
+    
+    
+    for th=thT
+        plot_corr_matrices_allen(outputfolder, animals,statenames, th, parcels_names, parcels_region_labels);
+        simnames=simname;
+        simnames(simname=='_')=' ';
+        suptitle([simnames ' by states k=' num2str(th)]); 
+        set(gcf,'Position',[680         104        1107         874]);
+          mysave(gcf, fullfile(outputfiggolder,['W_'   signals_names{sig_i} '_th' num2str(th) ]));
+    
+        for isweigted = 1:length(isweigtedstr)
+            
+            
             sumfile = fullfile(outputfolder, ['summary_centrality_', signals_names{sig_i}, '_' isweigtedstr{isweigted} 'th' num2str(th) '.mat']);
             if  ~doover&&exist(sumfile, 'file')
                 load(sumfile);
             else
                 [correct_states, incorrect_states, spon_states, correct_heatmap,...
-                    incorrect_heatmap, spont_heatmap] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals, statenames, isweigtedstr{isweigted}, th);
+                    incorrect_heatmap, spont_heatmap, spon_states_grid4,...
+                    correct_states_grid4, incorrect_states_grid4] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals, statenames, isweigtedstr{isweigted}, th);
                 save(sumfile, 'correct_states', 'incorrect_states', 'spon_states',...
-                    'correct_heatmap', 'incorrect_heatmap', 'spont_heatmap');
+                    'correct_heatmap', 'incorrect_heatmap', 'spont_heatmap', ...
+                    'spon_states_grid4', 'correct_states_grid4', 'incorrect_states_grid4');
             end
-%             diffmapind = find(strcmp(cent_features, 'diffmap'));
-%             if ~isempty(diffmapind)
-%                 for j=1:length(statenames)
-%                     if sig_i==1
-%                         spon_states(:, :, j, diffmapind) = sign(diffmap2clusters(spon_states(:, :, j, diffmapind)));
-%                         correct_states(:, :, j, diffmapind) = sign(diffmap2clusters(correct_states(:, :, j, diffmapind)));
-%                         incorrect_states(:, :, j, diffmapind) = sign(diffmap2clusters(incorrect_states(:, :, j, diffmapind)));
-%                     end
-%                     
-%                     spont_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(spont_heatmap(:,:,:,j,diffmapind)));
-%                     correct_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(correct_heatmap(:,:,:,j,diffmapind)));
-%                     incorrect_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(incorrect_heatmap(:,:,:,j,diffmapind)));
-%                 end
-%             end
+            %             diffmapind = find(strcmp(cent_features, 'diffmap'));
+            %             if ~isempty(diffmapind)
+            %                 for j=1:length(statenames)
+            %                     if sig_i==1
+            %                         spon_states(:, :, j, diffmapind) = sign(diffmap2clusters(spon_states(:, :, j, diffmapind)));
+            %                         correct_states(:, :, j, diffmapind) = sign(diffmap2clusters(correct_states(:, :, j, diffmapind)));
+            %                         incorrect_states(:, :, j, diffmapind) = sign(diffmap2clusters(incorrect_states(:, :, j, diffmapind)));
+            %                     end
+            %
+            %                     spont_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(spont_heatmap(:,:,:,j,diffmapind)));
+            %                     correct_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(correct_heatmap(:,:,:,j,diffmapind)));
+            %                     incorrect_heatmap(:,:,:,j,diffmapind) = sign(diffmap2clusters(incorrect_heatmap(:,:,:,j,diffmapind)));
+            %                 end
+            %             end
             
             legstr = {'Low Q', 'High Q', 'Loc'};
-            if ~strcmp(signals_names{sig_i}, 'LSSC')
-                for l=find(~strcmp(cent_features, 'second_eigval'))
-                    diffspont = spon_states(:, :, 3, l) - spon_states(:,:,1,l);
-                    difftrial = correct_states(:,:,:,l) - incorrect_states(:,:,:,l);
-                    figure;
-                    for state_i = 1:length(statenames)
-                        subplot(1,3,state_i);
-                        x=mean(difftrial([visualinds somatoinds], :, state_i),2);
-                        y=mean(diffspont([visualinds somatoinds], :),2);
-                        lmodel = fitlm(x(:), y(:));
-                        
-                        hold all;
-                        for ri = 1:7
-                            nds = find(parcels_region_labels==ri);
-                            x=mean(difftrial(nds, :, state_i),2);
+            for l=1:2%find(~strcmp(cent_features, 'second_eigval'))
+                diffspont = spon_states(:, :, 3, l) - spon_states(:,:,1,l);
+                difftrial = correct_states(:,:,:,l) - incorrect_states(:,:,:,l);
+                figure;
+                for state_i = 1:length(statenames)
+                    subplot(1,3,state_i);
+                    x=mean(difftrial([visualinds somatoinds], :, state_i),2);
+                    y=mean(diffspont([visualinds somatoinds], :),2);
+                    lmodel = fitlm(x(:), y(:));
+                    
+                    hold all;
+                    for ri = 1:7
+                        nds = find(parcels_region_labels==ri);
+                        x=mean(difftrial(nds, :, state_i),2);
                         y=mean(diffspont(nds, :),2);
                         plot(x,y,'.', 'MarkerSize',12);
-                        end
-                        p=plot(lmodel);
-                        p(1).Visible='off';
-                        legend(region_lut)
-                        ylabel([legstr{3} ' minus ' legstr{1} ' spont']);
-                        xlabel(['corr-inc on ' legstr{state_i}]);
-                       
-                        title(sprintf('%s R2=%2.2f', legstr{state_i},  lmodel.Rsquared.Ordinary));
-%                         leg = get(gca,'Legend');leg.Visible='off';
-                        
                     end
-                    suptitle(['Trend of diffs for ' cent_features{l} ' visual and somato'])
-                    set(gcf, 'Position',[176         177        1598         627]);
-                    mysave(gcf, fullfile(outputfiggolder,cent_features{l}, ['diffs_',cent_features{l},'_'  isweigtedstr{isweigted}  '_' signals_names{sig_i} '_th' num2str(th)]));
-
-                end
-            end
-            if strcmp(signals_names{sig_i},'Allen')
-                parcels_names = get_allen_meta_parcels;
-                N = size(correct_states,2);
-                Mc = squeeze(nanmean(correct_states,2));
-                Mi = squeeze(nanmean(incorrect_states,2));
-                Sc = squeeze(nanstd(correct_states,[],2));
-                Si = squeeze(nanstd(incorrect_states,[],2));
-                for l=find(~strcmp(cent_features, 'second_eigval'))
-                    M=[];S=[];
-                    for k=1:length(statenames)
-                        M(:,1,k) = Mc(:,k,l);
-                        M(:, 2, k) = Mi(:,k,l);
-                        S(:, 1, k) = Sc(:,k,l)/sqrt(N-1);
-                        S(:, 2, k) = Si(:,k,l)/sqrt(N-1);
-                    end
-                    plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
-                    suptitle(cent_features{l});
-                    mysave(gcf, fullfile(outputfiggolder,cent_features{l},['trial_',cent_features{l},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+                    p=plot(lmodel);
+                    p(1).Visible='off';
+                    legend(region_lut)
+                    ylabel([legstr{3} ' minus ' legstr{1} ' spont']);
+                    xlabel(['corr-inc on ' legstr{state_i}]);
+                    
+                    title(sprintf('%s R2=%2.2f', legstr{state_i},  lmodel.Rsquared.Ordinary));
+                    %                         leg = get(gca,'Legend');leg.Visible='off';
                     
                 end
-                for ni = find(~strcmp(cent_features, 'second_eigval'))
-                    graph_overlay_allen_3conditions('', '', spon_states(:,:,1,ni),...
-                        spon_states(:,:,2,ni), spon_states(:,:,3,ni),...
-                        '',cent_features{ni},['3 states ' cent_features{ni} ' Centrality '], parcels_names,length(animals), legstr);
-                    mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, ['spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+                suptitle(['Trend of diffs for ' cent_features{l} ' visual and somato'])
+                set(gcf, 'Position',[176         177        1598         627]);
+                mysave(gcf, fullfile(outputfiggolder,cent_features{l}, ['diffs_',cent_features{l},'_'  isweigtedstr{isweigted}  '_' signals_names{sig_i} '_th' num2str(th)]));
+                if strcmp(signals_names{sig_i}, 'Grid4')
+                   diffspont = spon_states_grid4(:, :, 3, l) - spon_states_grid4(:,:,1,l);
+                difftrial = correct_states_grid4(:,:,:,l) - incorrect_states_grid4(:,:,:,l);
+                figure;
+                for state_i = 1:length(statenames)
+                    subplot(1,3,state_i);
+                    x=mean(difftrial([visualinds_grid4 somatoinds_grid4], :, state_i),2);
+                    y=mean(diffspont([visualinds_grid4 somatoinds_grid4], :),2);
+                    lmodel = fitlm(x(:), y(:));
+                    
+                    hold all;
+                    for ri = 1:7
+                        nds = find(parcels_region_labels_grid4==ri);
+                        x=mean(difftrial(nds, :, state_i),2);
+                        y=mean(diffspont(nds, :),2);
+                        plot(x,y,'.', 'MarkerSize',12);
+                    end
+                    p=plot(lmodel);
+                    p(1).Visible='off';
+                    legend(region_lut)
+                    ylabel([legstr{3} ' minus ' legstr{1} ' spont']);
+                    xlabel(['corr-inc on ' legstr{state_i}]);
+                    
+                    title(sprintf('%s R2=%2.2f', legstr{state_i},  lmodel.Rsquared.Ordinary));
+                    %                         leg = get(gca,'Legend');leg.Visible='off';
+                    
+                end
+                suptitle(['Trend of diffs for ' cent_features{l} ' visual and somato'])
+                set(gcf, 'Position',[176         177        1598         627]);
+                mysave(gcf, fullfile(outputfiggolder,cent_features{l}, ['diffs_',cent_features{l},'_'  isweigtedstr{isweigted}  '_' signals_names{sig_i} '_th' num2str(th) '_allparcels']));
+            
                     
                 end
             end
+            
+            parcels_names = get_allen_meta_parcels;
+            N = size(correct_states,2);
+            Mc = squeeze(nanmean(correct_states,2));
+            Mi = squeeze(nanmean(incorrect_states,2));
+            Sc = squeeze(nanstd(correct_states,[],2));
+            Si = squeeze(nanstd(incorrect_states,[],2));
+            for l=1:2%find(~strcmp(cent_features, 'second_eigval'))
+                M=[];S=[];
+                for k=1:length(statenames)
+                    M(:,1,k) = Mc(:,k,l);
+                    M(:, 2, k) = Mi(:,k,l);
+                    S(:, 1, k) = Sc(:,k,l)/sqrt(N-1);
+                    S(:, 2, k) = Si(:,k,l)/sqrt(N-1);
+                end
+                plot_correct_incorrect_per_state_per_parcels(M, S, parcels_names, statenames)
+                suptitle(cent_features{l});
+                mysave(gcf, fullfile(outputfiggolder,cent_features{l},['trial_',cent_features{l},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+                
+            end
+            for ni = 1:2%find(~strcmp(cent_features, 'second_eigval'))
+                graph_overlay_allen_3conditions('', '', spon_states(:,:,1,ni),...
+                    spon_states(:,:,2,ni), spon_states(:,:,3,ni),...
+                    '',cent_features{ni},['3 states ' cent_features{ni} ' Centrality '], parcels_names,length(animals), legstr);
+                mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, ['spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+                
+            end
+            
             
             %% heatmaps
             
             maskscentmeanspont = squeeze(mean(spont_heatmap,3));
             maskscentmeanc = squeeze(mean(correct_heatmap,3));
             maskscentmeani = squeeze(mean(incorrect_heatmap,3));
-            for ni = find(~strcmp(cent_features, 'second_eigval'))
+            for ni = 1:2%find(~strcmp(cent_features, 'second_eigval'))
                 % spont
                 %             plot_cent_per_animal(spont_heatmap(:,:,:,:,ni))
                 %             suptitle([cent_features{ni} ' Spont']);
@@ -666,39 +693,39 @@ for sig_i = 1:length(signals_names)
             end
             secondegvali = find(strcmp(cent_features, 'second_eigval'));
             if ~isempty(secondegvali)
-                if ~strcmp(signals_names{sig_i},'LSSC')
-                    M = squeeze(mean(spon_states(1,:,:,secondegvali),2));
-                    S = squeeze(std(spon_states(1,:,:,secondegvali),[],2))/sqrt(size(spon_states,2)-1);
-                else
-                    v=[];
-                    for ai=1:size(spon_states,2)
-                        v(:,ai) = squeeze(spon_states{ai}(1,:,secondegvali));
-                    end
-                    M=mean(v,2);
-                    S=std(v,[],2);
-                end
+                %                 if ~strcmp(signals_names{sig_i},'LSSC')
+                M = squeeze(mean(spon_states(1,:,:,secondegvali),2));
+                S = squeeze(std(spon_states(1,:,:,secondegvali),[],2))/sqrt(size(spon_states,2)-1);
+                %                 else
+                %                     v=[];
+                %                     for ai=1:size(spon_states,2)
+                %                         v(:,ai) = squeeze(spon_states{ai}(1,:,secondegvali));
+                %                     end
+                %                     M=mean(v,2);
+                %                     S=std(v,[],2);
+                %                 end
                 figure;subplot(3,1,1);plot_3_bars(M,S,statenames);
                 ylim([0 .2]);
-                if ~strcmp(signals_names{sig_i},'LSSC')
-                    M(:,1) = squeeze(mean(correct_states(1,:,:,secondegvali),2));
-                    M(:,2) = squeeze(mean(incorrect_states(1,:,:,secondegvali),2));
-                    S(:,1) = squeeze(std(correct_states(1,:,:,secondegvali),[],2));
-                    S(:,2) = squeeze(std(incorrect_states(1,:,:,secondegvali),[],2));
-                else
-                    M=[];S=[];
-                    v=[];
-                    for ai=1:length(spon_states)
-                        v(:,ai) = squeeze(correct_states{ai}(1,:,secondegvali));
-                    end
-                    M(:,1)=mean(v,2);
-                    S(:,1)=std(v,[],2);
-                    v=[];
-                    for ai=1:length(spon_states)
-                        v(:,ai) = squeeze(incorrect_states{ai}(1,:,secondegvali));
-                    end
-                    M(:,2)=mean(v,2);
-                    S(:,2)=std(v,[],2);
-                end
+                %                 if ~strcmp(signals_names{sig_i},'LSSC')
+                M(:,1) = squeeze(mean(correct_states(1,:,:,secondegvali),2));
+                M(:,2) = squeeze(mean(incorrect_states(1,:,:,secondegvali),2));
+                S(:,1) = squeeze(std(correct_states(1,:,:,secondegvali),[],2));
+                S(:,2) = squeeze(std(incorrect_states(1,:,:,secondegvali),[],2));
+                %                 else
+                %                     M=[];S=[];
+                %                     v=[];
+                %                     for ai=1:length(spon_states)
+                %                         v(:,ai) = squeeze(correct_states{ai}(1,:,secondegvali));
+                %                     end
+                %                     M(:,1)=mean(v,2);
+                %                     S(:,1)=std(v,[],2);
+                %                     v=[];
+                %                     for ai=1:length(spon_states)
+                %                         v(:,ai) = squeeze(incorrect_states{ai}(1,:,secondegvali));
+                %                     end
+                %                     M(:,2)=mean(v,2);
+                %                     S(:,2)=std(v,[],2);
+                %                 end
                 subplot(3,1,2);
                 plot_3_bars(M(:,1),S(:,1),statenames);ylim([0 .2]);title('c');
                 subplot(3,1,3);plot_3_bars(M(:,2),S(:,2),statenames);ylim([0 .2]);title('i');

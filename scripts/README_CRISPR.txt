@@ -8,6 +8,8 @@ Analysis - Spont data
 Demixing, detrending, hemodynamics removal and parcellation - done on farnam
 Input to this code: deltaF/F of parcels extracted by: Allen and a 4X4 grid
 ------------------------------
+0. Process smrx files: spike2processing_crispr.m results are save in 
+   X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData\...\smrx_signals_v3.mat
 1. Extract sustained states from smrx files: pre_process_spont_animals_crispr.m. 
    Outputs saved to data folder as arousal_state_ITI_segemts.mat
 
@@ -25,8 +27,8 @@ Make figs - saved in X:\Hadas\Meso-imaging\crispr\meso_results\figs\
 Figure 1 - behavior - main_make_behavior_figs_crispr.m
                       Uses arousal_state_ITI_segemts files (step 1 of analysis)
 
-!!Figure 2 - activity            - main_make_activity_figs.m
-Figure 4 - Network             - main_make_network_figs.m
+Figure 1 - activity            - main_make_activity_figs_crispr.m
+Figure 2 - Network             - main_make_network_figs_crispr.m
 
 
 

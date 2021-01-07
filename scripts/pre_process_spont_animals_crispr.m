@@ -12,9 +12,14 @@ procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_cri
 %mkNewDir(procdatapath);
 %% Detects 3 arousal states per animal
 for k=1:length(animals_db.folder_list)
-if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
-    extract_sustained_state(spike2path, procdatapath, animals_db.folder_list{k});
-end
+    if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
+        try
+            extract_sustained_state(spike2path, procdatapath, animals_db.folder_list{k});
+        catch
+            disp(['check ' animals_db.folder_list{k} ' has got a ptoblem']);
+        end
+        close all;
+    end
 end
 dover=true;
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
@@ -48,10 +53,10 @@ for ir=1:length(animals_db.animal_list)
     %     delay_filt=150;
     datafile_allen = fullfile(dffpath, animal,  'Ca_traces_spt_patch14_Allen_dfff.mat');
     datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch14_Grid4_dfff.mat');
-    if ~exist(fullfile(spike2pth, 'smrx_signals_v2.mat'), 'file')
+    if ~exist(fullfile(spike2pth, 'smrx_signals_v3.mat'), 'file')
         continue;
     end
-    load(fullfile(spike2pth, 'smrx_signals_v2.mat'),'timing');
+    load(fullfile(spike2pth, 'smrx_signals_v3.mat'),'timing');
     t_imaging = timing.bluestart;
     
     
@@ -122,17 +127,17 @@ if  isempty(pupilfile)
     disp('no pupil file');
     return;
 end
-if  exist(fullfile(procdatapath, animalpath, 'arousal_state_ITI_segemts.mat'), 'file')
+if  0&exist(fullfile(procdatapath, animalpath, 'arousal_state_ITI_segemts.mat'), 'file')
     disp('file exists');
     return;
 end
-if ~exist(fullfile(spike2path, animalpath, 'smrx_signals_v2.mat'), 'file')
-    warning('No smrx_signals_v2 file');
+if ~exist(fullfile(spike2path, animalpath, 'smrx_signals_v3.mat'), 'file')
+    warning('No smrx_signals_v3 file');
     return;
 end
 
 %% for each mouse, load spont and airpuff folders and perform correlations
-load(fullfile(spike2path, animalpath, 'smrx_signals_v2.mat'),'channels_data',...
+load(fullfile(spike2path, animalpath, 'smrx_signals_v3.mat'),'channels_data',...
     'timing');
 timing.events2ignorestart = [];
 timing.events2ignoreend = [];

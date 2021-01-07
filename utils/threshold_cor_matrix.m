@@ -1,5 +1,7 @@
 function aff_mat = threshold_cor_matrix(W,k)
-
+if k==inf
+    aff_mat=abs(W);
+else
 params.knn =k;
 % if size(W,1)>100
 % %     params.knn =100;
@@ -14,6 +16,7 @@ params.knn =k;
 % end
 aff_mat=abs(W);
 aff_mat(abs(W)<th)=0;
+end
 % params.knn =round(size(W,1)/3);
 
 % params.knn =5;

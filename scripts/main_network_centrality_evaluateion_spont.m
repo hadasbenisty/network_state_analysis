@@ -6,8 +6,8 @@ addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 animals={'xt' 'xu' 'xs'  'xw' 'xx', 'xz'};%,%
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-similarity_name = {'pearson_corr'  'partial_corr_mean_pop'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
-signames = {'LSSC' 'Allen'  };% ,};'Grid4'  
+similarity_name = { 'pearson_corr'};
+signames = {'LSSC' 'Allen'  'Grid4'};% ,};  
 
 for sim_i = 1:length(similarity_name)
     
@@ -78,9 +78,9 @@ for state_i = 1:length(statenames)
         
         if strcmp(signames{sig_i}, 'Grid4')
             data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
-            thvals = 150:50:400;
+            thvals = [inf 150:50:400];
         else
-            thvals=5:2:23;
+            thvals=[inf 5:2:23];
         end
         if exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '_W.mat']),'file')
             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '_W.mat']),'W_corr')

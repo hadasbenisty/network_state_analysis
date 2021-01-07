@@ -138,9 +138,9 @@ for state_i = 1:length(statenames)
         
         if strcmp(signames{sig_i}, 'Grid4')
             data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
-            thT=50:50:400;
+            thT=[Inf 50:50:400];
         else
-            thT=5:2:23;
+            thT=[Inf 5:2:23];
         end
 %         if  exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
 %             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
