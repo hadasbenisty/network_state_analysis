@@ -27,7 +27,7 @@ Emx_Cas9_m20029/m20029_Day2_Session1,F238,blueuv,Air,Emx_Cas9_m20029,Cohort 1,em
 Emx_Cas9_m20029/m20029_Day3_Session1_SponOnly,F238,blueuv,Spon,Emx_Cas9_m20029,Cohort 1,emx,3
 Emx_Cas9_m20030/m20030_Day1_Session1_SponWithAirPuff,F238,blueuv,Air,Emx_Cas9_m20030,Cohort 1,emx,0
 Emx_Cas9_m20030/m20030_Day2_Session1_SponWithAirPuff,F238,blueuv,Spon,Emx_Cas9_m20030,Cohort 1,emx,0
-Emx_Cas9_m20030/m20030_Day3_Session1_SponWithAirPuff,F238,blueuv,Air,Emx_Cas9_m20030,Cohort 1,emx,0
+Emx_Cas9_m20030/m20030_Day3_Session1_SponWithAirPuff,F238,blueuv,Air,Emx_Cas9_m20030,Cohort 1,emx,3
 Emx_Cas9_m20030/m20030_Day4_Session1,F238,blueuv,Spon,Emx_Cas9_m20030,Cohort 1,emx,0
 Emx_Cas9_m20042/m20042_Day1_Session1_SponOnly,F238,blueuv,Spon,Emx_Cas9_m20042,Cohort 1,emx,3
 Emx_Cas9_m20042/m20042_Day2_Session1_SponWithAirPuff,F238,blueuv,Air,Emx_Cas9_m20042,Cohort 1,emx,3
@@ -37,8 +37,8 @@ Emx_Cas9_m20061/m20061_Day1_Session1_SponOnly,F238,blueuv,Spon,Emx_Cas9_m20061,C
 Emx_Cas9_m20061/m20061_Day2_Session1_SponWithAirPuff,F238,blueuv,Air,Emx_Cas9_m20061,Cohort 1,emx,0
 Emx_Cas9_m20063/m20063_Day1_Session1_SponWithAirPuff,F238,blueuv,Spon,Emx_Cas9_m20063,Cohort 1,emx,1
 Emx_Cas9_m20063/m20063_Day2_Session1,F238,blueuv,Air,Emx_Cas9_m20063,Cohort 1,emx,0
-Emx_Cas9_m20063/m20063_Day3_Session1,F238,blueuv,Air,Emx_Cas9_m20063,Cohort 1,emx,0
-Emx_Cas9_m20182/m20182_Day1_Session1,F238,blueuv,Spon,Emx_Cas9_m20182,Cohort 1,emx,0
+Emx_Cas9_m20063/m20063_Day3_Session1,F238,blueuv,Air,Emx_Cas9_m20063,Cohort 1,emx,1
+Emx_Cas9_m20182/m20182_Day1_Session1,F238,blueuv,Spon,Emx_Cas9_m20182,Cohort 1,emx,3
 Emx_Cas9_m20182/m20182_Day2_Session1,F238,blueuv,Air,Emx_Cas9_m20182,Cohort 1,emx,0
 Emx_Cas9_m20182/m20182_Day3_Session1,F238,blueuv,Air,Emx_Cas9_m20182,Cohort 1,emx,0
 Emx_Cas9_m20182/m20182_Day4_Session1,F238,blueuv,Air,Emx_Cas9_m20182,Cohort 1,emx,0
@@ -46,12 +46,12 @@ Lhx6_Cas9_m23501/m23501_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m23501
 Lhx6_Cas9_m23501/m23501_Day1_Session4_AirPuff,F238,blueuv,Air,Lhx6_Cas9_m23501,Cohort 2,lhx,0
 Lhx6_Cas9_m23502/m23502_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m23502,Cohort 2,lhx,0
 Lhx6_Cas9_m23503/m23503_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m23503,Cohort 2,lhx,0
-Lhx6_Cas9_m20086/m20086_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m20086,Cohort 1,lhx,0
-Lhx6_Cas9_m20086/m20086_Day2_Session1,F238,blueuv,Air,Lhx6_Cas9_m20086,Cohort 1,lhx,0
+Lhx6_Cas9_m20086/m20086_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m20086,Cohort 1,lhx,3
+Lhx6_Cas9_m20086/m20086_Day2_Session1,F238,blueuv,Air,Lhx6_Cas9_m20086,Cohort 1,lhx,3
 Lhx6_Cas9_m22089/m20089_Day2_Session1_SponWithAirPuff,F238,blueuv,Spon,Lhx6_Cas9_m22089,Cohort 1,lhx,0
 Lhx6_Cas9_m22089/m20089_Day3_Session1,F238,blueuv,Air,Lhx6_Cas9_m22089,Cohort 1,lhx,0
 Lhx6_Cas9_m22089/m22089_Day4_Session1,F238,blueuv,Air,Lhx6_Cas9_m22089,Cohort 1,lhx,0
-Lhx6_Cas9_m22091/m22091_Day1_Session1,F238,blueuv,Air,Lhx6_Cas9_m22091,Cohort 1,lhx,0
+Lhx6_Cas9_m22091/m22091_Day1_Session1,F238,blueuv,Air,Lhx6_Cas9_m22091,Cohort 1,lhx,3
 Lhx6_Cas9_m22091/m22091_Day2_Session1_SponWithAirPuff,F238,blueuv,Air,Lhx6_Cas9_m22091,Cohort 1,lhx,0
 Lhx6_Cas9_m22091/m22091_Day3_Session1_SponWithAirPuff,F238,blueuv,Air,Lhx6_Cas9_m22091,Cohort 1,lhx,0
 Lhx6_Cas9_m22093/m22093_Day1_Session1_SponOnly,F238,blueuv,Spon,Lhx6_Cas9_m22093,Cohort 1,lhx,0
