@@ -22,6 +22,11 @@ else
     isgoodpupil_list(T.ispupilgood>1) = 2;
     isgoodpupil_list(T.ispupilgood<=1) = 1;
     isgoodpupil_lut = {'GOOD','BAD'};
+    
+    isimagingood_list = ones(size(T.isimagingood));
+    isimagingood_list(T.isimagingood>1) = 2;
+    isimagingood_list(T.isimagingood<=1) = 1;
+    isimagingood_lut = {'GOOD','BAD'};
     for k = 1:N
         animal_list(k) = find(strcmp(animal_lut, T.animal{k}));
         sessionsid_list(k) = find(strcmp(sessionsids_lut, T.sessid{k}));
