@@ -5,7 +5,8 @@ addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 animals_db = get_animals_meta_data_by_csv;
-statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
+statenames_3states = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
+statenames_2states = {'qui', 'loc'};
 similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
 signames = {'Grid4' 'Allen' };% ;
 
@@ -16,7 +17,7 @@ for sim_i = 1:length(similarity_name)
             continue;
         end
         %         eval_weights_and_cent_perday(similarity_name{sim_i}, animals{ai}, statenames);
-        eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames);
+        eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_2states);
     end
 end
 end
@@ -85,7 +86,11 @@ end
 
 function eval_weights_and_cent(signames, simname, animal, statenames)
 outputfolder = ['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
-
+if length(statenames) == 2
+    datafilename = 'spont_data_2states_dfff.mat';
+else
+    datafilename = 'spont_data_3states_dfff.mat';
+end
 mkNewDir(outputfolder);
 for s=1:length(signames)
     switch signames{s}
@@ -108,11 +113,10 @@ for s=1:length(signames)
             regionLabel.Grid4=regionLabel.Grid4(ii);
     end
 end
-if ~exist(fullfile('X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\',animal,'spont_data_3states_dfff.mat'), 'file')
+if ~exist(fullfile('X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\',animal,datafilename), 'file')
     return;
 end
-load(fullfile('X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\',animal,'spont_data_3states_dfff.mat'),...
-    'low_pup_q','high_pup_q','high_pup_l'); %#ok<NASGU>
+load(fullfile('X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\',animal,datafilename)); %#ok<NASGU>
 disp(animal);
 for state_i = 1:length(statenames)
     disp(statenames{state_i})

@@ -7,48 +7,66 @@ procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_cri
 
 outputfiggolder = 'X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\activity';
 mkNewDir(outputfiggolder);
-plot_activity_by_state(outputfiggolder, procdatapath);
+
+
+plot_activity_by_state(outputfiggolder, procdatapath, {'qui', 'loc'});
+plot_activity_by_state(outputfiggolder, procdatapath, {'low_pup_q', 'high_pup_q', 'high_pup_l'});
+
 plot_traces_events(outputfiggolder);
 end
 
 
-function plot_activity_by_state(outputfiggolder, procdatapath)
-
+function plot_activity_by_state(outputfiggolder, procdatapath, statenames)
+if length(statenames) == 2
+    datafile = 'spont_data_2states_dfff.mat';
+else
+    datafile = 'spont_data_3states_dfff.mat';
+end
 animals_db = get_animals_meta_data_by_csv;
-validsessions = animals_db.isgoodpupil_list'==find(strcmp(animals_db.isgoodpupil_lut,'GOOD'));
-
-mean_activity = nan(1, 3, length(validsessions));
-for i=1:length(validsessions)
-    if ~validsessions(i)
+mean_activity = nan(1, length(statenames), length(animals_db.folder_list));
+for i=1:length(animals_db.folder_list)
+    ispup_good =ispupilgood(animals_db, i);
+    isimaging_good =isimaginggood(animals_db, i);
+    if length(statenames) == 2
+        isvalidsession = isimaging_good;
+    else
+        isvalidsession = isimaging_good & ispup_good;
+    end
+    if ~isvalidsession
         continue;
     end
-    resfile = fullfile(procdatapath,  animals_db.folder_list{i}, 'spont_data_3states_dfff.mat');
+    resfile = fullfile(procdatapath,  animals_db.folder_list{i}, datafile);
     if isfile(resfile)
-        load(resfile,'low_pup_q',    'high_pup_q','high_pup_l');
-        if ~isempty(low_pup_q.Allen)
-            mean_activity(:, 1, i) = nanmean(nanmean(low_pup_q.Allen, 2));
-        end
-        if ~isempty(high_pup_q.Allen)
-            mean_activity(:, 2, i) = nanmean(nanmean(high_pup_q.Allen, 2));
-        end
-        if ~isempty(high_pup_l.Allen)
-            mean_activity(:, 3, i) = nanmean(nanmean(high_pup_l.Allen, 2));
+        load(resfile);
+        for state_i = 1:length(statenames)
+            dat = eval(statenames{state_i});
+            if ~isempty(dat.Allen)
+                mean_activity(:, state_i, i) = nanmean(nanmean(dat.Allen, 2));
+            end
         end
     end
 end
 for ti = 1:length(animals_db.type_lut)
     currtype = animals_db.type_lut{ti};
-    M = nanmean(mean_activity(:, :, animals_db.type_list==ti), 3);
-    S = nanstd(mean_activity(:, :, animals_db.type_list==ti), [],3);
-    N = sum(~isnan(mean_activity(1, :, animals_db.type_list==ti)), 3);
-    figure;
-    plot_3_bars(M,S./sqrt(N-1), {'low pup q','high pup q','high p loc'})
-    ylim([-0.1 .1]);
-    title(currtype);
-    ylabel('Mean \Delta F/F')
-    xlabel('Arousal State');
-    mysave(gcf, fullfile(outputfiggolder, ['mean_activity_'  currtype]));
+    M(ti,:) = nanmean(mean_activity(:, :, animals_db.type_list==ti), 3);
+    S(ti,:) = nanstd(mean_activity(:, :, animals_db.type_list==ti), [],3);
+    N(ti,:) = sum(~isnan(mean_activity(1, :, animals_db.type_list==ti)), 3);
 end
+clrs = get_3states_colors;
+if size(M,2) == 2
+    clrs = clrs([1 3], :);
+end
+
+figure;b=barwitherr(S./sqrt(N-1), M);
+for ib=1:length(b)
+    b(ib).FaceColor = clrs(ib,:);
+end
+legend(statenames);
+set(gca,'XTickLabel', animals_db.type_lut)
+ylabel('Mean \Delta F/F')
+
+mysave(gcf, fullfile(outputfiggolder, ['mean_activity_by_' num2str(length(statenames)) 'states_populations'  ]));
+
 end
 function plot_traces_events(outputfiggolder)
 

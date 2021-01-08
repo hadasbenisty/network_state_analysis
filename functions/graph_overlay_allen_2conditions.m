@@ -1,11 +1,12 @@
-function graph_overlay_allen_2conditions(strsuffix, outputpth,cond1_cat,cond3_cat,condition,name,plottitle,parcels_names,num, legstr)
+function graph_overlay_allen_2conditions(strsuffix, outputpth,cond1_cat,cond3_cat,condition,name,plottitle,parcels_names,legstr)
     %calculate average and error of condition 1
-    condition1_meanvec_parcel=mean(cond1_cat,2);
-    condition1_sevec_parcel=std(cond1_cat,0,2)./sqrt(num-1);
+    num = sum(~isnan(cond1_cat(1,:)));
+    condition1_meanvec_parcel=nanmean(cond1_cat,2);
+    condition1_sevec_parcel=nanstd(cond1_cat,0,2)./sqrt(num-1);
     
     
-    condition3_meanvec_parcel=mean(cond3_cat,2);
-    condition3_sevec_parcel=std(cond3_cat,0,2)./sqrt(num-1);
+    condition3_meanvec_parcel=nanmean(cond3_cat,2);
+    condition3_sevec_parcel=nanstd(cond3_cat,0,2)./sqrt(num-1);
     CondColors=[0,0,0;0.9961,0.5469,0;1,0,0];
     CondColors=CondColors([1 3],:);
     %get colors

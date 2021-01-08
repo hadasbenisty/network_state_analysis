@@ -2,7 +2,7 @@ function N=plot_corr_matrices_allen_crispr(outputfolder, animals,statenames, th,
 
 signame='Allen';
 %% plot corr matrices
-W_spont=nan(23,23,3, length(animals));
+W_spont=nan(23,23,length(statenames), length(animals));
 for ai=1:length(animals)
     for state_i=1:length(statenames)
         Wfile=fullfile(outputfolder,animals{ai},[ statenames{state_i} ,signame '_' num2str(th) '.mat']);
@@ -32,8 +32,8 @@ for state_i=1:length(statenames)
     title(['Spont ' statenamesstr{state_i}]);
 end
 subplot(2,2, 4);
-imagesc(W_spont(:,:,3)-W_spont(:,:,1),[-1 1]/10);colorbar;
-title(['Spont 3-1' ]);
+imagesc(W_spont(:,:,end)-W_spont(:,:,1),[-1 1]/10);colorbar;
+title(['Spont' statenames{end} '-' statenames{1} ]);
 % suptitle(['N=' num2str(N)]);
 %%
 
