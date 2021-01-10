@@ -449,24 +449,24 @@ for sig_i = 1:length(signals_names)
                 close all;
             end
         end
-        
-        figure;l=1;
-        for si=1:length(statenames)
+        if ~all(isnan(W_spont(:)))
+            figure;l=1;
+            for si=1:length(statenames)
+                for ti=1:length(typesvals)
+                    subplot(length(statenames)+1,length(typesvals),l);
+                    imagesc(W_spont(:,:,si,ti),[0 1]);l=l+1;
+                    title([ animals.type_lut{ti} ' ' statenames{si} ]);
+                    colorbar;
+                end
+            end
             for ti=1:length(typesvals)
                 subplot(length(statenames)+1,length(typesvals),l);
-                imagesc(W_spont(:,:,si,ti),[0 1]);l=l+1;
-                title([ animals.type_lut{ti} ' ' statenames{si} ]);
+                imagesc(W_spont(:,:,end,ti)-W_spont(:,:,1,ti),[-.5  .5]/5);l=l+1;
+                title([ animals.type_lut{ti} ' ' statenames{end} '-' statenames{1} ]);
                 colorbar;
             end
+            mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_All_types_spont_', '_W_' signals_names{sig_i} '_th' num2str(th)]));
         end
-        for ti=1:length(typesvals)
-            subplot(length(statenames)+1,length(typesvals),l);
-            imagesc(W_spont(:,:,end,ti)-W_spont(:,:,1,ti),[-.5  .5]/5);l=l+1;
-            title([ animals.type_lut{ti} ' ' statenames{end} '-' statenames{1} ]);
-            colorbar;
-        end
-        mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_All_types_spont_', '_W_' signals_names{sig_i} '_th' num2str(th)]));
-   
         
         ni = find(strcmp(cent_features, 'second_eigval'));
         M = squeeze(cent_by_allen_mean(1,:,ni,:));
