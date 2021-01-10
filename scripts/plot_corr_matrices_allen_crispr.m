@@ -1,4 +1,4 @@
-function N=plot_corr_matrices_allen_crispr(outputfolder, animals,statenames, th, parcels_names, parcels_region_labels)
+function [N, W_spont]=plot_corr_matrices_allen_crispr(outputfolder, animals,statenames, th, parcels_names, parcels_region_labels)
 
 signame='Allen';
 %% plot corr matrices

@@ -6,8 +6,9 @@ animals_db = get_animals_meta_data_by_csv;
 % stateslabels = { 'low_pup_q', 'high_pup_q', 'high_pup_l'};
 stateslabels = { 'qui', 'loc'};
 cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
+cent_features = {  'eigenvector' 'degree'  'second_eigval'};%};%'eigenvector'
 similarity_name = {'pearson_corr'   };%'corr',,  'fullcorr' 'cov''partial_corr'
-doover=true;
+doover=false;
 %% Fig 4 - network
 % plot_centrality_res_per_day(animals, outputfiggolder, stateslabels);
 for sim_i = 1:length(similarity_name)
@@ -15,6 +16,7 @@ for sim_i = 1:length(similarity_name)
     outputfiggolder = ['X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\network_centrality_' similarity_name{sim_i}];
     mkNewDir(outputfiggolder)
     %     plot_similarity_res(similarity_name{sim_i}, animals, outputfiggolder, stateslabels);
+    plot_centrality_across_groups(cent_features, similarity_name{sim_i}, animals_db, outputfiggolder, stateslabels, doover);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals_db, outputfiggolder, stateslabels, doover);
     
@@ -391,6 +393,149 @@ end
 %
 % end
 
+function plot_centrality_across_groups(cent_features, simname, animals, outputfiggolder, statenames, doover)
+
+outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
+files = dir(['X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat']);
+load(fullfile(files(1).folder, files(1).name), 'par_inds');
+
+signals_names = { 'Grid4' 'Allen' };%
+isweigtedstr = { 'weighted'};%'notweighted'
+for l = 1:length(cent_features)
+    mkNewDir(fullfile(outputfiggolder,cent_features{l}));
+end
+[parcels_names, parcels_region_labels, final_index, region_lut, grid_map_final_index, labelsbyallen] = get_allen_meta_parcels;
+ legstr = statenames;
+for k=1:length(legstr)
+    legstr{k}(legstr{k}=='_') = ' ';
+end
+
+for sig_i = 1:length(signals_names)
+    switch signals_names{sig_i}
+        case 'Allen'
+            visualinds = 1;
+            somatoinds = 14;
+            visualinds = find(parcels_region_labels==1);
+            somatoinds = find(parcels_region_labels==6);
+            thT=[Inf 5:2:23];
+        case 'Grid4'
+            %             [parcels_names, parcels_region_labels, final_index_grid, region_lut, grid_map_final_index, labelsbyallen] = getAllenClusteringLabelsGrid(par_inds, 4);
+            %             visualinds = find(parcels_region_labels==1);
+            %             somatoinds = find(parcels_region_labels==6);
+            thT=[Inf 50:50:400];
+    end
+    typesvals = unique(animals.type_list);
+    Nstates = length(statenames);
+    for th=thT
+        for ti = 1:length(typesvals)
+            curtype = animals.type_lut{ti};
+            animalsinds = find(animals.type_list==ti);
+            for isweigted = 1:length(isweigtedstr)
+                
+                sumfile = fullfile(outputfolder, [num2str(Nstates) 'states_' curtype '_summary_centrality_', signals_names{sig_i}, '_' isweigtedstr{isweigted} 'th' num2str(th) '.mat']);
+                if  ~doover&&exist(sumfile, 'file')
+                    load(sumfile);
+                else
+                    [spon_states, spont_heatmap] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals.folder_list(animalsinds), statenames, isweigtedstr{isweigted}, th);
+                    save(sumfile, 'spon_states',...
+                        'spont_heatmap');
+                end
+                cent_by_allen_mean(:,:,:,ti) = squeeze(nanmean(spon_states,2));
+                cent_by_allen_std(:,:,:,ti) = squeeze(nanstd(spon_states,[],2));
+                cent_by_allen_N(:,:,ti) = squeeze(sum(~isnan(spon_states(1,:,:,:,:)),2));
+                masks_cent_mean_spont(:,:, :, :,ti) = squeeze(nanmean(spont_heatmap,3));
+                %% corr matrices
+                [~, W_spont(:,:,:,ti)]=plot_corr_matrices_allen_crispr(outputfolder, animals.folder_list(animalsinds),statenames, th, parcels_names, parcels_region_labels);
+                close all;
+            end
+        end
+        
+        figure;l=1;
+        for si=1:length(statenames)
+            for ti=1:length(typesvals)
+                subplot(length(statenames)+1,length(typesvals),l);
+                imagesc(W_spont(:,:,si,ti),[0 1]);l=l+1;
+                title([ animals.type_lut{ti} ' ' statenames{si} ]);
+                colorbar;
+            end
+        end
+        for ti=1:length(typesvals)
+            subplot(length(statenames)+1,length(typesvals),l);
+            imagesc(W_spont(:,:,end,ti)-W_spont(:,:,1,ti),[-.5  .5]/5);l=l+1;
+            title([ animals.type_lut{ti} ' ' statenames{end} '-' statenames{1} ]);
+            colorbar;
+        end
+        mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_All_types_spont_', '_W_' signals_names{sig_i} '_th' num2str(th)]));
+   
+        
+        ni = find(strcmp(cent_features, 'second_eigval'));
+        M = squeeze(cent_by_allen_mean(1,:,ni,:));
+        S = squeeze(cent_by_allen_std(1,:,ni,:));
+        N = squeeze(cent_by_allen_N(:,ni,:));
+        figure;
+        barwitherr(S./sqrt(N-1),M);
+        legend(animals.type_lut);
+        set(gca,'XTickLabel',(legstr));
+        title('Second Eigenval');
+        mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+
+        for ni = find(~strcmp(cent_features, 'second_eigval'))
+           M = permute(squeeze(cent_by_allen_mean(:,:,ni,:)),[1 3 2]);
+           S = permute(squeeze(cent_by_allen_std(:,:,ni,:)),[1 3 2]);
+           N = repmat(permute(squeeze(cent_by_allen_N(:,ni,:)),[3 2 1]), 23, 1,1);
+           
+           for si=1:length(statenames)
+               h(si)=subplot(length(statenames),1, si);
+               barwitherr(S(:,:,si)./sqrt(N(:,:,si)-1),M(:,:,si));
+               legend(animals.type_lut);
+               set(gca,'XTick',1:length(parcels_names))
+               set(gca,'XTickLabel',(parcels_names));
+               title(legstr{si});
+           end
+           linkaxes(h,'y');
+           suptitle(cent_features{ni});
+           L = quantile(reshape(masks_cent_mean_spont(:,:,:,ni,:),1,[]),[.1 .9]);
+           figure;l=1;
+           for si=1:length(statenames)
+               for ti=1:length(typesvals)
+                   subplot(length(statenames)+1,length(typesvals),l);
+                    plot_vals_heatmap(masks_cent_mean_spont(:,:,si,ni,ti),...
+                        '',[],  L(1), L(2), 1,colormap(redblue));l=l+1;
+                    title([ animals.type_lut{ti} ' ' statenames{si} ]);
+               end
+           end
+           mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+
+           L = quantile(reshape(masks_cent_mean_spont(:,:,end,ni,:)-masks_cent_mean_spont(:,:,1,ni,:),1,[]),[.1 .9]);
+           for ti=1:length(typesvals)
+               subplot(length(statenames)+1,length(typesvals),l);
+               plot_vals_heatmap(masks_cent_mean_spont(:,:,end,ni,ti)-masks_cent_mean_spont(:,:,1,ni,ti),...
+                        '',[],  -max(abs(L)), max(abs(L)), 1,colormap(redblue));l=l+1;
+                    title([ animals.type_lut{ti} ' ' statenames{end} '-' statenames{1} ]);
+           end
+           suptitle(cent_features{ni});
+           mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_heatmaps_' signals_names{sig_i} '_th' num2str(th)]));
+
+        end
+        
+    end
+end
+                
+end             
+                
+               
+                
+                    
+                    
+                    
+                    
+                    
+               
+              
+            
+        
+
+
 function plot_centrality_res(cent_features, simname, animals, outputfiggolder, statenames, doover)
 
 outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
@@ -461,7 +606,7 @@ for sig_i = 1:length(signals_names)
                     plot_bars_by_conditions(spon_states(:,:,:,ni), ...
                         cent_features{ni}, parcels_names, legstr, curtype);
                     
-                         mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+                    mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
                     
                 end
                 
