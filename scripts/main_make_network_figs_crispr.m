@@ -477,7 +477,7 @@ for sig_i = 1:length(signals_names)
         legend(animals.type_lut);
         set(gca,'XTickLabel',(legstr));
         title('Second Eigenval');
-        mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+        mysave(gcf, fullfile(outputfiggolder,'second_eigval',[num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
 
         for ni = find(~strcmp(cent_features, 'second_eigval'))
            M = permute(squeeze(cent_by_allen_mean(:,:,ni,:)),[1 3 2]);
@@ -494,6 +494,8 @@ for sig_i = 1:length(signals_names)
            end
            linkaxes(h,'y');
            suptitle(cent_features{ni});
+           mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
+
            L = quantile(reshape(masks_cent_mean_spont(:,:,:,ni,:),1,[]),[.1 .9]);
            figure;l=1;
            for si=1:length(statenames)
@@ -504,8 +506,7 @@ for sig_i = 1:length(signals_names)
                     title([ animals.type_lut{ti} ' ' statenames{si} ]);
                end
            end
-           mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_All_types_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
-
+           
            L = quantile(reshape(masks_cent_mean_spont(:,:,end,ni,:)-masks_cent_mean_spont(:,:,1,ni,:),1,[]),[.1 .9]);
            for ti=1:length(typesvals)
                subplot(length(statenames)+1,length(typesvals),l);
