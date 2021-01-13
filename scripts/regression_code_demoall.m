@@ -1,6 +1,6 @@
 
 clear;
-cd('C:\Users\SuperComp-HigleyLab\Documents\Lav\network_state_analysis\scripts')
+% cd('C:\Users\SuperComp-HigleyLab\Documents\Lav\network_state_analysis\scripts')
 addpath(genpath('../pre_processing'));
 addpath(genpath('../meta_data_processing'));
 addpath(genpath('../../utils'));
