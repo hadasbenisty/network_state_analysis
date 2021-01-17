@@ -15,10 +15,10 @@ procdatapath = 'X:\Hadas\Meso-imaging\crispr\meso_results\ProcessingDirectory';
 %k=4,9,10
 typesvals = unique(animals_db.type_list);
 all_results_type=[];%NaN(4,56,1);
-for ti = 1%:length(typesvals)
+for ti = 1:length(typesvals)
     curtype = animals_db.type_lut{ti};
     animalsinds = find(animals_db.type_list==ti);
-    for kj=4%:length(animalsinds)
+    for kj=1:length(animalsinds)
         k=animalsinds(kj);
         if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))&&animals_db.isimagingood_list(k)==find(strcmp(animals_db.isimagingood_lut, 'GOOD'))
             %extract_sustained_state(datapath, procdatapath, spike2path, animals_db.folder_list{k});

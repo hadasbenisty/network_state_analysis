@@ -39,15 +39,17 @@ params.deterend.filtcutoff = 0.001;
 params.deterend.method = 'FIR';
 
 % imaging_data = load('final_dFoF.mat'); % load in full imaging data <-
-if exist(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat'))>0&&exist(fullfile(dataFolderPath,'smrx_signals_v2.mat'))>0
+if exist(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat'))>0&&exist(fullfile(dataFolderPath,'smrx_signals_v3.mat'))>0
     
 dFoF_parcells = load(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat')); %<- parcels data
 smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v2.mat'));
 
 dFoF_parcells_data=dFoF_parcells.parcels_time_trace;
-blue_parcels = dFoF_parcells_data;
-%add dfof into the same folders later 
+
+blue_parcels = dFoF_parcells_data;%(:,params.deterend.filtLen/2:end);
 %smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(params.deterend.filtLen/2:end);
+
+%cut off time at the end if not aligned
 if size(blue_parcels,2)==length(smrx_sigs.timestamps.timaging)
 elseif size(blue_parcels,2)<length(smrx_sigs.timestamps.timaging)
     smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:size(blue_parcels,2));
@@ -84,14 +86,29 @@ if ~isfield(dat, 'areaii')
 end
 pupil_Norm = dat.areaii;
 if size(pupil_Norm,1)==length(smrx_sigs.timing.pupilcamstart(1:end))
-    smrx_sigs.timing.pupilcamstart=smrx_sigs.timing.pupilcamstart(1:end);
 elseif size(pupil_Norm,1)<length(smrx_sigs.timing.pupilcamstart(1:end))
+    % if pupil video is smaller than cam ticks then subset cam ticks
     smrx_sigs.timing.pupilcamstart=smrx_sigs.timing.pupilcamstart(1:size(pupil_Norm,1));
     smrx_sigs.timing.pupilcamend=smrx_sigs.timing.pupilcamend(1:size(pupil_Norm,1));
 elseif size(pupil_Norm,1)>length(smrx_sigs.timing.pupilcamstart(1:end))
+    %if cam ticks are more subset pupil and facemap video
     pupil_Norm=pupil_Norm(1:length(smrx_sigs.timing.pupilcamstart),:);
+    proc_output.proc.motSVD{1,1}=proc_output.proc.motSVD{1,1}(1:length(smrx_sigs.timing.pupilcamstart),:);
 end
 pupil_time=smrx_sigs.timing.pupilcamstart;
+%remove NaNs
+
+%find the smallest of facemap, pupil, and imaging
+if pupil_time(1) > smrx_sigs.timestamps.timaging(1)
+   % if imaging starts earlier than pupil
+   toremove_img=find(smrx_sigs.timestamps.timaging<pupil_time(1));
+   smrx_sigs.timestamps.timaging(toremove_img)=[];
+   blue_parcels(:,toremove_img)=[];
+elseif pupil_time(1) < smrx_sigs.timestamps.timaging(1)
+    %interp will take care
+else   
+end
+
 pupil_interp = interp1(pupil_time,pupil_Norm,smrx_sigs.timestamps.timaging);
 pupil_sig=zscore(pupil_interp);
 % what lohani and moberly did
@@ -101,16 +118,9 @@ pupil_sig=zscore(pupil_interp);
 % pupil_interp = interp1(pupil_time,pupil,smrx_sigs.timestamps.timaging);
 % pupil_sig = zscore(pupil_interp);
 
-%make facemap and pupil cam ticks same length
-
 % 2) face PC1**************************************************************
 wholeFaceSVD_time = pupil_time;
-if size(proc_output.proc.motSVD{1,1},1)==length(wholeFaceSVD_time)
-elseif size(proc_output.proc.motSVD{1,1},1)<length(wholeFaceSVD_time)
-    wholeFaceSVD_time=wholeFaceSVD_time(1:size(proc_output.proc.motSVD{1,1},1));
-elseif size(proc_output.proc.motSVD{1,1},1)>length(wholeFaceSVD_time)
-    proc_output.proc.motSVD{1,1}=proc_output.proc.motSVD{1,1}(1:length(smrx_sigs.timing.pupilcamstart),:);
-end
+
 wholeFaceSVD_interp = zeros(length(smrx_sigs.timestamps.timaging), 100);
     for i = 1:100
         tmp = proc_output.proc.motSVD{1,1}(:,i);
@@ -180,13 +190,16 @@ if airpuff_trial
 end    
     
 %remove NaNs from detrending filter and realign
-blue_parcels = blue_parcels(:,params.deterend.filtLen/2:end); 
-blue_parcels_z = blue_parcels_z(:,params.deterend.filtLen/2:end); 
-wheel=wheel(params.deterend.filtLen/2:end);
-face_PC1=face_PC1(params.deterend.filtLen/2:end,:);
-pupil_sig=pupil_sig(params.deterend.filtLen/2:end);
+% blue_parcels = blue_parcels(:,params.deterend.filtLen/2:end); 
+% blue_parcels_z = blue_parcels_z(:,params.deterend.filtLen/2:end); 
+% wheel=wheel(params.deterend.filtLen/2:end);
+% face_PC1=face_PC1(params.deterend.filtLen/2:end,:);
+% pupil_sig=pupil_sig(params.deterend.filtLen/2:end);
 
-%find remaining NaNs
+%find periods when all parcels have NaNs, which is due to the detrending
+%filter or sometimes 1-3 frames after. controls for removal of timestamps
+%earlier possibly  due to alignment with pupil (thus the detrending filter
+%may no longer apply)
 
 toremove=all(~isnan(blue_parcels))==0; % find indices where there are missing NaNs for all parcels
 %the indices are always the same as find(all(isnan(blue_parcels))==1) since
@@ -200,6 +213,8 @@ wheel(toremove== 1)= [];
 blue_parcels_z(:,toremove == 1) = [];
 
 blue_parcels(:,toremove == 1) = [];
+
+
 
 %**************************************************************************
 % regression using y as parcel data and X as behavioral variables:
