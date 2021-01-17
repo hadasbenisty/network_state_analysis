@@ -1,5 +1,7 @@
 function [outputMat_grabs_regular, outputMat_grabs_ridge] = ...
     returnCVRSquared(animal,k,dataFolderPath,imagingdatapath,spike2path,airpuff_trial,howManyFacePCs)
+[parcels_names, parcels_region_labels, finalindex, region_lut] = get_allen_meta_parcels; %#ok<ASGLU>
+
 %dbstop if warning
 tic
 %**************************************************************************
@@ -38,15 +40,15 @@ params.deterend.filtLen = 150;
 params.deterend.filtcutoff = 0.001;
 params.deterend.method = 'FIR';
 
-% imaging_data = load('final_dFoF.mat'); % load in full imaging data <-
-if exist(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat'))>0&&exist(fullfile(dataFolderPath,'smrx_signals_v3.mat'))>0
+    
+
+if isfile(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat'))&&isfile(fullfile(dataFolderPath,'smrx_signals_v3.mat'))
     
 dFoF_parcells = load(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat')); %<- parcels data
-smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v2.mat'));
-
-dFoF_parcells_data=dFoF_parcells.parcels_time_trace;
-
-blue_parcels = dFoF_parcells_data;%(:,params.deterend.filtLen/2:end);
+smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v3.mat'));
+% get those parcels from one hemi
+blue_parcels=dFoF_parcells.parcels_time_trace;
+%add dfof into the same folders later 
 %smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(params.deterend.filtLen/2:end);
 
 %cut off time at the end if not aligned
@@ -105,11 +107,12 @@ if pupil_time(1) > smrx_sigs.timestamps.timaging(1)
    smrx_sigs.timestamps.timaging(toremove_img)=[];
    blue_parcels(:,toremove_img)=[];
 elseif pupil_time(1) < smrx_sigs.timestamps.timaging(1)
-    %interp will take care
+    %interp will take care of this case
 else   
 end
 
 pupil_interp = interp1(pupil_time,pupil_Norm,smrx_sigs.timestamps.timaging);
+pupil_interp(isnan(pupil_interp))=0;
 pupil_sig=zscore(pupil_interp);
 % what lohani and moberly did
 % pupil=proc_output.proc.pupil.area; 
@@ -126,6 +129,7 @@ wholeFaceSVD_interp = zeros(length(smrx_sigs.timestamps.timaging), 100);
         tmp = proc_output.proc.motSVD{1,1}(:,i);
         
         tmp_interp = interp1(wholeFaceSVD_time,tmp,smrx_sigs.timestamps.timaging);
+        tmp_interp(isnan(tmp_interp))=0;
         wholeFaceSVD_interp(:,i) = zscore(tmp_interp);
     end
  face_PC1 = wholeFaceSVD_interp(:,1:howManyFacePCs);

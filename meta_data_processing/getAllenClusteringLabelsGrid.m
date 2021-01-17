@@ -18,7 +18,7 @@ for i = 1:size(par_inds,2)
         if ~isempty(parcels_names)
         parcels_names_grid{end+1} = parcels_names{selvote};
         end
-        grid_map_final_index(roiinds) = i;
+        grid_map_final_index(roiinds) = length(final_index_grid);% was i
         labelsbyallen(end+1) = selvote;
         parcels_region_labels_grid(end+1) = parcels_region_labels(selvote);
     end
