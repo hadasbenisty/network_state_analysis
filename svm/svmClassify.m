@@ -37,7 +37,7 @@ else
     Xnorm=X;
 end
 Xnorm = Xnorm.';
-log2c = -6:10;log2g = -6:4;
+log2c = -6:8;log2g = -6:4;
 
 
 kernelStr = [' -t ' num2str(kernelType)];

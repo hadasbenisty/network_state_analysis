@@ -1,6 +1,6 @@
 function [pupil_time, pupil_Norm] = load_pupil_data(animal_name, selectedday, pupil_frame, fsspike2, pth)
 if ~exist('pth','var')
-    pth = 'X:\Lan\Meso-imaging\';
+    pth = 'X:\Older\Lan\Meso-imaging\';
 end
 pupil_data = fullfile(pth, animal_name, [animal_name '_D' ...
     num2str(selectedday)  '_pupil_clean.mat']);

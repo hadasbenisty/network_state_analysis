@@ -54,7 +54,7 @@ for k=1:length(c)
     cent_weighted.(c{k}) = centrality(G, c{k}, wstr{k}, wnums{k}+eps);    
     cent_notweighted.(c{k}) = centrality(G, c{k});
 end
-if ~isempty(communitylabels)
+if exist('communitylabels','var') && ~isempty(communitylabels)
 cent_notweighted.participation=participation_coef((W~=0),communitylabels,0);
 cent_notweighted.community = communitylabels;
 
