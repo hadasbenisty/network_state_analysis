@@ -1,4 +1,4 @@
-function regression_heatmap(brain_mask,parcels,betas,plotitle)
+function regression_heatmap(brain_mask,parcels,betas,plotitle,ul)
 %isleftlabel=2:2:56;
 %finalindex=setdiff(1:56,[21:26 53:56]);
 %finalindex=intersect(isleftlabel,toremove);
@@ -17,10 +17,10 @@ end
 
 figure;imagesc(maskacc);
 set(gcf,'renderer','painters');
-myColorMap = colormap(redblue);
+myColorMap = colormap(parula);
 colormap(myColorMap);
 h=colorbar;
-%caxis([lowerlim upperlim]);
+caxis([0 ul]);
 ylabel(h, 'R^2');title(plotitle);axis off
 hold on
 plot_parcellation_boundaries(parcels(:,:,:));

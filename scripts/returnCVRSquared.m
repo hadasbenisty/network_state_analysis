@@ -58,6 +58,13 @@ elseif size(blue_parcels,2)<length(smrx_sigs.timestamps.timaging)
 elseif size(blue_parcels,2)>length(smrx_sigs.timestamps.timaging)
     blue_parcels=blue_parcels(:,1:length(smrx_sigs.timestamps.timaging));
 end
+
+%equal length sessions input jan 26 2021
+if size(blue_parcels,2)>1800&&length(smrx_sigs.timestamps.timaging)>1800
+    blue_parcels=blue_parcels(:,1:1800);
+    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:1800);
+else
+end
 proc_filelist = (dir(fullfile(spike2path, '*_proc.mat')));
 ProcFileName=fullfile(spike2path,proc_filelist.name);
 proc_output = load(fullfile(ProcFileName));
