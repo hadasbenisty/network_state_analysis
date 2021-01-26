@@ -54,14 +54,14 @@ for ti = 1:length(typesvals)
     %all
     km=size(allpertype.all_results_type,3);
     figure;
-    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(1,:,:)),strcat('All Vars',curtype,num2str(km),'sessions'),0.25)
+    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(1,:,:)),strcat('All Vars',curtype,num2str(km),'sessions'))
    	mysave(gcf, fullfile(outputfiggolder, strcat(curtype,'allvars')));
     %Pupil
-    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(2,:,:)),strcat('Pupil',curtype,num2str(km),'sessions'),0.1)
+    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(2,:,:)),strcat('Pupil',curtype,num2str(km),'sessions'))
    	mysave(gcf, fullfile(outputfiggolder, strcat(curtype,'Pupil')));    
-    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(3,:,:)),strcat('Face',curtype,num2str(km),'sessions'),0.25)
+    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(3,:,:)),strcat('Face',curtype,num2str(km),'sessions'))
    	mysave(gcf, fullfile(outputfiggolder, strcat(curtype,'Face')));        
-    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(4,:,:)),strcat('Wheel',curtype,num2str(km),'sessions'),0.1)
+    regression_heatmap(brain_mask,parcelsallen.parcells_new.indicators,squeeze(allpertype.all_results_type(4,:,:)),strcat('Wheel',curtype,num2str(km),'sessions'))
     mysave(gcf, fullfile(outputfiggolder, strcat(curtype,'Wheel')));    
    
     clearvars allpertype
