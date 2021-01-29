@@ -9,8 +9,9 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     
     animal_lut = unique(T.animal);
     sex_lut=unique(T.Sex);
-    cohort_lut = unique(T.Cohort);
+    ex_lut=unique(T.ExpressionCategory);
     sessionsids_lut = unique(T.sessid);
+    cohort_lut = unique(T.Cohort);
     type_lut = unique(T.type);
     N = length(T.animal);
     animal_list = zeros(N,1);
@@ -19,6 +20,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     cohort_list = zeros(N,1);
     folder_list = cell(N,1);
     type_list = zeros(N,1);
+    ex_list = zeros(N,1);
     
     isgoodpupil_list = ones(size(T.ispupilgood));
     isgoodpupil_list(T.ispupilgood>1) = 2;
@@ -33,6 +35,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     for k = 1:N
         animal_list(k) = find(strcmp(animal_lut, T.animal{k}));
         sex_list(k) = find(strcmp(sex_lut, T.Sex{k}));
+        ex_list(k) = find(strcmp(cellstr(num2str(ex_lut)),num2str(T.ExpressionCategory(k))));
         sessionsid_list(k) = find(strcmp(sessionsids_lut, T.sessid{k}));
         cohort_list(k) = find(strcmp(cohort_lut, T.Cohort{k}));
         type_list(k) = find(strcmp(type_lut, T.type{k}));
@@ -41,6 +44,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     
     animals_db.animal_list=animal_list;
     animals_db.sex_list=sex_list;
+    animals_db.ex_list=ex_list;
     animals_db.sessionsid_list=sessionsid_list;
     animals_db.cohort_list=cohort_list;
     animals_db.folder_list=folder_list;
@@ -50,6 +54,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     animals_db.cohort_lut=cohort_lut;
     animals_db.type_lut=type_lut;
     animals_db.sex_lut=sex_lut;
+    animals_db.ex_lut=ex_lut;
     
 animals_db.isgoodpupil_lut=isgoodpupil_lut;
 animals_db.isgoodpupil_list=isgoodpupil_list;
