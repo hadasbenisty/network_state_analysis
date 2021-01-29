@@ -88,7 +88,7 @@ for i=1:length(validsessions)
     end
     load(fullfile(spike2pth, 'smrx_signals_v3.mat'), 'timing');
     
-    datafile_allen = fullfile(dffpath, animals_db.folder_list{i},  'Ca_traces_spt_patch14_Allen_dfff.mat');
+    datafile_allen = fullfile(dffpath, animals_db.folder_list{i},  'Ca_traces_spt_patch11_Allen_dfff.mat');
     if ~isfile(datafile_allen)
         continue;
     end

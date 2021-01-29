@@ -39,15 +39,22 @@ tic
 params.deterend.filtLen = 150;
 params.deterend.filtcutoff = 0.001;
 params.deterend.method = 'FIR';
-
+MAX_TIME = 18000;% samples - 30 mins for 10Hz
+[~, ~, finalindex] = get_allen_meta_parcels;    
+outputMat_grabs_regular=[];outputMat_grabs_ridge=[];
+if ~isfile(fullfile(imagingdatapath,'Ca_traces_spt_patch11_Allen_dfff.mat'))
+    disp(['no imaging data ' imagingdatapath]);
+    return;
+end
+if ~isfile(fullfile(dataFolderPath,'smrx_signals_v3.mat'))
+    disp(['no smrx_signals_v3 data ' dataFolderPath]);
+    return;
+end
     
-
-if isfile(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat'))&&isfile(fullfile(dataFolderPath,'smrx_signals_v3.mat'))
-    
-dFoF_parcells = load(fullfile(imagingdatapath,'Ca_traces_spt_patch14_Allen_dfff.mat')); %<- parcels data
+dFoF_parcells = load(fullfile(imagingdatapath,'Ca_traces_spt_patch11_Allen_dfff.mat')); %<- parcels data
 smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v3.mat'));
 % get those parcels from one hemi
-blue_parcels=dFoF_parcells.parcels_time_trace;
+blue_parcels=dFoF_parcells.parcels_time_trace(finalindex,:);
 %add dfof into the same folders later 
 %smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(params.deterend.filtLen/2:end);
 
@@ -60,12 +67,18 @@ elseif size(blue_parcels,2)>length(smrx_sigs.timestamps.timaging)
 end
 
 %equal length sessions input jan 26 2021
-if size(blue_parcels,2)>1800&&length(smrx_sigs.timestamps.timaging)>1800
-    blue_parcels=blue_parcels(:,1:1800);
-    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:1800);
+if size(blue_parcels,2)>MAX_TIME&&length(smrx_sigs.timestamps.timaging)>MAX_TIME
+    blue_parcels=blue_parcels(:,1:MAX_TIME);
+    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:MAX_TIME);
 else
 end
 proc_filelist = (dir(fullfile(spike2path, '*_proc.mat')));
+if isempty(proc_filelist)
+    disp(['No face map file at ' spike2path]); 
+    outputMat_grabs_regular=[];
+    outputMat_grabs_ridge = [];
+    return;
+end
 ProcFileName=fullfile(spike2path,proc_filelist.name);
 proc_output = load(fullfile(ProcFileName));
 
@@ -150,14 +163,14 @@ wheel = zscore(wheel_speed_interp);
 
 %**************************************************************************
 % remove normally nan parcels
-blue_parcels([21:26 53:56],:) = []; % remove nan values
+
 blue_parcels_z = zeros(size(blue_parcels,1), size(blue_parcels,2));
 
 % z score
-    for i = 1:size(blue_parcels,1)
-        tmp = blue_parcels(i,:)-nanmean(blue_parcels(i,:))./nanstd(blue_parcels(i,:));
-        blue_parcels_z(i,:) = tmp;
-    end  
+for i = 1:size(blue_parcels,1)
+    tmp = (blue_parcels(i,:)-nanmean(blue_parcels(i,:)))./nanstd(blue_parcels(i,:));
+    blue_parcels_z(i,:) = tmp;
+end
 
 %**************************************************************************
 % if an airpuff trial-> remove data around airpuffs
@@ -510,19 +523,11 @@ outputMat_grabs_regular = vertcat(rsquared_grabs_allVars,rsquared_grabs_pupil,rs
 %outputMat_grabs_ridge = vertcat(rsquared_grabs_allVars_ridge,rsquared_grabs_pupil_ridge,rsquared_grabs_face_ridge,rsquared_grabs_wheel_ridge);
 
 % pad nan parcels up to 56 parcels
-nan_parcels = nan(size(outputMat_grabs_regular,1),1);
-outputMat_grabs_regular = [outputMat_grabs_regular(:,1:20) nan_parcels nan_parcels nan_parcels nan_parcels nan_parcels nan_parcels...
-    outputMat_grabs_regular(:,21:end) nan_parcels nan_parcels nan_parcels nan_parcels];
+nan_parcels = nan(size(outputMat_grabs_regular,1),56);
+nan_parcels(:,finalindex) = outputMat_grabs_regular;
 
-% pad nan parcels up to 56 parcels
-%nan_parcels = nan(size(outputMat_grabs_ridge,1),1);
-%outputMat_grabs_ridge = [outputMat_grabs_ridge(:,1:20) nan_parcels nan_parcels nan_parcels nan_parcels nan_parcels nan_parcels...
-%   outputMat_grabs_ridge(:,21:end) nan_parcels nan_parcels nan_parcels nan_parcels];
 outputMat_grabs_ridge=[];
 toc
-else
-    outputMat_grabs_regular=[];outputMat_grabs_ridge=[];
-    disp(strcat(animal,num2str(k),'NO DATA'))
-end
+
 disp(strcat(animal,num2str(k),'done'))
 end

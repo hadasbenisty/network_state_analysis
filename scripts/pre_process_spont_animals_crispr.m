@@ -18,7 +18,7 @@ for k=1:length(animals_db.folder_list)
     end
     close all;
 end
-dover=true;
+dover=false;
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
 concatenateSpontPeriodsBy2States(dover, animals_db, dffpath, spike2path, procdatapath)
 
@@ -68,8 +68,8 @@ for ir=1:length(animals_db.animal_list)
     
     %     fsimaing=10;
     %     delay_filt=150;
-    datafile_allen = fullfile(dffpath, animal,  'Ca_traces_spt_patch14_Allen_dfff.mat');
-    datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch14_Grid4_dfff.mat');
+    datafile_allen = fullfile(dffpath, animal,  'Ca_traces_spt_patch11_Allen_dfff.mat');
+    datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch11_Grid4_dfff.mat');
     if ~exist(fullfile(spike2pth, 'smrx_signals_v3.mat'), 'file')
         continue;
     end
@@ -154,8 +154,8 @@ for ir=1:length(animals_db.animal_list)
     
     %     fsimaing=10;
     %     delay_filt=150;
-    datafile_allen = fullfile(dffpath, animal,  'Ca_traces_spt_patch14_Allen_dfff.mat');
-    datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch14_Grid4_dfff.mat');
+    datafile_allen = fullfile(dffpath, animal,  'Ca_traces_spt_patch11_Allen_dfff.mat');
+    datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch11_Grid4_dfff.mat');
     if ~exist(fullfile(spike2pth, 'smrx_signals_v3.mat'), 'file')
         continue;
     end
@@ -163,7 +163,7 @@ for ir=1:length(animals_db.animal_list)
     t_imaging = timing.bluestart;
     
     
-    segmentfile = fullfile(procdatapath,animal,  'arousal_state_ITI_segemts.mat');
+    segmentfile = fullfile(procdatapath,animal,  'arousal_3state_ITI_segemts.mat');
     if exist(datafile_allen,'file') && exist(datafile_grid4,'file') && exist(segmentfile,'file')
         load(segmentfile, 'segments_arousals');
         a=load(datafile_allen);
@@ -222,7 +222,7 @@ params.minSitDuration=3;%minimum sit duration during quiescnece state
 mkNewDir(fullfile(procdatapath, animalpath));
 disp(animalpath);
 
-if 0&exist(fullfile(procdatapath, animalpath, 'arousal_2state_ITI_segemts.mat'), 'file')
+if exist(fullfile(procdatapath, animalpath, 'arousal_2state_ITI_segemts.mat'), 'file')
     disp('file exists');
     return;
 end
@@ -812,7 +812,7 @@ for statei=1:length(statesnames)
         
     end
 end
-save(fullfile(procdatapath, animalpath, 'arousal_state_ITI_segemts.mat'),...
+save(fullfile(procdatapath, animalpath, 'arousal_3state_ITI_segemts.mat'),...
     'segments_arousals','pupvals','wheelvals');
 
 
