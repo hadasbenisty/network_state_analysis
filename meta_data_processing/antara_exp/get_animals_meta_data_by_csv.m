@@ -3,7 +3,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
 %     load('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
 % else
     if nargin == 0
-        csvfile = '../meta_data_processing/antara_exp/Processing_Pipeline_Full.csv';
+        csvfile = '../meta_data_processing/antara_exp/Processing_Pipeline_Full_expression.csv';
     end
     T = readtable(csvfile);
     
