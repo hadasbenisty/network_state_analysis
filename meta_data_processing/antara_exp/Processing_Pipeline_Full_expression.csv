@@ -11,7 +11,7 @@ Cas9_Control_m22096/m22096_Day1_Session1,F238,blueuv,Air,Cas9_Control_m22096,Coh
 Cas9_Control_m22096/m22096_Day2_Session1,F238,blueuv,Spon,Cas9_Control_m22096,Cohort 1,ctrl,0,0,F,2
 Cas9_Control_m22096/m22096_Day3_Session1_SponWithAirPuff,F238,blueuv,Air,Cas9_Control_m22096,Cohort 1,ctrl,3,0,F,2
 Cas9_Control_m22096/m22096_Day4_Session1_SponWithAirPuff,F238,blueuv,Air,Cas9_Control_m22096,Cohort 1,ctrl,3,0,F,2
-Cas9_Control_m23504/m23504_Day1_Session1_SponOnly,F238,blueuv,Air,Cas9_Control_m23504,Cohort 2,ctrl,0,0,F,3
+Cas9_Control_m23504/m23504_Day1_Session1_SponOnly,F238,blueuv,Spon,Cas9_Control_m23504,Cohort 2,ctrl,0,0,F,3
 Emx_Cas9_m501/m501_Day1_Session1_SponOnly,F238,blueuv,Spon,Emx_Cas9_m501,Cohort 2,emx,3,0,M,4
 Emx_Cas9_m502/m502_Day1_Session1_SponOnly,F238,blueuv,Spon,Emx_Cas9_m502,Cohort 2,emx,0,0,M,1
 Emx_Cas9_m502/m502_Day1_Session5_AirPuff,F238,blueuv,Air,Emx_Cas9_m502,Cohort 2,emx,3,0,M,1

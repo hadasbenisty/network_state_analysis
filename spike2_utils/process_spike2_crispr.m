@@ -58,7 +58,7 @@ timestamps.airpuff=timing.airpuffstart(timing.airpuffstart>(timestamps.timaging(
 timestamps.wheelOn=timing.wheelOn(timing.wheelOn>(timestamps.timaging(1)+ minSitDuration) & timing.wheelOn<(timestamps.timaging(end)-minRunDuration));%remove events if they occur outside imaging period
 
 
-
+mkNewDir(outputPath)
 save(char(strcat(outputPath, '\smrx_signals_v3.mat')), 'timing', 'channels_data','timestamps','params');
 end
 

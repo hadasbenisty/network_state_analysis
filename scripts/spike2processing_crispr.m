@@ -8,11 +8,11 @@ outputFolder='X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
 [params,channels] = get_channels_param('Vis','F238','blueuv');
 
 CEDS64LoadLib('../spike2_utils/CEDS64ML/');
-validsessions = animals_db.isgoodpupil_list'==find(strcmp(animals_db.isgoodpupil_lut,'GOOD'));
+validsessions = animals_db.isimagingood_list'==find(strcmp(animals_db.isimagingood_lut,'GOOD'));
 for i=1:length(validsessions)
-    if ~validsessions(i)
-        continue;
-    end
+%     if ~validsessions(i)
+%         continue;
+%     end
     pre_Session=char(animals_db.folder_list(i));
     if contains(pre_Session,'Control')
         Session = strrep(pre_Session,'9_C','9 C');
