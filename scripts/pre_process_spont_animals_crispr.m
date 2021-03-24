@@ -242,10 +242,10 @@ params.minSitDuration=5;%minimum sit duration during quiescnece state
 mkNewDir(fullfile(procdatapath, animalpath));
 disp(animalpath);
 
-if exist(fullfile(procdatapath, animalpath, 'arousal_2state_ITI_segemts.mat'), 'file')
-    disp('file exists');
-    return;
-end
+% if exist(fullfile(procdatapath, animalpath, 'arousal_2state_ITI_segemts.mat'), 'file')
+%     disp('file exists');
+%     return;
+% end
 if ~exist(fullfile(spike2path, animalpath, 'smrx_signals_v3.mat'), 'file')
     warning('No smrx_signals_v3 file');
     return;
