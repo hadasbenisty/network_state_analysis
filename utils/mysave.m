@@ -2,11 +2,16 @@ function mysave(f,filename, est)
 if nargin == 2
     est = 'all';
 end
+[~,~,EXT] = fileparts(filename);
+if ~isempty(EXT)
+    est = EXT(2:end);
+end
 if isempty(f)
     f=gcf;
 end
 switch est
     case 'all'
+        print( f, '-depsc', [filename '.eps']);
         saveas(f,[filename '.fig'],'fig');
         saveas(f,[filename '.tif'],'tif');
 saveas(f,[filename '.jpg'],'jpg');

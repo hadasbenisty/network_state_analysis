@@ -9,10 +9,9 @@ outputFolder='X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
 
 CEDS64LoadLib('../spike2_utils/CEDS64ML/');
 validsessions = animals_db.isimagingood_list'==find(strcmp(animals_db.isimagingood_lut,'GOOD'));
+validsessions=validsessions'&animals_db.toinclude_list==find(strcmp(animals_db.toinclude_lut,'Good'));
 for i=1:length(validsessions)
-%     if ~validsessions(i)
-%         continue;
-%     end
+
     pre_Session=char(animals_db.folder_list(i));
     if contains(pre_Session,'Control')
         Session = strrep(pre_Session,'9_C','9 C');
@@ -30,7 +29,7 @@ for i=1:length(validsessions)
     dataSmrxFile=fullfile(tiffsPath,smrxfilelist.name);
     outputPath=fullfile(outputFolder,animals_db.folder_list{i});
     mkNewDir(outputPath);
-    if ~exist(dataSmrxFile, 'file')
+    if ~exist(dataSmrxFile, 'file')||isempty(smrxfilelist)
         disp('no file');
     else
         tic

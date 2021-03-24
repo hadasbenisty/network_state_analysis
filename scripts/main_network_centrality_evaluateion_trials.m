@@ -5,9 +5,9 @@ addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 addpath(genpath('../network_state_analysis\gspbox'));
 animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
-pre_trial_time_start = -3;
+pre_trial_time_start = -5;
 pre_trial_time_end = -.1;
-doover=0;maxdays=30;
+doover=1;maxdays=30;
 similarity_name = { 'pearson_corr'};
 statenames = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 for sim_i = 1:length(similarity_name)
@@ -121,14 +121,14 @@ function eval_weights_and_cent(maxdays, doover, simname, animal, statenames, pre
 
 outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality_' simname];
 mkNewDir(outputfolder);
-signalnames = {'Allen' 'LSSC' 'Grid4'  };%'Allen' 
+signalnames = {'Allen'};% 'LSSC' 'Grid4'  };%'Allen' 
 disp(animal)
 for sig_i = 1:length(signalnames)
     switch signalnames{sig_i} 
         case {'Allen','LSSC'}
-            thvals =[inf 5:2:23];
+            thvals =[inf 7];%5:2:23];
         case 'Grid4'
-            thvals = [inf 150:50:400];
+            thvals = [inf 150];% 150:50:400];
     end
     for state_i = 1:length(statenames)
         disp(statenames{state_i})

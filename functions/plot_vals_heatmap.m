@@ -18,6 +18,8 @@ colormap(colormapvals);
 h=colorbar;
 caxis([lowerlim upperlim]);
 %colormap(fireice);h=colorbar;
+mid = mean([lowerlim upperlim]);
+set(h,'Ticks', [lowerlim mid upperlim])
 ylabel(h, clrbarttl);axis off
 hold on
 if ~isempty(allen_indicators)

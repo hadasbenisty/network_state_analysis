@@ -12,7 +12,7 @@ procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_cri
 mkNewDir(procdatapath);
 %% 2 arousal states per animal
 for k=1:length(animals_db.folder_list)
-    isimaging_good =isimaginggood(animals_db, k);
+    isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
     if isimaging_good
         extract_sustained_2states(spike2path, procdatapath, animals_db.folder_list{k});
     end
@@ -27,8 +27,8 @@ concatenateSpontPeriodsBy2States(dover, animals_db, dffpath, spike2path, procdat
 for k=1:length(animals_db.folder_list)
     isimaging_good =isimaginggood(animals_db, k);
     ispup_good =ispupilgood(animals_db, k);
-    if isimaging_good && ispup_good        
-        extract_sustained_3states(spike2path, procdatapath, animals_db.folder_list{k});                
+    if isimaging_good && ispup_good
+        extract_sustained_3states(spike2path, procdatapath, animals_db.folder_list{k});
     end
     close all;
 end
@@ -47,11 +47,11 @@ regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 statesnames = {'qui','loc'};
 for ir=1:length(animals_db.animal_list)
     animal=animals_db.folder_list{ir};
-    disp(animal);    
+    disp(animal);
     resfile = fullfile(procdatapath,  animal, 'spont_data_2states_dfff.mat');
-    
-    isimaging_good =isimaginggood(animals_db, ir);
-    if ~isimaging_good 
+    isimaging_good = animals_db.toinclude_list(ir)==find(strcmp(animals_db.toinclude_lut, 'Good'));
+
+    if ~isimaging_good
         continue;
     end
     if exist(resfile, 'file')&&~dover
@@ -86,12 +86,31 @@ for ir=1:length(animals_db.animal_list)
             t_imaging=t_imaging(1:size(g4.parcels_time_trace,2));
         end
         
-        
+        standardinds=load('X:\Hadas\Meso-imaging\lan\xspsych\spt\xs_31_grid4_dfff.mat','par_inds');
+        [parcels_names1, regionLabel1, finalindex1, ~, maskByAllen1, roiLabelsbyAllen1] = getAllenClusteringLabelsGrid(standardinds.par_inds, 4);
         [parcels_names.grid4, regionLabel.grid4, finalindex.grid4, ~, maskByAllen.grid4, roiLabelsbyAllen.grid4] = getAllenClusteringLabelsGrid(g4.par_inds, 4);
-        
-        
+        if length(finalindex.grid4) == length(finalindex1)
+            Xg4  =g4.parcels_time_trace(finalindex.grid4,:);
+        else
+            
+            Xg4 = nan(length(finalindex1), size(g4.parcels_time_trace,2));
+            
+            for hi = 1:length(finalindex1)
+                indsel = find(finalindex.grid4 == finalindex1(hi));
+                if ~isempty(indsel)
+                    Xg4( (hi), :) = g4.parcels_time_trace(indsel, :);
+                else
+                    disp(finalindex1(hi))
+                end
+            end
+        end
+        parcels_names.grid4=parcels_names1;
+        regionLabel.grid4=regionLabel1;
+        finalindex.grid4=finalindex1;
+        maskByAllen.grid4=maskByAllen1;
+        roiLabelsbyAllen.grid4=roiLabelsbyAllen1;
         Xa  =a.parcels_time_trace(finalindex.Allen,:);
-        Xg4  =g4.parcels_time_trace(finalindex.grid4,:);
+        
         for si = 1:length(statesnames)
             if isfield(segments_arousals, statesnames{si})
                 data = eval(statesnames{si});
@@ -113,6 +132,7 @@ for ir=1:length(animals_db.animal_list)
         
         
         
+   
     end
     
     
@@ -132,7 +152,7 @@ regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 statesnames = {'low_pup_q','high_pup_q','high_pup_l'};
 for ir=1:length(animals_db.animal_list)
     animal=animals_db.folder_list{ir};
-    disp(animal);    
+    disp(animal);
     resfile = fullfile(procdatapath,  animal, 'spont_data_3states_dfff.mat');
     
     isimaging_good =isimaginggood(animals_db, ir);

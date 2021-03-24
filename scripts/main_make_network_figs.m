@@ -6,9 +6,9 @@ animals={'xt','xu' 'xs', 'xx','xz','xw'};%,
 stateslabels = { 'low_pup_q', 'high_pup_q', 'high_pup_l'};
 cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
 % similarity_name = {'partial_corr_mean_pop'  };% 'pearson_corr', 'corr',,  'fullcorr' 'cov''partial_corr'
-similarity_name = {'partial_corr_mean_pop' 'partial_corr'   'pearson_corr'};%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
+similarity_name = { 'pearson_corr'};% 'partial_corr_mean_pop' 'partial_corr'  };%, ,'pearson_corr', 'L2' 'fullcorr' 'cov''partial_corr'
 
-doover=true;
+doover=false;
 %% Fig 4 - network
 % plot_centrality_res_per_day(animals, outputfiggolder, stateslabels);
 for sim_i = 1:length(similarity_name)
@@ -157,6 +157,9 @@ for i=1:length(animals)
         end
         Pvec = scores_to_heatmap(xx, 0,signame, animal);
         correct_states(:,i,state_i,:) = heatmap2score_allen(Pvec);
+          for cent_i = 1:length(cent_features)
+            correct_heatmap(:,:,i, state_i,cent_i)=Pvec(:,:,cent_i);
+          end
         
         % trial incorrect
         load(fullfile(outputfolder,[animal '_',statenames{state_i} ,'_trials_incorrect_' signame '_' num2str(th)]), ...
@@ -442,7 +445,7 @@ outputfolder=['X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\networ
 files = dir(['X:\Hadas\Meso-imaging\lan\' animals{1} 'psych\spt\' animals{1} '*_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
-signals_names = {'Grid4' 'LSSC' 'Allen' };%'LSSC'
+signals_names = {'Allen'  };%'LSSC''Grid4' 'LSSC'
 
 isweigtedstr = { 'weighted'};%'notweighted'
 for l = 1:length(cent_features)
@@ -459,28 +462,29 @@ for sig_i = 1:length(signals_names)
     switch signals_names{sig_i}
         case 'Allen'
             
-            thT=[inf 5:2:23];
+%             thT=[7 5 9:2:23 inf];
+            thT=[7 inf];
         case 'LSSC'
             %                  [parcels_names, finalindex_gal, maskByGal, regionLabel_gal, roiLabelsbyAllen_gal] = get_gal_meta_parcels_by_allen(parcels_names, maskByAllen, ...
             %     regionLabel, animals);
             
-            thT=[inf 5:2:23];
+            thT=[7 inf];%5 9:2:23 inf];
         case 'Grid4'
             
             [~, parcels_region_labels_grid4] = getAllenClusteringLabelsGrid(par_inds, 4);
             visualinds_grid4 = find(parcels_region_labels_grid4==1);
             somatoinds_grid4 = find(parcels_region_labels_grid4==6);
-            thT=[inf 200 150 250:50:400];%50:50:400;
+            thT=[  150 inf];%250:50:400 ];%50:50:400;
     end
     
     
     for th=thT
-        plot_corr_matrices_allen(outputfolder, animals,statenames, th, parcels_names, parcels_region_labels);
-        simnames=simname;
-        simnames(simname=='_')=' ';
-        suptitle([simnames ' by states k=' num2str(th)]); 
-        set(gcf,'Position',[680         104        1107         874]);
-          mysave(gcf, fullfile(outputfiggolder,['W_'   signals_names{sig_i} '_th' num2str(th) ]));
+%         plot_corr_matrices_allen(outputfolder, animals,statenames, th, parcels_names, parcels_region_labels);
+%         simnames=simname;
+%         simnames(simname=='_')=' ';
+%         suptitle([simnames ' by states k=' num2str(th)]); 
+%         set(gcf,'Position',[680         104        1107         874]);
+%           mysave(gcf, fullfile(outputfiggolder,['W_'   signals_names{sig_i} '_th' num2str(th) ]));
     
         for isweigted = 1:length(isweigtedstr)
             

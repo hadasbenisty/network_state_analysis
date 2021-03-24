@@ -26,7 +26,7 @@ animals_db = get_animals_meta_data_by_csv;
 mean_activity = nan(1, length(statenames), length(animals_db.folder_list));
 for i=1:length(animals_db.folder_list)
     ispup_good =ispupilgood(animals_db, i);
-    isimaging_good =isimaginggood(animals_db, i);
+    isimaging_good =isimaginggood(animals_db, i)&animals_db.toinclude_list(i)==3;
     if length(statenames) == 2
         isvalidsession = isimaging_good;
     else

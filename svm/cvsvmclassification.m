@@ -1,4 +1,4 @@
-function [bestc, bestg, str4training] = cvsvmclassification(X, Y, C, G, foldsNum)
+function [bestc, bestg, str4training, wstr] = cvsvmclassification(X, Y, C, G, foldsNum)
 cv = zeros(length(C), length(G));
 classes = unique(Y);
 wstr=' ';

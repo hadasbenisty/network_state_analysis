@@ -8,16 +8,16 @@ animals_db = get_animals_meta_data_by_csv;
 statenames_3states = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 statenames_2states = {'qui', 'loc'};
 similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
-signames = {'Grid4' 'Allen' };% ;
+signames = {'Grid4','Allen'};% ;
 
 for sim_i = 1:length(similarity_name)
     
     for ai = 1:length(animals_db.folder_list)
-        if animals_db.isgoodpupil_list(ai)==find(strcmp(animals_db.isgoodpupil_lut, 'BAD'))
-            continue;
-        end
+        if animals_db.toinclude_list(ai)==find(strcmp(animals_db.toinclude_lut, 'Good'))
+           
         %         eval_weights_and_cent_perday(similarity_name{sim_i}, animals{ai}, statenames);
         eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_2states);
+        end
     end
 end
 end
@@ -141,15 +141,22 @@ for state_i = 1:length(statenames)
         
         
         if strcmp(signames{sig_i}, 'Grid4')
+            if length(ii) > size(data.(signames{sig_i}),1)
+               error('check this');
+            else
             data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
-            thT=[Inf 50:50:400];
+            end
+            thT=[Inf 150];
         else
-            thT=[Inf 5:2:23];
+            thT=[Inf 7 ];
         end
 %         if  exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
 %             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
 %         else
             W_corr = measure_weights(data.(signames{sig_i}), simname);
+            if isempty(W_corr)
+                continue;
+            end
 %         end
         for th=thT
             [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @process_sim, th);
