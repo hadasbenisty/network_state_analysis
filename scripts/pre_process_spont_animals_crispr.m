@@ -235,9 +235,9 @@ params.TimeBeforeLocOff=3;%for locomotion state, minimum time before locomotion 
 params.TimeSinceSitOn=5;%for quiescence state, minimum time since quiescence onset
 params.TimeBeforeSitOff=5;%for quiescence state, minimum time before quiescence offset
 params.TimeSinceEvent=3;%for any state, minimum time since any event onset/offset
-params.minRunDuration=5;% minimum run duration during locomotion state
+params.minRunDuration=3;% minimum run duration during locomotion state
 params.minArousalDuration=2; %minimum face/pupil arousal state (high or low arousal)
-params.minSitDuration=3;%minimum sit duration during quiescnece state
+params.minSitDuration=5;%minimum sit duration during quiescnece state
 
 mkNewDir(fullfile(procdatapath, animalpath));
 disp(animalpath);

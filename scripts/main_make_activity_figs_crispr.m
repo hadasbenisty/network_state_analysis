@@ -10,7 +10,7 @@ mkNewDir(outputfiggolder);
 
 
 plot_activity_by_state(outputfiggolder, procdatapath, {'qui', 'loc'});
-plot_activity_by_state(outputfiggolder, procdatapath, {'low_pup_q', 'high_pup_q', 'high_pup_l'});
+% plot_activity_by_state(outputfiggolder, procdatapath, {'low_pup_q', 'high_pup_q', 'high_pup_l'});
 
 plot_traces_events(outputfiggolder);
 end
@@ -74,7 +74,7 @@ animals_db = get_animals_meta_data_by_csv;
 
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
 [~, ~, finalindex.Allen] = get_allen_meta_parcels;
-validsessions = animals_db.isgoodpupil_list'==find(strcmp(animals_db.isgoodpupil_lut,'GOOD'));
+validsessions = animals_db.toinclude_list==3
 for i=1:length(validsessions)
     if ~validsessions(i)
         continue;
