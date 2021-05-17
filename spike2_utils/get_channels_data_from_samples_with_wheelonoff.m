@@ -24,6 +24,7 @@ for ni = 1:length(names)
             wheelData=data(:,channels.WHEEL);
             wheelData=fillmissing(wheelData,'nearest');
             dataWheel.trial{1}=(wheelData(:))'; 
+            
             dataWheel.time{1}=1/dataWheel.fsample:1/dataWheel.fsample:((size(dataWheel.trial{1},2))/dataWheel.fsample);
             [h1,sCFG] = wheel_changepoints(sCFG,dataWheel);
             channels_data.wheelspeed=sCFG.sL0PPWR.db1SpeedMpS;

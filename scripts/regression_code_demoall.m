@@ -22,28 +22,33 @@ end
 function do_analysis(animals_db, datapath, imagingpath, spike2path, procdatapath)
 % regression analysis
 clc;
-for k=1:length(animals_db.animal_list)
-    if animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))&&animals_db.isimagingood_list(k)==find(strcmp(animals_db.isimagingood_lut, 'GOOD'))
+for k=44:length(animals_db.animal_list)
+    if animals_db.toinclude_list(k)==find(strcmp(animals_db.toinclude_lut, 'Good'))&&...
+            animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
         mkNewDir(fullfile(procdatapath,animals_db.folder_list{k}));
         resfile = fullfile(procdatapath,animals_db.folder_list{k}, 'regression_res.mat');
-        if isfile(resfile)
+        if isfile(resfile)&&0
             a = load(resfile);
             if ~isempty(a.outputMat_gcamp_regular)
-            continue;
+                continue;
             end
         end
         %extract_sustained_state(datapath, procdatapath, spike2path, animals_db.folder_list{k});
         tic
         isair=animals_db.sessionsid_list(k)==1;
-        outputMat_gcamp_regular = ...
-            returnCVRSquared(animals_db.folder_list{k},k,fullfile(datapath,animals_db.folder_list{k}),fullfile(imagingpath,animals_db.folder_list{k}),fullfile(spike2path,animals_db.folder_list{k}),isair,25);
+%         try
+            outputMat_gcamp_regular = ...
+                returnCVRSquared(animals_db.folder_list{k},k,fullfile(datapath,animals_db.folder_list{k}),fullfile(imagingpath,animals_db.folder_list{k}),fullfile(spike2path,animals_db.folder_list{k}),isair,25);
+%         catch
+%             continue;
+%         end
         toc
         if ~isempty(outputMat_gcamp_regular)
-        save(resfile,'outputMat_gcamp_regular');
+            save(resfile,'outputMat_gcamp_regular');
         end
         
     else
-%         disp(strcat('data isnt good for',animals_db.folder_list{k}));
+        %         disp(strcat('data isnt good for',animals_db.folder_list{k}));
     end
     
 end
@@ -57,9 +62,11 @@ for k=1:length(animals_db.folder_list)
         continue;
     end
     load(resfile,'outputMat_gcamp_regular');
-    if ~isempty(~outputMat_gcamp_regular)
-    all_results_type(:,:,k) = outputMat_gcamp_regular;
+    if isempty(outputMat_gcamp_regular)
+        continue;
     end
+    all_results_type(:,:,k) = outputMat_gcamp_regular;
+   
     
 end
 
@@ -88,23 +95,31 @@ for ti = 1:length(animals_db.type_lut)
     subplot(R,R,j+1);imshow(nanmean(Pvec(:, 120:240,:),3),[0 M]);title('Average');colorbar;colormap jet;
      suptitle([ curtype '  per session, using all predictors']);
     figure;subplot(2,2,1);
-    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title('All');colorbar;
+    sessionsnum=sum(~isnan(squeeze(rsquareRes(1,1,:))));
+    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title(['All N=' num2str(sessionsnum)]);colorbar;
     
     %Pupil
     subplot(2,2,2);
     Pvec = scores_to_heatmap_allen(squeeze(rsquareRes(2,:,:)), false);
-    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title('Pupil');colorbar;
+    sessionsnum=sum(~isnan(squeeze(rsquareRes(2,1,:))));
+    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title(['Pupil N=' num2str(sessionsnum)]);colorbar;
+    
     %Face
     subplot(2,2,3);
     Pvec = scores_to_heatmap_allen(squeeze(rsquareRes(3,:,:)), false);
-    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title('Face');colorbar;
+    sessionsnum=sum(~isnan(squeeze(rsquareRes(3,1,:))));
+    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title(['Face N=' num2str(sessionsnum)]);colorbar;
+    
     %Wheel
     subplot(2,2,4);
     Pvec = scores_to_heatmap_allen(squeeze(rsquareRes(4,:,:)), false);
-    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title('Wheel');colorbar;
+     sessionsnum=sum(~isnan(squeeze(rsquareRes(4,1,:))));
+    imagesc(nanmean(Pvec(:, 120:240,:),3),[0 M]);title(['Wheel N=' num2str(sessionsnum)]);colorbar;
+   
+    
     colormap jet;
     suptitle([ curtype ' ' num2str(sessionsnum),' sessions']);
     
-%     mysave(gcf, fullfile(figspath, ['R2_' curtype]));
+    mysave(gcf, fullfile(figspath, ['R2_' curtype]));
 end
 end

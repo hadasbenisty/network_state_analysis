@@ -1,7 +1,7 @@
 function [outputMat_grabs_regular, outputMat_grabs_ridge] = ...
     returnCVRSquared(animal,k,dataFolderPath,imagingdatapath,spike2path,airpuff_trial,howManyFacePCs)
 [parcels_names, parcels_region_labels, finalindex, region_lut] = get_allen_meta_parcels; %#ok<ASGLU>
-
+addpath(genpath('../network_analysis/'))
 %dbstop if warning
 tic
 %**************************************************************************
@@ -46,51 +46,15 @@ if ~isfile(fullfile(imagingdatapath,'Ca_traces_spt_patch11_Allen_dfff.mat'))
     disp(['no imaging data ' imagingdatapath]);
     return;
 end
-if ~isfile(fullfile(dataFolderPath,'smrx_signals_v3.mat'))
-    disp(['no smrx_signals_v3 data ' dataFolderPath]);
+if ~isfile(fullfile(dataFolderPath,'smrx_signals_v4.mat'))
+    disp(['no smrx_signals_v4 data ' dataFolderPath]);
     return;
 end
-    
+isgoodface = true;
+isgoodpupil = true;
 dFoF_parcells = load(fullfile(imagingdatapath,'Ca_traces_spt_patch11_Allen_dfff.mat')); %<- parcels data
-smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v3.mat'));
-% get those parcels from one hemi
-blue_parcels=dFoF_parcells.parcels_time_trace(finalindex,:);
-%add dfof into the same folders later 
-%smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(params.deterend.filtLen/2:end);
+smrx_sigs = load(fullfile(dataFolderPath,'smrx_signals_v4.mat'));
 
-%cut off time at the end if not aligned
-if size(blue_parcels,2)==length(smrx_sigs.timestamps.timaging)
-elseif size(blue_parcels,2)<length(smrx_sigs.timestamps.timaging)
-    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:size(blue_parcels,2));
-elseif size(blue_parcels,2)>length(smrx_sigs.timestamps.timaging)
-    blue_parcels=blue_parcels(:,1:length(smrx_sigs.timestamps.timaging));
-end
-
-%equal length sessions input jan 26 2021
-if size(blue_parcels,2)>MAX_TIME&&length(smrx_sigs.timestamps.timaging)>MAX_TIME
-    blue_parcels=blue_parcels(:,1:MAX_TIME);
-    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:MAX_TIME);
-else
-end
-proc_filelist = (dir(fullfile(spike2path, '*_proc.mat')));
-if isempty(proc_filelist)
-    disp(['No face map file at ' spike2path]); 
-    outputMat_grabs_regular=[];
-    outputMat_grabs_ridge = [];
-    return;
-end
-ProcFileName=fullfile(spike2path,proc_filelist.name);
-proc_output = load(fullfile(ProcFileName));
-
-% 1) pupil*****************************************************************
-
-pupilfile = dir(fullfile(dataFolderPath, 'pupil_clean.mat'));
-if  isempty(pupilfile)
-    disp('no pupil file');
-    return;
-end
-
-%% for each mouse, load spont and airpuff folders and perform correlations
 
 if ~isfield(smrx_sigs.timing, 'airpuffstart')
     if isfield(smrx_sigs.timing, 'stimstart') % if this is a vis session, save vis as airpuff so we'll know to avoid these segmenents
@@ -101,23 +65,57 @@ if ~isfield(smrx_sigs.timing, 'airpuffstart')
         smrx_sigs.timing.airpuffend = [];
     end
 end
-dat=load(fullfile(pupilfile.folder, pupilfile.name));
-if ~isfield(dat, 'areaii')
-    warning('No Pupil on face map');
-    return;
+
+% get those parcels from one hemi
+blue_parcels=dFoF_parcells.parcels_time_trace(finalindex,:);
+%add dfof into the same folders later 
+%smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(params.deterend.filtLen/2:end);
+
+%equal length sessions input jan 26 2021
+if size(blue_parcels,2)>MAX_TIME&&length(smrx_sigs.timestamps.timaging)>MAX_TIME
+    blue_parcels=blue_parcels(:,1:MAX_TIME);
+    smrx_sigs.timestamps.timaging=smrx_sigs.timestamps.timaging(1:MAX_TIME);
 end
-pupil_Norm = dat.areaii;
-if size(pupil_Norm,1)==length(smrx_sigs.timing.pupilcamstart(1:end))
-elseif size(pupil_Norm,1)<length(smrx_sigs.timing.pupilcamstart(1:end))
+proc_filelist = dir(fullfile(spike2path, '*_proc.mat'));
+if isempty(proc_filelist)
+    disp(['No face map file at ' spike2path]); 
+    isgoodface = false;  
+
+end
+if isgoodface
+ ProcFileName=fullfile(spike2path,proc_filelist.name);
+proc_output = load(fullfile(ProcFileName));
+end
+% 1) pupil*****************************************************************
+
+pupilfile = dir(fullfile(dataFolderPath, 'pupil_clean.mat'));
+if  isempty(pupilfile)
+    disp('no pupil file');
+    isgoodpupil=false;
+else
+    dat=load(fullfile(pupilfile.folder, pupilfile.name));
+    if ~isfield(dat, 'areaii')
+        warning('No Pupil on face map');
+        isgoodpupil=false;
+    else
+        pupil_Norm = dat.areaii;
+    end
+end
+
+if isgoodpupil
+if size(pupil_Norm,1)<length(smrx_sigs.timing.pupilcamstart(1:end))
     % if pupil video is smaller than cam ticks then subset cam ticks
     smrx_sigs.timing.pupilcamstart=smrx_sigs.timing.pupilcamstart(1:size(pupil_Norm,1));
     smrx_sigs.timing.pupilcamend=smrx_sigs.timing.pupilcamend(1:size(pupil_Norm,1));
 elseif size(pupil_Norm,1)>length(smrx_sigs.timing.pupilcamstart(1:end))
     %if cam ticks are more subset pupil and facemap video
     pupil_Norm=pupil_Norm(1:length(smrx_sigs.timing.pupilcamstart),:);
+    if isgoodface
     proc_output.proc.motSVD{1,1}=proc_output.proc.motSVD{1,1}(1:length(smrx_sigs.timing.pupilcamstart),:);
+    end
 end
 pupil_time=smrx_sigs.timing.pupilcamstart;
+
 %remove NaNs
 
 %find the smallest of facemap, pupil, and imaging
@@ -128,12 +126,13 @@ if pupil_time(1) > smrx_sigs.timestamps.timaging(1)
    blue_parcels(:,toremove_img)=[];
 elseif pupil_time(1) < smrx_sigs.timestamps.timaging(1)
     %interp will take care of this case
-else   
+  
 end
-
 pupil_interp = interp1(pupil_time,pupil_Norm,smrx_sigs.timestamps.timaging);
 pupil_interp(isnan(pupil_interp))=0;
 pupil_sig=zscore(pupil_interp);
+
+end
 % what lohani and moberly did
 % pupil=proc_output.proc.pupil.area; 
 % pupil_time = smrx_sigs.timing.pupilcamstart(1:length(pupil));
@@ -142,6 +141,8 @@ pupil_sig=zscore(pupil_interp);
 % pupil_sig = zscore(pupil_interp);
 
 % 2) face PC1**************************************************************
+if  isgoodface
+
 wholeFaceSVD_time = pupil_time;
 
 wholeFaceSVD_interp = zeros(length(smrx_sigs.timestamps.timaging), 100);
@@ -153,7 +154,7 @@ wholeFaceSVD_interp = zeros(length(smrx_sigs.timestamps.timaging), 100);
         wholeFaceSVD_interp(:,i) = zscore(tmp_interp);
     end
  face_PC1 = wholeFaceSVD_interp(:,1:howManyFacePCs);
-    
+end
 %3 wheel speed cont********************************************************
 wheel_speed = smrx_sigs.channels_data.wheelspeed;
 wheel_time = (1:length(wheel_speed))/5000;
@@ -201,14 +202,14 @@ if airpuff_trial
     end
 
     %3 remove these inds from each behavioral variable:
+    if isgoodpupil
     pupil_sig(airpuff_delete == 1) = [];
-
+    end
+    if isgoodface
     face_PC1(airpuff_delete == 1,:) = [];
-
+    end
     wheel(airpuff_delete == 1) = [];
-
-    blue_parcels_z(:,airpuff_delete == 1) = [];
-    
+    blue_parcels_z(:,airpuff_delete == 1) = [];    
     blue_parcels(:,airpuff_delete == 1) = [];
       
 end    
@@ -226,12 +227,28 @@ end
 %may no longer apply)
 
 toremove=all(~isnan(blue_parcels))==0; % find indices where there are missing NaNs for all parcels
+L = min([length(blue_parcels), length(toremove), length(wheel), ]);
+if isgoodface
+L = min([L,  length(face_PC1)]);
+end
+if isgoodpupil
+    L = min([L,  length(pupil_sig)]);
+end
+blue_parcels=blue_parcels(:,1:L);
+wheel=wheel(1:L);
+toremove=toremove(1:L);
+
+
 %the indices are always the same as find(all(isnan(blue_parcels))==1) since
 %nans are usually missing from all parcels at once
-
-pupil_sig(toremove== 1) = [];
-
+if isgoodpupil
+    pupil_sig=pupil_sig(1:L);
+pupil_sig(toremove(1:length(pupil_sig))== 1) = [];
+end
+if isgoodface
+    face_PC1=face_PC1(1:L, :);
 face_PC1(toremove== 1,:) = [];
+end
 wheel(toremove== 1)= [];
 
 blue_parcels_z(:,toremove == 1) = [];
@@ -246,41 +263,16 @@ blue_parcels(:,toremove == 1) = [];
 %**************************************************************************
 
 %1) using all behavioral variables GRABS:
-
+K = 10; % number of folds
 % regular regression:
 
-rsquared_grabs_allVars = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
-for parcel_num = 1:size(blue_parcels,1) % for each parcel
-    y = blue_parcels_z(parcel_num,:)';
-    X = [pupil_sig face_PC1 wheel];
-    K = 10; % number of folds
-    cv = cvpartition(size(y,1),'kfold',K);
-    cv_rsquared_values = zeros(K,size(y,2));
-    for i = 1:K
-        % training and testing indices for this fold
-        trainIdx = cv.training(i);
-        testIdx = cv.test(i);
-        % return beta dims on training set:
-        
-        betas = regress(y(trainIdx,:), X(trainIdx,:)); %get beta weights.
-        % predict using testing data
-        Vm = (X(testIdx,:) * betas); % reconstruct data
-        all_rsquareds = zeros(1,size(y,2));
-        for j = 1:size(y,2)
-            predicted = Vm(:,j);
-            actual = y(testIdx,:);
-            actual = actual(:,j);
-            % caluculate R squared
-            SSR = sum((predicted-nanmean(actual)).^2);
-            SSTotal = sum((actual-nanmean(actual)).^2);
-            all_rsquareds(j) = SSR/SSTotal;
-        end
-        cv_rsquared_values(i,:) = all_rsquareds;
+rsquared_grabs_allVars = nan(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
+if isgoodpupil&&isgoodface
+    X = [pupil_sig face_PC1 wheel]';
+    for parcel_num = 1:size(blue_parcels,1) % for each parcel
+        rsquared_grabs_allVars(parcel_num) = cross_val_regression_chunks2d(K, X, blue_parcels_z(parcel_num,:)');
     end
-    cvrsquared = mean(cv_rsquared_values);
-    rsquared_grabs_allVars(parcel_num) = cvrsquared;
 end
-
 % Ridge regression:
 % rsquared_grabs_allVars_ridge = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
 % for parcel_num = 1:size(blue_parcels,1) % for each parcel
@@ -317,37 +309,14 @@ end
 %3) using pupil only~ GRABS:
 
 %regular regression:
-rsquared_grabs_pupil = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
-for parcel_num = 1:size(blue_parcels,1) % for each parcel
-    y = blue_parcels_z(parcel_num,:)';
-    X = pupil_sig;
-    K = 10; % number of folds
-    cv = cvpartition(size(y,1),'kfold',K);
-    cv_rsquared_values = zeros(K,size(y,2));
-    for i = 1:K
-        % training and testing indices for this fold
-        trainIdx = cv.training(i);
-        testIdx = cv.test(i);
-        % return beta dims on training set:
-        betas = regress(y(trainIdx,:), X(trainIdx,:)); %get beta weights.
-        % predict using testing data
-        Vm = (X(testIdx,:) * betas); % reconstruct data
-        all_rsquareds = zeros(1,size(y,2));
-        for j = 1:size(y,2)
-            predicted = Vm(:,j);
-            actual = y(testIdx,:);
-            actual = actual(:,j);
-            % caluculate R squared
-            SSR = sum((predicted-mean(actual)).^2);
-            SSTotal = sum((actual-mean(actual)).^2);
-            all_rsquareds(j) = SSR/SSTotal;
-        end
-        cv_rsquared_values(i,:) = all_rsquareds;
-    end
-    cvrsquared = mean(cv_rsquared_values);
-    rsquared_grabs_pupil(parcel_num) = cvrsquared;
-end
 
+rsquared_grabs_pupil = nan(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
+if isgoodpupil
+    X = pupil_sig';
+    for parcel_num = 1:size(blue_parcels,1) % for each parcel
+        rsquared_grabs_pupil(parcel_num) = cross_val_regression_chunks2d(K, X, blue_parcels_z(parcel_num,:)');
+    end
+end
 % Ridge regression:
 % rsquared_grabs_pupil_ridge = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
 % for parcel_num = 1:size(blue_parcels,1) % for each parcel
@@ -384,36 +353,14 @@ end
 
 %**************************************************************************
 %5) using Face only~ GRABS:
-rsquared_grabs_face = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
-for parcel_num = 1:size(blue_parcels,1) % for each parcel
-    y = blue_parcels_z(parcel_num,:)';
-    X = face_PC1;
-    K = 10; % number of folds
-    cv = cvpartition(size(y,1),'kfold',K);
-    cv_rsquared_values = zeros(K,size(y,2));
-    for i = 1:K
-        % training and testing indices for this fold
-        trainIdx = cv.training(i);
-        testIdx = cv.test(i);
-        % return beta dims on training set:
-        betas = regress(y(trainIdx,:), X(trainIdx,:)); %get beta weights.
-        % predict using testing data
-        Vm = (X(testIdx,:) * betas); % reconstruct data
-        all_rsquareds = zeros(1,size(y,2));
-        for j = 1:size(y,2)
-            predicted = Vm(:,j);
-            actual = y(testIdx,:);
-            actual = actual(:,j);
-            % caluculate R squared
-            SSR = sum((predicted-mean(actual)).^2);
-            SSTotal = sum((actual-mean(actual)).^2);
-            all_rsquareds(j) = SSR/SSTotal;
-        end
-        cv_rsquared_values(i,:) = all_rsquareds;
+rsquared_grabs_face = nan(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
+if isgoodface
+    X = face_PC1';
+    for parcel_num = 1:size(blue_parcels,1) % for each parcel
+        rsquared_grabs_face(parcel_num) = cross_val_regression_chunks2d(K, X, blue_parcels_z(parcel_num,:)');
     end
-    cvrsquared = mean(cv_rsquared_values);
-    rsquared_grabs_face(parcel_num) = cvrsquared;
 end
+
 
 %Ridge regression:
 % rsquared_grabs_face_ridge = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
@@ -450,35 +397,12 @@ end
 %**************************************************************************
 %**************************************************************************
 %7) using wheel only~ GRABS:
-rsquared_grabs_wheel = zeros(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
+rsquared_grabs_wheel = nan(1,size(blue_parcels,1)); % initialize variable to hold parcel rsqrd vals
+
+X = wheel';
 for parcel_num = 1:size(blue_parcels,1) % for each parcel
-    y = blue_parcels_z(parcel_num,:)';
-    X = wheel;
-    K = 10; % number of folds
-    cv = cvpartition(size(y,1),'kfold',K);
-    cv_rsquared_values = zeros(K,size(y,2));
-    for i = 1:K
-        % training and testing indices for this fold
-        trainIdx = cv.training(i);
-        testIdx = cv.test(i);
-        % return beta dims on training set:
-        betas = regress(y(trainIdx,:), X(trainIdx,:)); %get beta weights.
-        % predict using testing data
-        Vm = (X(testIdx,:) * betas); % reconstruct data
-        all_rsquareds = zeros(1,size(y,2));
-        for j = 1:size(y,2)
-            predicted = Vm(:,j);
-            actual = y(testIdx,:);
-            actual = actual(:,j);
-            % caluculate R squared
-            SSR = sum((predicted-mean(actual)).^2);
-            SSTotal = sum((actual-mean(actual)).^2);
-            all_rsquareds(j) = SSR/SSTotal;
-        end
-        cv_rsquared_values(i,:) = all_rsquareds;
-    end
-    cvrsquared = mean(cv_rsquared_values);
-    rsquared_grabs_wheel(parcel_num) = cvrsquared;
+    rsquared_grabs_wheel(parcel_num) = cross_val_regression_chunks2d(K, X, blue_parcels_z(parcel_num,:)');
+    
 end
 
 % % Ridge regression:

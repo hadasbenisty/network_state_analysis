@@ -1,9 +1,10 @@
 function main_plot_simple_stats
 animals={'xs','xx','xz','xw','xt','xu'};
-loosestr = 'loose';
 %plot_vals_by_state(animals)
 %plot_time_spent_by_state_spont(animals)
 %plot_learning_sponblink(animals)
+% plotTracesXs;% plot example of time traces (cosyne poster)
+plot_frames_xs; % plot examples of frames (cosyne poster)
 plot_resp_vs_contrast_single_parcel(animals, 1, loosestr);
 plot_exampletimetraces(animals,1,2,102,110)
 
@@ -276,8 +277,9 @@ function plot_exampletimetraces(animalNames,animal_i,day_i,t1,t2)
 %animal_i=1;
 % day_i=2;
 % t1=102;t2=110;
-%animal =xs, dayi=2, t1=102,t2=110
+%animal =xs, day_i=2, t1=102,t2=110
 %animal =xs, dayi=2, t1=202,t2=210 also 302 to 210
+animal_i = 1; day_i = 2; t1=190; t2 = 220;
 %animalNames = {'xs'};%'xu'   'xs'    };
 addpath(genpath('../parcellation/'));
 addpath(genpath('../correlation'));
@@ -331,7 +333,7 @@ maskByAllen.Allen = maskAllen;
 regionLabel.Allen = allen_parcels.regionNum;
 isLeftLabel.Allen = repmat(1:2, 1, 28);
 regionLabel.nameslegend = {'Rest','Visual','Parietal','Temp','Aud','R-S','S-S','Motor'};
-pupil_data = fullfile('X:\Lan\Meso-imaging\', animalNames{animal_i}, [animalNames{animal_i} '_D' ...
+pupil_data = fullfile('X:\Older\Lan\Meso-imaging\', animalNames{animal_i}, [animalNames{animal_i} '_D' ...
 num2str(days(day_i))  '_pupil_clean.mat']);
 pupilarea = load(pupil_data,  'areaii');
 pupil_Norm=pupilarea.areaii; %get pupil camera timepoints
@@ -381,7 +383,213 @@ plot(pupil_time(t1*30.3:t2*30.3),pupil_Norm(t1*30.3:t2*30.3).','color',[0.9290 0
 linkaxes([ax1, ax2, ax3, ax4,ax5],'x');
 mysave(gcf,fullfile('X:\Lav\ProcessingDirectory\figure_1',strcat('timetraces_allen',char(animalNames(animal_i)),num2str(days(day_i)),'t',num2str(t1),'to',num2str(t2))),'all');
 end
+function plotTracesXs
+figspath = 'X:\Hadas\Meso-imaging\lan\meso_results\figs\cosyne2021\activity';
+mkNewDir(figspath);
+day_i = 2;
+addpath(genpath('../parcellation/'));
+addpath(genpath('../correlation'));
+addpath(genpath('../functions/'));
+addpath(genpath('../LSSC-higley-master\LSSC-higley-master'));
+addpath(genpath('../../../utils/Questionnaire/'));
+addpath(genpath('../pre_processing_scripts'));
+addpath(genpath('../pre_processing_scripts'));
+addpath('X:\Hadas\Meso-imaging\lan\results\code\Functions')
+[~,days]=animaltodays('xs');
 
+fltstr = 'spt';
+
+fsspike2=5e3;
+%initialize output and input paths
+spike2pth0 = 'X:\Hadas\Meso-imaging\lan\spike2data';
+addpath(genpath('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master'));
+
+
+        fsimaing=33;
+        delay_filt = 500;
+  
+  
+datapath = ['X:\Hadas\Meso-imaging\lan\xspsych\' fltstr '\'];
+spike2pth = fullfile(spike2pth0, 'xs');
+load(fullfile(spike2pth, ['spike2data','xs' num2str(days(day_i)) '.mat']),'channels_data',...
+    'timing', 't_imaging');
+parfile = fullfile(datapath, ['xs' '_' num2str(days(day_i)) '_allen.mat']);
+pardataAllan = load(parfile);
+
+r=load(['X:\Hadas\Meso-imaging\lan\xspsych\spt\xs_D' num2str(days(day_i)) '_spt_patch14_dfff.mat']);
+L=min(size(r.regsig,2), length(t_imaging));
+
+t_imaging = t_imaging(1:L);
+r.regsig = r.regsig(:,1:L);
+
+[~, parcels_region_labels, finalindex, nameslegend] = get_allen_meta_parcels;
+
+if length(t_imaging) > size(pardataAllan.parcels_time_trace,2)
+    t_imaging=t_imaging(1:size(pardataAllan.parcels_time_trace,2));
+    r.regsig = r.regsig(:,1:size(pardataAllan.parcels_time_trace,2));
+end
+wheel_res = interp1((1:length(channels_data.wheelspeed))/5e3,channels_data.wheelspeed, t_imaging);
+wheel_res=(wheel_res-mean(wheel_res))/std(wheel_res);
+timing.stimstart=timing.stimstart/fsspike2;
+timing.stimend=timing.stimend/fsspike2;
+timing.airpuffstart=timing.airpuffstart/fsspike2;
+timing.airpuffend=timing.airpuffend/fsspike2;
+
+pupil_data = fullfile('X:\Older\Lan\Meso-imaging\', 'xs', ['xs' '_D' ...
+num2str(days(day_i))  '_pupil_clean.mat']);
+pupilarea = load(pupil_data,  'areaii');
+pupil_Norm=pupilarea.areaii; %get pupil camera timepoints
+pupil_Norm=(pupil_Norm-mean(pupil_Norm))/std(pupil_Norm);
+[timing.pupilstart,timing.pupilend]=squaredetect(channels_data.pupil_frame,.5);
+
+pupil_time=timing.pupilstart/fsspike2;
+X_Allen =pardataAllan.parcels_time_trace(:, 1:length(t_imaging));
+X_Allen=X_Allen(finalindex,:);
+X_Allen = bsxfun(@rdivide, X_Allen - min(X_Allen,[],2),max(X_Allen,[],2)-min(X_Allen,[],2));
+
+tvec = [1025 1040 1060 1069];
+
+
+clrs = colormap('jet');
+clusters = unique(parcels_region_labels);
+clrs = interp1(linspace(0,1,64), clrs, linspace(0,1,length(clusters)));
+figure;l=1;
+set(gcf,'renderer','Painters')
+ax1=subplot(2,1,1);
+for c = 1:length(clusters)
+    inds = find(parcels_region_labels==clusters(c));
+    for i=1:length(inds)
+        plot(t_imaging,-0.4*(l-1)+X_Allen(inds(i),:),'color',clrs(c,:));
+        hold all;
+        l=l+1;
+    end
+end
+for i=1:length(timing.airpuffstart)
+    plot(linspace(timing.stimstart(i),timing.stimend(i),10),ones(1,10)*-0.4*(l-1),'k',...
+        'LineWidth',5);
+    plot(linspace(timing.airpuffstart(i),timing.airpuffend(i),10),ones(1,10)*-0.4*(l-1),'r',...
+        'LineWidth',5);
+%     plot(timing.stimend(i)/5e3,-0.4*(l-1),'k*');
+%     line([1 1]*timing.stimstart(i)/5e3,get(gca,'YLim'),'Color','k');
+end
+for ti=1:length(tvec)
+   line([1 1]*tvec(ti), get(gca,'YLim'),'Color','k','lineWidth',1,'LineStyle',':');    
+end
+
+set(gca,'XColor','none');
+ylabel('Imaging Traces')
+ax4=subplot(4,1,3);
+plot(t_imaging,wheel_res.','color','k');ylabel('Wheel Speed');
+set(gca,'XColor','none');
+for ti=1:length(tvec)
+   line([1 1]*tvec(ti), get(gca,'YLim'),'Color','k','lineWidth',1,'LineStyle',':');    
+end
+ax5=subplot(4,1,4);
+plot(pupil_time(2:end),pupil_Norm,'color','k');ylabel('Pupil Size');
+xlabel('Time [sec]')
+for ti=1:length(tvec)
+   line([1 1]*tvec(ti), get(gca,'YLim'),'Color','k','lineWidth',1,'LineStyle',':');    
+end
+linkaxes([ax1,  ax4,ax5],'x');
+xlim([1.0139    1.0813]*1e3);
+mysave(gcf,fullfile(figspath, 'xs_day2_traces'));
+
+%% frames
+figure;
+for ti=1:length(tvec)
+   ind = findClosestDouble(t_imaging, tvec(ti)); 
+    subplot(2,2,ti);
+    P=medfilt2(reshape(r.regsig(:,ind),[256 256]));
+    P(:,126:130) = nan;
+    P(:,end-1:end)=nan;
+    P=flipud(P);
+    imshow(P,[-1 1]*.5);
+    colorbar;
+
+b = imagesc(P,[-1 1]*.5);
+set(b,'AlphaData',~isnan(P))
+ 
+set(gcf,'renderer','painters');
+%myColorMap(1,:) = 1;
+
+h=colorbar;
+;axis off
+set(h,'Ticks',[-1 0 1]*0.5)
+title(['T' num2str(ti)]);
+end
+mysave(gcf,fullfile(figspath, 'frames_spont'));
+figure;
+inds = [     1    13    11    12     9    17    23];
+
+for i=1:length(inds)
+        plot(t_imaging,X_Allen(inds(i),:),'color',clrs(i,:));
+        hold all;
+end
+ plot(t_imaging,X_Allen(inds(i),:),'k','LineWidth',5);
+legend(cat(2,nameslegend, {'visual stim.'}), 'Location','bestoutside');
+mysave(gcf,fullfile(figspath, 'legend'));
+
+
+
+end
+
+function plot_frames_xs
+spike2pth = 'X:\Hadas\Meso-imaging\lan\spike2data\xs';
+[~,days]=animaltodays('xs');
+day_i=2;
+load(fullfile(spike2pth, ['spike2data','xs' num2str(days(day_i)) '.mat']),...
+    't_imaging');
+
+
+
+
+r=load(['X:\Hadas\Meso-imaging\lan\xspsych\spt\xs_D' num2str(days(day_i)) '_spt_patch14_dfff.mat']);
+L=min(size(r.regsig,2), length(t_imaging));
+
+t_imaging = t_imaging(1:L);
+r.regsig = r.regsig(:,1:L);
+XX=zeros(256*256,60,75);
+for k=1:length(timing.stimstart)
+    ind = findClosestDouble(timing.stimstart(k),t_imaging);
+    XX(:,:,k) = r.regsig(:,[ind+5:ind+64]);
+    
+    
+end
+XX = mean(XX,3);
+for k=1:60
+    YY(:,:,k) = medfilt2(reshape(XX(:,k),[256 256]));
+    YY(:,1:128,k)=nan;
+end
+YY(:,end,:)=nan;
+ZZ=nan(256,256,6);
+for zz = 1:6
+    ZZ(:,:,zz) = medfilt2(reshape(r.regsig(:, -10+ind-2*(zz-1)),[256 256]));
+    ZZ(:,1:128,zz)=nan;
+end
+YY(:,end,:)=nan;
+ZZ(:,end,:)=nan;
+
+figure;
+for k=1:3   
+    subplot(2,3,k);
+    plot_vals_heatmap(YY(:,:,1+2*(k-1)), '',...
+                        [],  -.5, .5, 1,colormap(jet));
+end
+
+
+for k=1:3   
+    subplot(2,3,3+k);
+    plot_vals_heatmap(ZZ(:,:,k), '',...
+                        [],  -.5, .5, 1,colormap(jet));
+  
+%      set(gca,'XTickLabel',[]);
+%     set(gca,'YTickLabel',[]);
+end
+set(gcf,'Position',[680         246        1136         732]);
+mysave(gcf,fullfile(figspath,'frames'))
+
+
+end
 function zscored=zscore_session(X)
 zscored=NaN(size(X,1),size(X,2));
 for i=1:size(X,1)

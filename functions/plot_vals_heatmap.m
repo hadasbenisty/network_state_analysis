@@ -6,7 +6,9 @@ end
 if ~exist('domidval','var')
     domidval=true;
 end
-
+if ~exist('colormapvals','var')
+    colormapvals = colormap(redblue);
+end
 %clims = [lowerlim upperlim];
 imshow(maskacc);
 b = imagesc(maskacc);
@@ -18,9 +20,14 @@ colormap(colormapvals);
 h=colorbar;
 caxis([lowerlim upperlim]);
 %colormap(fireice);h=colorbar;
-ylabel(h, clrbarttl);axis off
+mid = mean([lowerlim upperlim]);
+set(h,'Ticks', [lowerlim mid upperlim])
+if exist('clrbarttl','var')
+ylabel(h, clrbarttl);
+end
+axis off
 hold on
-if ~isempty(allen_indicators)
+if exist('allen_indicators','var') &&~isempty(allen_indicators)
 plot_parcellation_boundaries(allen_indicators);
 end
 end

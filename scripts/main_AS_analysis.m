@@ -45,8 +45,8 @@ imaging_data.data = dFoF_parcells.Allen;
 imaging_data.regionLabelsAllen = parcels_region_labels;
 imaging_data.roiLabelsByAllen = 1:length(parcels_names);
 imaging_data.parcelsMask = allen_map_final_index;
-winsizeSec=[3 5 10 15 20 25 30 ];
-winhopSec=1.5;
+winsizeSec=30;%[3 5 10 15 20 25 30 ];
+winhopSec=20;%1.5;
 for wi=1:length(winsizeSec)
 [results_allen_allendata{wi}, results_tree_allendata{wi}] = network_analysis_single_session(imaging_data, behaveData, winsizeSec(wi), winhopSec(wi),false);
 end

@@ -59,7 +59,7 @@ switch method
     case 'pearson_corr'
         W = corr(data');
     case 'cov'
-        data=bsxfun(@minus, data, mean(data,2));
+        data=bsxfun(@minus, X, mean(data,2));
         inner_products     = data * data.';
         [ij_norm, ji_norm] = meshgrid( diag(inner_products) );
         W            = inner_products ./ (sqrt(ij_norm .* ji_norm)+eps);
@@ -125,9 +125,11 @@ end
 %         case 'cols'
 %             W = bsxfun(@rdivide, W, sum(W,1));
 %     end
+
 if any(isnan(W(:)))
     W=[];
 end
+
 end
 
 

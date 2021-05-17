@@ -34,6 +34,8 @@ B. Spont data
    Output saved as: X:\Hadas\Meso-imaging\lan\meso_results\ProcessingDirectory\network_centrality\xs_partial_corr_high_pup_lAllen.mat
 
 ------------------
+C. Continuous network analysis
+1. main_network_to_arousal_LAN.m
 
 Make figs - 
 

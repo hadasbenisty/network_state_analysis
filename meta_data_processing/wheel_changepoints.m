@@ -1,6 +1,9 @@
 
 function [h1,sCFG] =wheel_changepoints(sCFG,dataWheel)
 %written by Quentin Perrenoud, Cardin Lab  
+if ~isfield(sCFG.sPARAM, 'winlengthsmoothing')%for a smoothing of half a second
+   sCFG.sPARAM.winlengthsmoothing = 0.5;
+end
 sampleRate=dataWheel.fsample;
 db1WheelRot=cell2mat(dataWheel.trial(1));
 db1Range = [min(db1WheelRot) max(db1WheelRot)];
@@ -46,7 +49,8 @@ end
 
 
 %Computes the speed by smoothing the differential of the distance
-db1Win = gausswin(sampleRate*0.5); %for a smoothing of half a second
+
+db1Win = gausswin(sampleRate*sCFG.sPARAM.winlengthsmoothing); 
 db1SpeedMpS = (conv(diff(db1RunDistM)*sampleRate, db1Win, 'same')/sum(db1Win)); %speed in m per second
 db1SpeedMpS = [db1SpeedMpS db1SpeedMpS(end)];
 
