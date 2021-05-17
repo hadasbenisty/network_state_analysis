@@ -3,7 +3,7 @@ ROI_list=[];
 parcellsMat = 'AllenParcels.mat';
 % if exist(parcellsMat, 'file')
 %     load(parcellsMat,  'Allparcells', 'parcels');
-    load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat', 'parcells_new');
+    load('parcells_updated121519.mat', 'parcells_new');
     parcels=parcells_new;
 % else
 %     load('allregions.mat', 'allregions');

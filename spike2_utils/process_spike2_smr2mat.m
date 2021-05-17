@@ -10,13 +10,13 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-function [data] = process_spike2_smr2mat(datapath, outputpath, data_time_stamp_filename, channels_num)
+function [data] = process_spike2_smr2mat(~, outputpath, data_time_stamp_filename, channels_num)
 
 display(strcat('loading in smr: ',data_time_stamp_filename));
 if ~exist(char(data_time_stamp_filename),'file')
         error('Could not find file');
 end
-fhand = CEDS64Open(fullfile(strcat(data_time_stamp_filename)));
+fhand = CEDS64Open(((data_time_stamp_filename)));
 if fhand == -1
     error('Could not open file');
 end

@@ -4,14 +4,16 @@ addpath('..\functions');
 addpath(genpath('../utils'));
 addpath(genpath('../meta_data_processing/'));
 animals_db = get_animals_meta_data_by_csv;
-outputFolder='X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
+outputFolder='X:\Hadas\Meso-imaging\CRISPR\traces_data';
 [params,channels] = get_channels_param('Vis','F238','blueuv');
 
 CEDS64LoadLib('../spike2_utils/CEDS64ML/');
 validsessions = animals_db.isimagingood_list'==find(strcmp(animals_db.isimagingood_lut,'GOOD'));
 validsessions=validsessions'&animals_db.toinclude_list==find(strcmp(animals_db.toinclude_lut,'Good'));
 for i=1:length(validsessions)
-
+    if validsessions(i) == 0
+        continue;
+    end
     pre_Session=char(animals_db.folder_list(i));
     if contains(pre_Session,'Control')
         Session = strrep(pre_Session,'9_C','9 C');
@@ -33,7 +35,7 @@ for i=1:length(validsessions)
         disp('no file');
     else
         tic
-        process_spike2_crispr('X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData\',tiffsPath, dataSmrxFile, outputPath, channels,params,Session);
+        process_spike2_crispr('X:\Hadas\Meso-imaging\CRISPR\traces_data\',tiffsPath, dataSmrxFile, outputPath, channels,params,Session);
         toc
         %[timing, channels_data] = spike2_retmappingandwheel(cedpath, outputpath,filename, fsspike2,channels,minRunDuration,minSitDuration,ITITime,pupilSR,tiffsPath,Session);
         %save here

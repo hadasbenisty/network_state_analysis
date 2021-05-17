@@ -7,7 +7,7 @@ finalindex=intersect(isleftlabel,toremove);
 parcels_region_labels_bilateral=[1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 5 5 5 5 5 5 0 0 0 0 3 3 4 4 2 2 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 6 7 7 7 7 0 0 0 0];
 parcels_region_labels=parcels_region_labels_bilateral(finalindex);
 try
-T=readtable('X:\Hadas\Meso-imaging\Antara\preprocessing\meso_processing-master\parcellation\AllenParcellationLan\allanParcellationTiffs\subregion_list.csv');
+T=readtable('..\meta_data_processing\subregion_list.csv');
 parcels_namesall = T.Label;
 parcels_names=T.Label(finalindex);
 catch

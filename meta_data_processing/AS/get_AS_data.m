@@ -9,8 +9,10 @@ maskByGal=[];
 
 %load imaging time series
 load(fullfile(currfolder,'final_dFoF_parcels.mat'),'dFoF_parcells');
-imagingData.Allen = dFoF_parcells.green;
-imagingData.Allen = imagingData.Allen(finalindex,:);
+imagingData.Allen_green = dFoF_parcells.green;
+imagingData.Allen_green = imagingData.Allen_green(finalindex,:);
+imagingData.Allen_blue = dFoF_parcells.blue;
+imagingData.Allen_blue = imagingData.Allen_blue(finalindex,:);
 %% load LSSC
 ii=strfind(currfolder, 'DualMice\grab');
 jj=strfind(currfolder,'\imaging');
@@ -23,7 +25,7 @@ if ~isempty(LSSCfile)
 LSSCimaging = load(fullfile(LSSCfile.folder, LSSCfile.name), 'imaging_traces_green');
 load(fullfile(LSSCfile.folder, LSSCfile.name),'regionLabel_gal',...
     'roiLabelsbyAllen_gal','maskByGal');
-imagingData.LSCC = LSSCimaging.imaging_traces_green;
+imagingData.LSCC_green = LSSCimaging.imaging_traces_green;
 end
 
 

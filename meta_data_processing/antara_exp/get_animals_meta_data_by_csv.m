@@ -33,6 +33,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
     isimagingood_list(T.isimagingood<=1) = 1;
     isimagingood_lut = {'GOOD','BAD'};
     toinclude_lut = {'BAD', 'Maybe','Good'};
+   
     for k = 1:N
         animal_list(k) = find(strcmp(animal_lut, T.animal{k}));
         sex_list(k) = find(strcmp(sex_lut, T.Sex{k}));
@@ -43,8 +44,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
         folder_list{k} = T.directory{k};
         toinclude_list(k) = T.isgoodbadmaybe(k);
     end
-    
-    animals_db.animal_list=animal_list;
+     animals_db.animal_list=animal_list;
     animals_db.sex_list=sex_list;
     animals_db.ex_list=ex_list;
     animals_db.sessionsid_list=sessionsid_list;

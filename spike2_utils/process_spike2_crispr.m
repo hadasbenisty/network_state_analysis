@@ -2,8 +2,9 @@
 
 function process_spike2_crispr(cedpath, tiffsPath, dataSmrxFile,outputPath, channels,params,Session)
 
-
-if isfile(fullfile(outputPath, 'smrx_signals_v3.mat'))
+%smrx_signals_v3 is with 0.5sec window smoothing wheel
+%smrx_signals_v4 is with 1sec window smoothing wheel
+if isfile(fullfile(outputPath, 'smrx_signals_v4.mat'))
     disp('file exist');
     return;
 end
@@ -59,7 +60,7 @@ timestamps.wheelOn=timing.wheelOn(timing.wheelOn>(timestamps.timaging(1)+ minSit
 
 
 mkNewDir(outputPath)
-save(char(strcat(outputPath, '\smrx_signals_v3.mat')), 'timing', 'channels_data','timestamps','params');
+save(char(strcat(outputPath, '\smrx_signals_v4.mat')), 'timing', 'channels_data','timestamps','params');
 end
 
 

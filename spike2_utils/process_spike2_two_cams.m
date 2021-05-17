@@ -10,6 +10,7 @@ sCFG.sPARAM.db1WheelVRange=[0 5];%cut off range for signal
 sCFG.sPARAM.dbWindowLenSec=2; % set the temoporal resolution of the analysis, this seems optimal so far
 sCFG.sPARAM.blDoPlot=1; % indicate whether you want to plot or not
 sCFG.sPARAM.blDoPlotDuration=1:500000; %plot duration in sample units
+sCFG.sPARAM.winlengthsmoothing = 1;%smoothing wheel with 1 second window
 %% load event channels 
 data = process_spike2_smr2mat('', outputpath, data_smr_time_stamp_filename, channels_num);
 [channels_data,wheelOn,wheelOff,h1] = get_channels_data_from_samples_with_wheelonoff(data, channels, sCFG,fsspike2);
