@@ -3,9 +3,9 @@ function pre_process_spont_animals_crispr
 %of 3 arousal states: low pupil + quiescence, high pupil + quiescence, high pupil + locomotion
 % or 2 states: quiescence, locomotion
 
-addpath(genpath('..\pre_processing'));
-addpath(genpath('..\meta_data_processing'));
-addpath(genpath('..\..\utils'));
+addpath(genpath('..\network_state_analysis\pre_processing'));
+addpath(genpath('..\network_state_analysis\meta_data_processing'));
+addpath(genpath('..\..\network_state_analysis\utils'));
 spike2path = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
 animals_db = get_animals_meta_data_by_csv;
 procdatapath = 'X:\Hadas\Meso-imaging\CRISPR\analysis_results';
@@ -49,7 +49,8 @@ end
 dffpath = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
 % concatenateSpontPeriodsBy2States(doover, animals_db, dffpath, spike2path, procdatapath)
 % 3 arousal states per animal
-concatenateSpontPeriodsByState_all(doover, animals_db, dffpath, spike2path, procdatapath)
+%concatenateSpontPeriodsByState_all(doover, animals_db, dffpath, spike2path, procdatapath)
+concatenateSpontPeriodsByState(doover, animals_db, dffpath, spike2path, procdatapath)
 
 
 
@@ -362,7 +363,10 @@ else
     [h4,Face_LowArousal_OnTStamp,Face_LowArousal_OffTStamp] =changepoints1(-face_Norm', -zthres_Low,pupil_time,params.fspupilcam,smoothWin, b1DoPlot,blDoPlotDuration,1);
     
     
-    
+    if size(Face_LowArousal_OnTStamp,1)>size(Face_LowArousal_OffTStamp,1)
+        Face_LowArousal_OnTStamp=Face_LowArousal_OnTStamp(1:size(Face_LowArousal_OffTStamp,1),:)
+    else
+    end
     
     
     % determine that pupil and face high/low arousal/movement time are at least minimum criterion seconds long
@@ -482,9 +486,18 @@ if isfacemap
 else
     face=nan;
 end
+
 save(fullfile(procdatapath, animalpath, 'arousal_traces_states.mat'),...
     't_imaging','pupil','face', 'wheel_speed', 'segments_arousals');
 
+
+if ~isfield(segments_arousals, 'low_face')||~isfield(segments_arousals, 'high_face')
+    disp('no facemap fields')
+elseif isempty(segments_arousals.low_face)||isempty(segments_arousals.high_face)
+    disp('empty facemap')
+else
+end
+    
 figure;
 subplot(3,1,1);plot(t_imaging, wheel_speed);
 for ti=1:size(segments_arousals.loc,1)
@@ -713,7 +726,7 @@ function concatenateSpontPeriodsByState(dover, animals_db, dffpath, spike2path, 
 % regionLabel.Allen = allen_parcels.regionNum;
 % regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 % cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
-statesnames = {'low_pup_q','high_pup_q','high_pup_l'};
+statesnames = {'low_face','high_face','loc'};
 for ir=1:length(animals_db.animal_list)
     animal=animals_db.folder_list{ir};
     disp(animal);
@@ -792,7 +805,7 @@ for ir=1:length(animals_db.animal_list)
     end
     
     
-    save(resfile,'low_pup_q',    'high_pup_q','high_pup_l');
+    save(resfile,'low_face', 'high_face','loc');
     
 end
 
@@ -1404,6 +1417,7 @@ for statei=1:length(statesnames)
         
     end
 end
+
 save(fullfile(procdatapath, animalpath, 'arousal_3state_ITI_segemts.mat'),...
     'segments_arousals','pupvals','wheelvals');
 wheelN = interp1(wheel_time, wheel_speedNorm, pupil_time);
