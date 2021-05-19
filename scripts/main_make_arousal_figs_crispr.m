@@ -6,7 +6,9 @@ addpath(genpath('../functions'))
 addpath(genpath('../utils'))
 stateslabels3 = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
 stateslabels2 = { 'qui', 'loc'};
-stateslabels5 = { 'sit','low_pupil','high_pupil','loc'};%,'low_face','high_face'};
+%stateslabels5 = { 'sit','low_pupil','high_pupil','loc'};%,
+stateslabels5 = { 'low_pupil','high_pupil','loc'};%,'low_face','high_face'};
+
 procfolder = 'X:\Hadas\Meso-imaging\CRISPR\analysis_results\';
 outputfiggolder = 'X:\Hadas\Meso-imaging\CRISPR\Figures\arousal';
 mkNewDir(outputfiggolder);
@@ -187,7 +189,7 @@ for ci = 1:length(animals_db.type_lut)
         nbytype(ci,kk)= length(unique(jj(ii(:,1))));
     end
 end
-figure;b = barwitherr(Sbytype./sqrt(nbytype-1), Mbytype);
+figure;b = barwitherr(Sbytype./sqrt(nbytype), Mbytype);
 for i=1:length(b)
     b(i).FaceColor=CondColors(i,:);
 end
@@ -200,7 +202,7 @@ title('Fraction of time on arousal state');
 
 mysave(gcf, fullfile(outputfiggolder, ['time_spent_fraction', num2str(length(stateslabels_ttls)) ]));
 
-figure;b = barwitherr(Sbytype'./sqrt(nbytype'-1), Mbytype');
+figure;b = barwitherr(Sbytype'./sqrt(nbytype'), Mbytype');
 
 legend(str);
 set(gca,'XTickLabel',stateslabels_ttls);
