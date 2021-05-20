@@ -42,5 +42,5 @@ end
 % set(c, 'Ticks', linspace(0,1,length(unique(unique(colorparam_c)))))
 % set(c, 'TickLabels', unique(colorparam_c))
 % end
-axis equal;
+%axis equal;
 end

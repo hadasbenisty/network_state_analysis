@@ -71,7 +71,7 @@ params.minSitDuration=3;%minimum sit duration during quiescnece state
 mkNewDir(fullfile(procdatapath, animalpath));
 disp(animalpath);
 
-if 0&&isfile(fullfile(procdatapath, animalpath, 'arousal_traces_states.mat'))
+if isfile(fullfile(procdatapath, animalpath, 'arousal_traces_states.mat'))
     disp('exist');
     return;
 end

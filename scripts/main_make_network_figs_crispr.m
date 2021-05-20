@@ -17,7 +17,7 @@ for sim_i = 1:length(similarity_name)
     procfolder = ['x:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' similarity_name{sim_i}];
     mkNewDir(outputfiggolder)
     
-%     plot_correlation_matrics_permutation_test(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
+     plot_correlation_matrics_permutation_test(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
