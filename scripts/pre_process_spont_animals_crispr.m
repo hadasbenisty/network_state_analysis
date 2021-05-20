@@ -14,7 +14,7 @@ doover=true;
 
 
 
-for k=1:length(animals_db.folder_list)
+for k=1:30%length(animals_db.folder_list)
     disp(k)
     isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
     if isimaging_good
@@ -49,8 +49,8 @@ end
 dffpath = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
 % concatenateSpontPeriodsBy2States(doover, animals_db, dffpath, spike2path, procdatapath)
 % 3 arousal states per animal
-%concatenateSpontPeriodsByState_all(doover, animals_db, dffpath, spike2path, procdatapath)
-concatenateSpontPeriodsByState(doover, animals_db, dffpath, spike2path, procdatapath)
+concatenateSpontPeriodsByState_all(doover, animals_db, dffpath, spike2path, procdatapath)
+%concatenateSpontPeriodsByState(doover, animals_db, dffpath, spike2path, procdatapath)
 
 
 
@@ -481,8 +481,9 @@ if ispupil
 else
     pupil=nan;
 end
+
 if isfacemap
-    face = interp1(pupil_time, face, t_imaging);
+    face = interp1(pupil_time, face, t_imaging);    
 else
     face=nan;
 end
@@ -648,7 +649,7 @@ function concatenateSpontPeriodsByState_all(dover, animals_db, dffpath, spike2pa
 % regionLabel.Allen = allen_parcels.regionNum;
 % regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
 % cd('X:\Hadas\Meso-imaging\lan\results\ProcessingDirectory');
-statesnames = {'sit','loc','low_pupil','high_pupil','high_face','low_face'};
+statesnames = {'low_face','high_face','loc'};
 for ir=1:length(animals_db.animal_list)
     animal=animals_db.folder_list{ir};
     disp(animal);
@@ -710,10 +711,8 @@ for ir=1:length(animals_db.animal_list)
     for k=1:length(names)
        eval([names{k} ' =  res.(names{k});']); 
     end
-    save(resfile,'sit',    'loc','low_pupil','high_pupil','low_face','high_face'); 
+    save(resfile,'low_face','high_face','loc'); 
 end
-
-
 
 end
 
