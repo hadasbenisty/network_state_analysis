@@ -15,7 +15,7 @@ catch
 end
 region_lut = {'visual','parietal','temporal','auditory','rs','somato','motor'};
 if ~exist('allen_map_final_index.mat','file')
-    parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+    parcelsallen=load(fullfile('..\meta_data_processing\parcells_updated121519.mat'));
     
     allen_map_final_index = zeros(size(parcelsallen.parcells_new.CombinedParcells));
     for k=1:length(finalindex)
