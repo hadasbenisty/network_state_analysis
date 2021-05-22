@@ -4,10 +4,10 @@ addpath(genpath('..\meta_data_processing'));
 animals_db = get_animals_meta_data_by_csv;
 addpath(genpath('../functions'))
 addpath(genpath('../utils'))
-stateslabels3 = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-stateslabels2 = { 'qui', 'loc'};
+stateslabels3 = {'low_face', 'high_face', 'loc'};
+%stateslabels2 = { 'qui', 'loc'};
 %stateslabels5 = { 'sit','low_pupil','high_pupil','loc'};%,
-stateslabels5 = { 'low_pupil','high_pupil','loc'};%,'low_face','high_face'};
+%stateslabels5 = { 'low_pupil','high_pupil','loc'};%,'low_face','high_face'};
 
 procfolder = 'X:\Hadas\Meso-imaging\CRISPR\analysis_results\';
 outputfiggolder = 'X:\Hadas\Meso-imaging\CRISPR\Figures\arousal';
@@ -15,10 +15,10 @@ mkNewDir(outputfiggolder);
 mkNewDir(procfolder);
 % plot_arousal_by_onset_noppl(procfolder, animals_db,spike2path, outputfiggolder)
 % plot_arousal_by_onset_withppl(procfolder, animals_db, spike2path, outputfiggolder);
-plot_time_spent(animals_db, stateslabels5, procfolder, outputfiggolder)
+%plot_time_spent(animals_db, stateslabels5, procfolder, outputfiggolder)
 
 plot_time_spent(animals_db, stateslabels3, procfolder, outputfiggolder)
-plot_time_spent(animals_db, stateslabels2, procfolder, outputfiggolder)
+%plot_time_spent(animals_db, stateslabels2, procfolder, outputfiggolder)
 
 
 end
@@ -140,6 +140,7 @@ for ai = 1:n
         continue;
     end
     load(fullfile(procfolder, animals_db.folder_list{ai}, ['arousal_traces_states.mat']));%
+    
     for state_i = 1:length(stateslabels)
         if isfield(segments_arousals, stateslabels{state_i})
             if isempty(segments_arousals.(stateslabels{state_i}))
