@@ -345,6 +345,7 @@ for ci=1:length(animals_db.type_lut)
     S4(:,:,ci) = nanstd(trials_wheeloff(:,  :,animals_db.type_list==ci),[],3);
     
     ii = animals_db.type_list==ci&~squeeze(isnan(trials_wheelon(1,1,:)));
+    
     nbytype(ci) =  length(unique(animals_db.animal_list(ii)));
 end
 parcels_names = get_allen_meta_parcels;

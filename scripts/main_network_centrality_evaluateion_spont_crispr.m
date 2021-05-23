@@ -5,9 +5,9 @@ addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 addpath(genpath('../graphs_analysis'));
 animals_db = get_animals_meta_data_by_csv;
-statenames_3states = {'low_pup_q', 'high_pup_q', 'high_pup_l'};
-statenames_2states = {'qui', 'loc'};
-statenames_5states = {'sit', 'loc','low_pupil','high_pupil','low_face','high_face'};
+statenames_3states = {'low_face', 'high_face', 'loc'};
+%statenames_2states = {'qui', 'loc'};
+%statenames_5states = {'sit', 'loc','low_pupil','high_pupil','low_face','high_face'};
 
 similarity_name = {'pearson_corr',  };%'corr',,  'L2' 'fullcorr' 'cov''partial_corr'
 signames = { 'Allen'}; % 'Grid4'};
@@ -16,8 +16,8 @@ for sim_i = 1:length(similarity_name)
     
     for ai = 1:length(animals_db.folder_list)
         if animals_db.toinclude_list(ai)==find(strcmp(animals_db.toinclude_lut, 'Good'))
-%                      eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_5states);
-            eval_corrmat_and_shuffles(similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_5states, REPS);
+            eval_weights_and_cent_facemap(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_3states);
+            eval_corrmat_and_shuffles_facemap(similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_3states, REPS);
             %         eval_weights_and_cent_perday(similarity_name{sim_i}, animals{ai}, statenames);
             %         eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_2states);
             %         eval_weights_and_cent(signames, similarity_name{sim_i}, animals_db.folder_list{ai}, statenames_3states);
@@ -213,8 +213,6 @@ end
 save(fullfile(outputfolder,animal ,['shuffled_corr_Allen_.mat']),...
     'corrmat_highpupilloc','corrmat_pupil');
 end
-
-
 function eval_weights_and_cent(signames, simname, animal, statenames)
 outputfolder = ['X:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' simname];
 
@@ -300,7 +298,141 @@ for state_i = 1:length(statenames)
 end
 end
 
+function eval_corrmat_and_shuffles_facemap(simname, animal, statenames, REPS)
 
+outputfolder = ['X:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' simname];
+
+mkNewDir(outputfolder);
+
+[~, allen_parcels] = getParcellsByLansAllansAtlas;
+[parcels_names.Allen, ~, finalindex.Allen, regionLabel.nameslegend, maskByAllen.Allen] = get_allen_meta_parcels;
+
+regionLabel.Allen = allen_parcels.regionNum;
+regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
+
+
+if ~exist(fullfile('X:\Hadas\Meso-imaging\CRISPR\analysis_results\',animal,'con_states.mat'), 'file')
+    return;
+end
+disp(animal);
+mkNewDir(fullfile(outputfolder,animal));
+
+res1 = load(fullfile('X:\Hadas\Meso-imaging\CRISPR\analysis_results\',animal,'arousal_traces_states.mat'));
+
+xa = load(fullfile('X:\Hadas\Meso-imaging\CRISPR\traces_data', animal, 'Ca_traces_spt_patch11_Allen_dfff'));
+parcels_traces=xa.parcels_time_trace(finalindex.Allen, :);
+
+load(fullfile('X:\Hadas\Meso-imaging\CRISPR\traces_data', animal, 'smrx_signals_v4.mat'),'timing');
+t_imaging = timing.bluestart;
+L = min([length(t_imaging) size(parcels_traces,2)]);
+parcels_traces=parcels_traces(:,1:L);
+t_imaging=t_imaging(1:L);
+notnans = all(~isnan(parcels_traces));
+parcels_traces=parcels_traces(:,notnans);
+
+t_imaging = t_imaging(notnans);
+corrmat_highfaceloc=[];corrmat_face=[];
+
+if isfield(res1.segments_arousals,'loc') && isfield(res1.segments_arousals,'high_face')&&...
+        ~isempty(res1.segments_arousals.loc)&&~isempty(res1.segments_arousals.high_face)
+    corrmat_highfaceloc = extract_shuffled_segs(simname, res1.segments_arousals, t_imaging, parcels_traces, 'loc', 'high_face', REPS);
+end
+if isfield(res1.segments_arousals,'low_face') && isfield(res1.segments_arousals,'high_face')&&...
+        ~isempty(res1.segments_arousals.low_face)&&~isempty(res1.segments_arousals.high_face)
+    corrmat_face = extract_shuffled_segs(simname, res1.segments_arousals, t_imaging, parcels_traces, 'high_face', 'low_face', REPS);
+end
+
+
+save(fullfile(outputfolder,animal ,['shuffled_corr_Allen_.mat']),...
+    'corrmat_highfaceloc','corrmat_face');
+end
+
+
+function eval_weights_and_cent_facemap(signames, simname, animal, statenames)
+outputfolder = ['X:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' simname];
+
+datafilename = ['spont_data_' num2str(length(statenames)) 'states_dfff.mat'];
+
+mkNewDir(outputfolder);
+for s=1:length(signames)
+    switch signames{s}
+        case 'Allen'
+            [~, allen_parcels] = getParcellsByLansAllansAtlas;
+            [parcels_names.Allen, ~, finalindex.Allen, regionLabel.nameslegend, maskByAllen.Allen] = get_allen_meta_parcels;
+            
+            regionLabel.Allen = allen_parcels.regionNum;
+            regionLabel.Allen=regionLabel.Allen(finalindex.Allen);
+        case 'LSSC'
+            % [roiLabelsbyAllen_gal, regionLabel.Gal, maskByAllen_gal, maskByAllen.Gal] = get_gal_parcels_lables(animal);
+            [parcels_names.LSSC, ~, ~, regionLabel.LSSC] = get_gal_meta_parcels_by_allen(parcels_names.Allen, maskByAllen.Allen, ...
+                regionLabel.Allen, animal);
+        case 'Grid4'
+            load('X:\Hadas\Meso-imaging\lan\xspsych\spt\xs_31_grid4_dfff.mat','par_inds');
+            [parcels_names.Grid4, regionLabel.Grid4, finalindex.Grid4, regionLabel.nameslegend, maskByAllen.Grid4, labelsbyallen.Grid4] = getAllenClusteringLabelsGrid(par_inds, 4);
+            ii = discard_inds;
+            
+            parcels_names.Grid4=parcels_names.Grid4(ii);
+            regionLabel.Grid4=regionLabel.Grid4(ii);
+    end
+end
+if ~exist(fullfile('X:\Hadas\Meso-imaging\CRISPR\analysis_results\',animal,'con_states.mat'), 'file')
+    return;
+end
+load(fullfile('X:\Hadas\Meso-imaging\CRISPR\analysis_results\',animal,'con_states.mat')); 
+disp(animal);
+for state_i = 1:length(statenames)
+    disp(statenames{state_i})
+    mkNewDir(fullfile(outputfolder,animal));
+    data = eval(statenames{state_i});
+    if isempty(data.t)
+        continue;
+    end
+    for sig_i = 1:length(signames)
+        
+        data.(signames{sig_i}) = data.(signames{sig_i})(:, all(~isnan(data.(signames{sig_i}))));
+        if any(isnan(data.(signames{sig_i})(:)))
+            tt = ~isnan(sum(data.(signames{sig_i})));
+            if sum(tt)==0
+                disp('nans in dataset')
+                
+                continue;
+            else
+                data.(signames{sig_i}) = data.(signames{sig_i})(:,tt);
+            end
+        end
+        
+        
+        if strcmp(signames{sig_i}, 'Grid4')
+            if length(ii) > size(data.(signames{sig_i}),1)
+                error('check this');
+            else
+                data.(signames{sig_i}) = data.(signames{sig_i})(ii,:);
+            end
+            thT=[Inf ];
+        else
+            thT=[Inf  ];
+        end
+        %         if  exist(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'file')
+        %             load(fullfile(outputfolder,[animal '_',statenames{state_i} ,signames{sig_i} '.mat']),'W_corr')
+        %         else
+        [W_corr,Wmat] = measure_weights_bysegs(1:length(data.t),data.(signames{sig_i}), simname);
+        if isempty(W_corr)
+            continue;
+        end
+        %         end
+        for th=thT
+            [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}), @process_sim, th);
+            
+            %         [cent_corr_weighted, cent_corr_notweighted, G_corr, names_corr] = graph_analysis_afterclust(W_corr, parcels_names.(signames{sig_i}), regionLabel.(signames{sig_i}));
+            
+            save(fullfile(outputfolder,animal ,[statenames{state_i} ,signames{sig_i} '_' num2str(th) '.mat']),'W_corr',...
+                'cent_corr_weighted','Wmat',...
+                'cent_corr_notweighted', 'G_corr', 'names_corr');
+        end
+    end
+    
+end
+end
 
 
 
