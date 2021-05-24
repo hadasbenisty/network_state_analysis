@@ -713,7 +713,7 @@ for sig_i = 1:length(signals_names)
                     title([animals.arousal_cluster_lut{2+ti} ' ' statenames{si} ]);
                 end
             end
-            
+            %
             L = quantile(reshape(masks_cent_mean_spont(:,:,end,ni,:)-masks_cent_mean_spont(:,:,1,ni,:),1,[]),[.1 .9]);
             for ti=1:length(arousaltypes)
                 subplot(length(statenames)+1,length(arousaltypes),l);
