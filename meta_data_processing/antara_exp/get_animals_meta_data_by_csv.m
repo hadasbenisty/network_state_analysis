@@ -1,7 +1,8 @@
 function animals_db = get_animals_meta_data_by_csv(csvfile)
-% if exist('../meta_data_processing/antara_exp/animals_db.mat','file')
-%     load('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
-% else
+%lav temporarily uncommented 3-5 awaiting the new xlsx
+if exist('../meta_data_processing/antara_exp/animals_db.mat','file')
+    load('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
+else
     if nargin == 0
         csvfile = '../meta_data_processing/antara_exp/Processing_Pipeline_Full_expression_andHannah.xlsx';
     end
@@ -67,4 +68,4 @@ animals_db.isgoodpupil_list=isgoodpupil_list;
 animals_db.isimagingood_lut=isimagingood_lut;
 animals_db.isimagingood_list=isimagingood_list;
     save('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
-%end 
+end %uncommented by lav may 18

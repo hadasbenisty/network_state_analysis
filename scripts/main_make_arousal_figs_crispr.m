@@ -244,7 +244,6 @@ mysave(gcf, fullfile(outputfiggolder, ['time_spent_fraction2', num2str(length(st
 
 %% wheel histograms per state and behavior
 binsN = linspace(0,.2,100);
-
 figure;
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
@@ -283,26 +282,70 @@ for ci = 1:length(animals_db.type_lut)
 end
 mysave(gcf, fullfile(outputfiggolder, ['spont_pup_hist_' num2str(length(stateslabels_ttls)) 'states']));
 
+%facemap
+figure;binsN = linspace(100,3e3,100);
+for ci = 1:length(animals_db.type_lut)
+    animals = find(animals_db.type_list==ci);
+    subplot(1,length(animals_db.type_lut),ci);
+    for state_i = 1:length(stateslabels)
+        x = facevalsall.(stateslabels{state_i})(animals);
+        set(gcf,'renderer','Painters');
+        b=hist(x, binsN);
+        bar(binsN,b/sum(b), 'facecolor',CondColors(state_i,:),'facealpha',.8,'edgecolor','none');
+        title([ animals_db.type_lut{ci}]); xlabel('facemap');
+        hold all
+    end
+    ylim([0 1]);
+    legend(stateslabels_ttls)
+end
+mysave(gcf, fullfile(outputfiggolder, ['spont_facemap_hist_' num2str(length(stateslabels_ttls)) 'states']));
 
+%facemap 2 states
+
+%facemap
+figure;binsN = linspace(100,3e3,100);
+for ci = 1:length(animals_db.type_lut)
+    animals = find(animals_db.type_list==ci);
+    subplot(1,length(animals_db.type_lut),ci);
+    for state_i = 2:length(stateslabels)
+        x = facevalsall.(stateslabels{state_i})(animals);
+        set(gcf,'renderer','Painters');
+        b=hist(x, binsN);
+        bar(binsN,b/sum(b), 'facecolor',CondColors(state_i,:),'facealpha',.8,'edgecolor','none');
+        title([ animals_db.type_lut{ci}]); xlabel('facemap');
+        hold all
+    end
+    ylim([0 1]);
+    legend(stateslabels_ttls)
+end
+mysave(gcf, fullfile(outputfiggolder, ['2states_spont_facemap_hist_' num2str(length(stateslabels_ttls)) 'states']));
+
+%%
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
     for state_i = 1:length(stateslabels)
+        
         Mp(state_i,ci) = nanmean(pupvalsall.(stateslabels{state_i})(animals));
         Sp(state_i,ci) = nanstd(pupvalsall.(stateslabels{state_i})(animals));
+              
+        Mf(state_i,ci) = nanmean(facevalsall.(stateslabels{state_i})(animals));
+        Sf(state_i,ci) = nanstd(facevalsall.(stateslabels{state_i})(animals));
+        
 %         Np(state_i,ci) = sum(~isnan(pupvalsall.(stateslabels{state_i})(animals)));
         Mw(state_i,ci) = nanmean(wheelvalsall.(stateslabels{state_i})(animals));
         Sw(state_i,ci) = nanstd(wheelvalsall.(stateslabels{state_i})(animals));
 %         Nw(state_i,ci) = sum(~isnan(wheelvalsall.(stateslabels{state_i})(animals)));
     end
 end
-figure;subplot(2,1,1);b=barwitherr(Sp'./sqrt(nbytype-1), Mp');
+
+figure;subplot(2,1,1);b=barwitherr(Sp'./sqrt(nbytype), Mp');
 set(gca,'XTickLabel',str);
 for si=1:length(stateslabels)
     b(si).FaceColor = CondColors(si,:);
 end
 ylabel('Pupil');legend(stateslabels_ttls);
 
-subplot(2,1,2);b=barwitherr(Sw'./sqrt(nbytype-1), Mw');
+subplot(2,1,2);b=barwitherr(Sw'./sqrt(nbytype), Mw');
 set(gca,'XTickLabel',animals_db.type_lut);
 for si=1:length(stateslabels)
     b(si).FaceColor = CondColors(si,:);
@@ -310,6 +353,32 @@ end
 ylabel('Wheel');legend(stateslabels_ttls);
 set(gca,'XTickLabel',str);
 mysave(gcf, fullfile(outputfiggolder, ['mean_wheel_pupil', num2str(length(stateslabels_ttls)) ]));
+
+
+figure;subplot(3,1,1);b=barwitherr(Sp'./sqrt(nbytype), Mp');
+set(gca,'XTickLabel',str);
+for si=1:length(stateslabels)
+    b(si).FaceColor = CondColors(si,:);
+end
+ylabel('Pupil');legend(stateslabels_ttls);
+
+subplot(3,1,2);b=barwitherr(Sw'./sqrt(nbytype), Mw');
+set(gca,'XTickLabel',animals_db.type_lut);
+for si=1:length(stateslabels)
+    b(si).FaceColor = CondColors(si,:);
+end
+ylabel('Wheel');legend(stateslabels_ttls);
+set(gca,'XTickLabel',str);
+
+subplot(3,1,3);b=barwitherr(Sf'./sqrt(nbytype), Mf');
+set(gca,'XTickLabel',animals_db.type_lut);
+for si=1:length(stateslabels)
+    b(si).FaceColor = CondColors(si,:);
+end
+ylabel('Face');legend(stateslabels_ttls);
+set(gca,'XTickLabel',str);
+
+mysave(gcf, fullfile(outputfiggolder, ['mean_wheel_pupil_face', num2str(length(stateslabels_ttls)) ]));
 
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
