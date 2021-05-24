@@ -3,10 +3,10 @@ addpath(genpath('../utils'));
 addpath(genpath('../functions/'));
 addpath(genpath('../meta_data_processing/'));
 animals = get_animals_meta_data_by_csv;
-stateslabels3 = { 'low_pupil', 'high_pupil', 'loc'};
-stateslabels2 = { 'qui', 'loc'};
+stateslabels3 = { 'low_face', 'high_face', 'loc'};
+%stateslabels2 = { 'qui', 'loc'};
 % cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
-cent_features = {  'eigenvector' 'degree'  'second_eigval'};%};%'eigenvector'
+%cent_features = {  'eigenvector' 'degree'  'second_eigval'};%};%'eigenvector'
 similarity_name = {'pearson_corr'   };%'corr',,  'fullcorr' 'cov''partial_corr'
 doover=true;
 %% Fig 4 - network
@@ -17,7 +17,7 @@ for sim_i = 1:length(similarity_name)
     procfolder = ['x:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' similarity_name{sim_i}];
     mkNewDir(outputfiggolder)
     
-     plot_correlation_matrics_permutation_test(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
+     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
@@ -101,6 +101,78 @@ mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_1_2'));
 % 2->3
 plot_corr_by_state(animals, locdata, highpupildata, hpupil23, 'Loc', 'High Pupil');
 mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_2_3'));
+
+
+
+end
+function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder)
+n=length(animals.folder_list);
+validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
+    
+high_facedata_sha = nan(23,23,1000,n);
+locdata_sh = nan(23,23,1000,n);
+highfacedata_shb = nan(23,23,1000,n);
+lowfacedata_sh = nan(23,23,1000,n);
+sitdata = nan(23,23,n);
+locdata = nan(23,23,n);
+highfacedata = nan(23,23,n);
+lowfacedata = nan(23,23,n);
+
+for ai = 1:length(animals.folder_list)
+    if validinds(ai)
+        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'))
+            
+            shdata = load(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'));
+            if isempty(shdata.corrmat_highfaceloc)||isempty(shdata.corrmat_highfaceloc.high_face)
+                continue;
+            end
+            high_facedata_sha(:,:,:,ai) = shdata.corrmat_highfaceloc.high_face;
+            locdata_sh(:,:,:,ai) = shdata.corrmat_highfaceloc.loc;
+            if isfield(shdata, 'corrmat_face')&&~isempty(shdata.corrmat_face)
+                lowfacedata_sh(:,:,:,ai) = shdata.corrmat_face.low_face;
+                highfacedata_shb(:,:,:,ai) = shdata.corrmat_face.high_face;
+            end
+           
+        end
+        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'))
+            load(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'),'W_corr');
+            locdata(:,:,ai) = W_corr;
+        end
+        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'))
+            load(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'),'W_corr');
+            sitdata(:,:,ai) = W_corr;
+        end
+        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'high_faceAllen_Inf.mat'))
+            load(fullfile(procfolder,animals.folder_list{ai} ,'high_faceAllen_Inf.mat'),'W_corr');
+            highfacedata(:,:,ai) = W_corr;
+        end
+        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'low_faceAllen_Inf.mat'))
+            load(fullfile(procfolder,animals.folder_list{ai} ,'low_faceAllen_Inf.mat'),'W_corr');
+            lowfacedata(:,:,ai) = W_corr;
+        end
+     
+     
+        
+    end
+end
+
+for ci = 1:length(animals.type_lut)
+    ii =  animals.type_list==ci&~squeeze(isnan(locdata(1,2,:)));
+    nbytype(ci) = length(unique(animals.animal_list(ii)));
+end
+for ci = 1:length(animals.type_lut)
+     % 2->3
+    [hface23(:,:,ci),pvalface23(:,:,ci)]=corr_perm_test(locdata, highfacedata, locdata_sh, high_facedata_sha, animals.type_list==ci);
+    % 1->2
+    [hface12(:,:,ci),pvalface12(:,:,ci)]=corr_perm_test(highfacedata, lowfacedata, highfacedata_shb, lowfacedata_sh, animals.type_list==ci);
+   
+end
+% 1->2
+plot_corr_by_state(animals, highfacedata, lowfacedata, hface12, 'High face', 'Low face');
+mysave(gcf, fullfile(outputfiggolder, 'corr_face_1_2'));
+% 2->3
+plot_corr_by_state(animals, locdata, highfacedata, hface23, 'Loc', 'High face');
+mysave(gcf, fullfile(outputfiggolder, 'corr_face_2_3'));
 
 
 

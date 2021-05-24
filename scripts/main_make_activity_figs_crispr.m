@@ -7,13 +7,13 @@ procdatapath = 'X:\Hadas\Meso-imaging\CRISPR\analysis_results';
 
 outputfiggolder = 'X:\Hadas\Meso-imaging\CRISPR\Figures\activity';
 mkNewDir(outputfiggolder);
-statenames_4states = {'low_pupil','high_pupil', 'loc',};%,'low_face','high_face'
+statenames_4states = {'low_face','high_face', 'loc',};%,'low_face','high_face'
 
 
-% plot_activity_by_state(outputfiggolder, procdatapath, statenames_4states);
-% plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames_4states);
+plot_activity_by_state(outputfiggolder, procdatapath, statenames_4states);
+plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames_4states);
 plot_traces_events_averaged_animals(outputfiggolder);
-plot_traces_events(outputfiggolder);
+%plot_traces_events(outputfiggolder);
 end
 function plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames)
 
@@ -34,8 +34,8 @@ for ai = 1:n
         continue;
     end
     res1 = load(fullfile('X:\Hadas\Meso-imaging\CRISPR\analysis_results\',animal,'arousal_traces_states.mat'));
-    if ~isfield(res1.segments_arousals, 'high_pupil')||~isfield(res1.segments_arousals, 'low_pupil')||...
-            isempty(res1.segments_arousals.low_pupil)||isempty(res1.segments_arousals.high_pupil)
+    if ~isfield(res1.segments_arousals, 'high_face')||~isfield(res1.segments_arousals, 'low_face')||...
+            isempty(res1.segments_arousals.low_face)||isempty(res1.segments_arousals.high_face)
         continue;
     end
     xa = load(fullfile('X:\Hadas\Meso-imaging\CRISPR\traces_data', animal, 'Ca_traces_spt_patch11_Allen_dfff'));
@@ -49,12 +49,12 @@ for ai = 1:n
     th = quantile(Ysit',0.005)';
     parcels_traces=parcels_traces-th;
     Yloc = extract_segment(t_imaging, parcels_traces, res1.segments_arousals.loc);
-    Yhigh_pupil = extract_segment(t_imaging, parcels_traces, res1.segments_arousals.high_pupil);
-    Ylow_pupil = extract_segment(t_imaging, parcels_traces, res1.segments_arousals.low_pupil);
-    labels12 = [zeros(size(Ylow_pupil,2),1); ones(size(Yhigh_pupil,2),1)];
-    labels23 = [zeros(size(Yhigh_pupil,2),1); ones(size(Yloc,2),1)];
-    Y12 = [Ylow_pupil  Yhigh_pupil];
-    Y23 = [Yhigh_pupil  Yloc];
+    Yhigh_face = extract_segment(t_imaging, parcels_traces, res1.segments_arousals.high_face);
+    Ylow_face = extract_segment(t_imaging, parcels_traces, res1.segments_arousals.low_face);
+    labels12 = [zeros(size(Ylow_face,2),1); ones(size(Yhigh_face,2),1)];
+    labels23 = [zeros(size(Yhigh_face,2),1); ones(size(Yloc,2),1)];
+    Y12 = [Ylow_face  Yhigh_face];
+    Y23 = [Yhigh_face  Yloc];
     dat1(:,ai) = nanmean(Y12(:,labels12==0),2);
     dat2(:,ai) = nanmean(Y12(:,labels12==1),2);
     dat3(:,ai) = nanmean(Y23(:,labels23==1),2);
@@ -125,11 +125,11 @@ end
 % figure;subplot(2,1,1);bar([dat1M;dat2M;dat3M]');set(gca,'XTickLabel',animals_db.type_lut);legend('low p','high p','loc');
 % subplot(2,1,2);bar([mean(dat1M_sh,2) mean(dat2M_sha,2) mean(dat2M_shb,2) mean(dat3M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);legend('low p','high p','loc');
 figure;
-subplot(2,1,1);bar([diff23M' nanmean(diff23M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('Loc minus High Pupil');ylabel('\Delta activity');
+subplot(2,1,1);bar([diff23M' nanmean(diff23M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('Loc minus High Face');ylabel('\Delta activity');
 legend('Data','Shuffled');
-subplot(2,1,2);bar([diff12M' nanmean(diff12M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('High Pupil minus Low Pupil');ylabel('\Delta activity');
+subplot(2,1,2);bar([diff12M' nanmean(diff12M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('High Pupil minus Low Face');ylabel('\Delta activity');
 legend('Data','Shuffled');
-mysave(gcf,fullfile(outputfiggolder,'overall_activity_low_high_pupil_loc'));
+mysave(gcf,fullfile(outputfiggolder,'overall_activity_low_high_face_loc'));
 end
 
 
