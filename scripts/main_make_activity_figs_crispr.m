@@ -11,8 +11,9 @@ statenames_4states = {'low_face','high_face', 'loc',};%,'low_face','high_face'
 
 
 plot_activity_by_state(outputfiggolder, procdatapath, statenames_4states);
-plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames_4states);
 plot_traces_events_averaged_animals(outputfiggolder);
+plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames_4states);
+
 %plot_traces_events(outputfiggolder);
 end
 function plot_overall_mean_activity_by_state_permutation(outputfiggolder, procdatapath, statenames)
@@ -138,6 +139,7 @@ parcels_names = get_allen_meta_parcels;
 
 animals_db = get_animals_meta_data_by_csv;
 mean_activity = nan(1, length(statenames), length(animals_db.folder_list));
+mean_activity_parcels= nan(23, length(statenames), length(animals_db.folder_list));
 for i=1:length(animals_db.folder_list)
     
     isimaging_good =animals_db.toinclude_list(i)==3;
@@ -167,20 +169,20 @@ for state_i = 1:length(statenames)
     [new_mean_activity(:,state_i),types,~]=sessions_to_animals(mean_squeezed_activity(state_i,:));
 end
 
-new_mean_parcel_activity=NaN(length(parcels_names),length(statenames),n_animals);
+new_mean_parcel_activity=NaN(length(parcels_names),n_animals,length(statenames));
 for state_i = 1:length(statenames)
     for parcel_i=1:length(parcels_names)
-        [new_mean_parcel_activity(parcel_i,state_i,:),types,~]=sessions_to_animals(squeeze(mean_activity_parcels(parcel_i,state_i,:))');
+        [new_mean_parcel_activity(parcel_i,:,state_i),types,~]=sessions_to_animals(squeeze(mean_activity_parcels(parcel_i,state_i,:))');
     end
 end
 
 for ti = 1:length(animals_db.type_lut)
     currtype = animals_db.type_lut{ti};
-    M(ti,:) = nanmean(new_mean_activity(:, types==ti), 2);
-    S(ti,:) = nanstd(new_mean_activity(:, types==ti), [],2);
-    N(ti)=length(find(types==ti)==1)
-    M_parcels(:, ti,:) = nanmean(mean_activity_parcels(:, :, types==ti), 3);
-    S_parcels(:, ti,:) = nanstd(mean_activity_parcels(:, :, types==ti), [],3);
+    M(ti,:) = nanmean(new_mean_activity(types==ti,:), 1);
+    S(ti,:) = nanstd(new_mean_activity(types==ti,:), [],1);
+    N(ti)=length(find(types==ti)==1);
+    M_parcels(:, ti,:) = nanmean(new_mean_parcel_activity(:, types==ti, :), 2);
+    S_parcels(:, ti,:) = nanstd(new_mean_parcel_activity(:, types==ti, :), [],2);
 end
 for si=1:length(animals_db.type_lut)
     strnamesanimals{si} = [animals_db.type_lut{si} ' N=' num2str(N(si))];
@@ -199,13 +201,13 @@ for ti = 1:length(animals_db.type_lut)
          plot_vals_heatmap(P,...
                         '',[],  L(1), L(2), 1,colormap(redblue));
                     l=l+1;
-                    title([animals_db.type_lut{ti} ' ' strstatenames{si}]);
+                    title([animals_db.type_lut{ti} ' ' strstatenames{si} ' N=' num2str(N(ti))]);
     end
     
 end
 mysave(gcf, fullfile(outputfiggolder, ['mean_activity_by_' num2str(length(statenames)) 'states_per_parcel_heatmap'  ]));
 
-N=min(N');
+%N=min(N');
 
 clrs = get_4states_colors;
 if size(M,2) == 2
@@ -215,7 +217,7 @@ end
 figure;
 for ti = 1:length(animals_db.type_lut)
     subplot(length(animals_db.type_lut),1,ti);
-    b=barwitherr(bsxfun(@rdivide, squeeze(S_parcels(:, ti,:)),sqrt(N(ti)-1)), squeeze(M_parcels(:, ti,:)));
+    b=barwitherr(bsxfun(@rdivide, squeeze(S_parcels(:, ti,:)),sqrt(N(ti))), squeeze(M_parcels(:, ti,:)));
     % for ib=1:length(b)
     %     b(ib).FaceColor = clrs(ib,:);
     % end
@@ -227,6 +229,7 @@ end
 mysave(gcf, fullfile(outputfiggolder, ['mean_activity_by_' num2str(length(statenames)) 'states_per_parcel1'  ]));
 Mmax=nanmax(M_parcels(:));
 Mmin=nanmin(M_parcels(:));
+
 figure;l=1;
 for ti = 1:length(animals_db.type_lut)
     for si = 1:length(statenames)
@@ -239,7 +242,7 @@ for ti = 1:length(animals_db.type_lut)
     P = scores_to_heatmap_allen(M_parcels(:,ti,end),0)-scores_to_heatmap_allen(M_parcels(:,ti,1),0);
     subplot(length(statenames)+1,length(animals_db.type_lut),l);plot_vals_heatmap(P);
     title([strnamesanimals{ti} ' ' strstatenames{end} ' minus ' strstatenames{1}]);
-    set(gca,'CLim',10*abs(Mmin)*[-1 1]);c=colorbar;
+    c=colorbar;set(gca,'CLim',abs(Mmax-Mmin)*[-1 1]);
     l=l+1;
 end
 for si=1:size(M_parcels,3)

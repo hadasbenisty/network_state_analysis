@@ -17,93 +17,21 @@ for sim_i = 1:length(similarity_name)
     procfolder = ['x:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' similarity_name{sim_i}];
     mkNewDir(outputfiggolder)
     
-     %plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
+    %change these from sessions to animals
+    %iterate over 4th dimension of nan(23,23,1000,n); and adjust code to
+    %average new matrix
+     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
     
-    %plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
+    plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
+   
+    %this is where im getting errors-continue tomorrow
     plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
-    %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     
-    %plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
-    %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
-    %plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
+    %not used in a while
+    %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     %     plot_correlation_matrices_type_sex(stateslabels2, similarity_name{sim_i}, animals, outputfiggolder);
     
 end
-end
-function plot_correlation_matrics_permutation_test(procfolder, simname, animals, outputfiggolder)
-n=length(animals.folder_list);
-validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
-high_pupildata_sha = nan(23,23,1000,n);
-locdata_sh = nan(23,23,1000,n);
-highpupildata_shb = nan(23,23,1000,n);
-lowpupildata_sh = nan(23,23,1000,n);
-highfacedata_sh = nan(23,23,1000,n);
-lowfacedata_sh = nan(23,23,1000,n);
-sitdata = nan(23,23,n);
-locdata = nan(23,23,n);
-highpupildata = nan(23,23,n);
-lowpupildata = nan(23,23,n);
-highfacedata = nan(23,23,n);
-lowfacedata = nan(23,23,n);
-
-for ai = 1:length(animals.folder_list)
-    if validinds(ai)
-        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'))
-            
-            shdata = load(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'));
-            if isempty(shdata.corrmat_highpupilloc)||isempty(shdata.corrmat_highpupilloc.high_pupil)
-                continue;
-            end
-            high_pupildata_sha(:,:,:,ai) = shdata.corrmat_highpupilloc.high_pupil;
-            locdata_sh(:,:,:,ai) = shdata.corrmat_highpupilloc.loc;
-            if isfield(shdata, 'corrmat_pupil')&&~isempty(shdata.corrmat_pupil)
-                lowpupildata_sh(:,:,:,ai) = shdata.corrmat_pupil.low_pupil;
-                highpupildata_shb(:,:,:,ai) = shdata.corrmat_pupil.high_pupil;
-            end
-           
-        end
-        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'))
-            load(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'),'W_corr');
-            locdata(:,:,ai) = W_corr;
-        end
-        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'))
-            load(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'),'W_corr');
-            sitdata(:,:,ai) = W_corr;
-        end
-        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'high_pupilAllen_Inf.mat'))
-            load(fullfile(procfolder,animals.folder_list{ai} ,'high_pupilAllen_Inf.mat'),'W_corr');
-            highpupildata(:,:,ai) = W_corr;
-        end
-        if isfile(fullfile(procfolder,animals.folder_list{ai} ,'low_pupilAllen_Inf.mat'))
-            load(fullfile(procfolder,animals.folder_list{ai} ,'low_pupilAllen_Inf.mat'),'W_corr');
-            lowpupildata(:,:,ai) = W_corr;
-        end
-     
-     
-        
-    end
-end
-
-for ci = 1:length(animals.type_lut)
-    ii =  animals.type_list==ci&~squeeze(isnan(locdata(1,2,:)));
-    nbytype(ci) = length(unique(animals.animal_list(ii)));
-end
-for ci = 1:length(animals.type_lut)
-     % 2->3
-    [hpupil23(:,:,ci),pvalpupil23(:,:,ci)]=corr_perm_test(locdata, highpupildata, locdata_sh, high_pupildata_sha, animals.type_list==ci);
-    % 1->2
-    [hpupil12(:,:,ci),pvalpupil12(:,:,ci)]=corr_perm_test(highpupildata, lowpupildata, highpupildata_shb, lowpupildata_sh, animals.type_list==ci);
-   
-end
-% 1->2
-plot_corr_by_state(animals, highpupildata, lowpupildata, hpupil12, 'High Pupil', 'Low Pupil');
-mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_1_2'));
-% 2->3
-plot_corr_by_state(animals, locdata, highpupildata, hpupil23, 'Loc', 'High Pupil');
-mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_2_3'));
-
-
-
 end
 function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder)
 n=length(animals.folder_list);
@@ -312,79 +240,9 @@ for i=1:length(animals)
 end
 end
 
-function plot_correlation_matrices_type_sex(statenames, simname, animals, outputfiggolder)
-
-outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
-files = dir('X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat');
-load(fullfile(files(1).folder, files(1).name), 'par_inds');
-
-signames = {'Allen' };%
-
-parcels_names = get_allen_meta_parcels;
-
-
-l=1;labels_type=[];labels_state=[];
-for state_i = 1:length(statenames)
-    for ai = 1:length(animals.folder_list)
-        if animals.toinclude_list(ai)==find(strcmp(animals.toinclude_lut, 'Good'))
-            filename=fullfile(outputfolder,animals.folder_list{ai} ,[statenames{state_i} ,signames{1} '_Inf.mat']);
-            if ~isfile(filename)
-                continue;
-            end
-            r= load(filename,'W_corr','cent_corr_weighted');
-            
-            Wvec(:,:,l) = r.W_corr+eye(23);
-            deg(:,l) = r.cent_corr_weighted.degree;
-            eigv(:,l) = r.cent_corr_weighted.eigenvector;
-            labels_type(l) = animals.type_list(ai);
-            labels_state(l) = state_i;
-            animal_label(l) = ai;
-            cohort_label(l) = animals.cohort_list(ai);
-            sex_label(l) = animals.sex_list(ai);
-            
-            l=l+1;
-        end
-    end
-end
-
-
-%% by sex and type
-figure;
-for sex_i = 2:3
-    M=[];S=[];
-    for type_i = 1:length(animals.type_lut)
-        
-        M(:,type_i) = mean(eigv(:,labels_type==type_i),2);
-        S(:,type_i) = std(eigv(:,labels_type==type_i),[],2)./sqrt(sum(labels_type==type_i)-1);
-    end
-    subplot(2,1,sex_i-1);barwitherr(S,M);set(gca,'XTick',1:length(parcels_names));
-    set(gca,'XTickLabel',parcels_names);title(animals.sex_lut{sex_i});legend(animals.type_lut)
-end
-mysave(gcf,fullfile(outputfiggolder,'eigenvector','by_sex'));
-
-for co=1:3
-    figure;i=1;
-    for sex_i = 2:3
-        for type_i = 1:length(animals.type_lut)
-            subplot(2,length(animals.type_lut),i);i=i+1;
-            imagesc(mean(Wvec(:,:,cohort_label==co&labels_type==type_i&sex_label==sex_i),3));
-            title([animals.type_lut{type_i} ' ' animals.sex_lut{sex_i}]);
-            set(gca,'XTick',[]);
-            set(gca,'YTick',1:2:length(parcels_names));
-            set(gca,'YTickLabel',parcels_names(1:2:end));
-        end
-    end
-    suptitle(animals.cohort_lut{co});
-    mysave(gcf,fullfile(outputfiggolder, ['corr_by_sex_type_co' num2str(co)]));
-end
-
-
-
-end
-
 function plot_centrality_across_groups_arousal(cent_features, simname, animals, outputfiggolder, statenames, doover)
 
-outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
+outputfolder=['X:\Hadas\Meso-imaging\CRISPR\Figures\network_centrality_' simname];
 files = dir(['X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat']);
 load(fullfile(files(1).folder, files(1).name), 'par_inds');
 
@@ -426,8 +284,7 @@ for sig_i = 1:length(signals_names)
                     load(sumfile);
                 else
                     [spon_states, spont_heatmap] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals.folder_list(animalsinds), statenames, isweigtedstr{isweigted}, th);
-                    %save(sumfile, 'spon_states',...
-                    %    'spont_heatmap'); REMOVED BY LAV
+                    save(sumfile, 'spon_states','spont_heatmap'); 
                 end
                 cent_by_allen_mean(:,:,:,ti) = squeeze(nanmean(spon_states,2));
                 cent_by_allen_std(:,:,:,ti) = squeeze(nanstd(spon_states,[],2));
@@ -733,16 +590,75 @@ end
 end
 
 
+function plot_correlation_matrices_type_sex(statenames, simname, animals, outputfiggolder)
+
+outputfolder=['X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\network_centrality_' simname];
+files = dir('X:\Hadas\Meso-imaging\lan\xxpsych\spt\xx_12_grid4.mat');
+load(fullfile(files(1).folder, files(1).name), 'par_inds');
+
+signames = {'Allen' };%
+
+parcels_names = get_allen_meta_parcels;
+
+
+l=1;labels_type=[];labels_state=[];
+for state_i = 1:length(statenames)
+    for ai = 1:length(animals.folder_list)
+        if animals.toinclude_list(ai)==find(strcmp(animals.toinclude_lut, 'Good'))
+            filename=fullfile(outputfolder,animals.folder_list{ai} ,[statenames{state_i} ,signames{1} '_Inf.mat']);
+            if ~isfile(filename)
+                continue;
+            end
+            r= load(filename,'W_corr','cent_corr_weighted');
+            
+            Wvec(:,:,l) = r.W_corr+eye(23);
+            deg(:,l) = r.cent_corr_weighted.degree;
+            eigv(:,l) = r.cent_corr_weighted.eigenvector;
+            labels_type(l) = animals.type_list(ai);
+            labels_state(l) = state_i;
+            animal_label(l) = ai;
+            cohort_label(l) = animals.cohort_list(ai);
+            sex_label(l) = animals.sex_list(ai);
+            
+            l=l+1;
+        end
+    end
+end
+
+
+%% by sex and type
+figure;
+for sex_i = 2:3
+    M=[];S=[];
+    for type_i = 1:length(animals.type_lut)
+        
+        M(:,type_i) = mean(eigv(:,labels_type==type_i),2);
+        S(:,type_i) = std(eigv(:,labels_type==type_i),[],2)./sqrt(sum(labels_type==type_i)-1);
+    end
+    subplot(2,1,sex_i-1);barwitherr(S,M);set(gca,'XTick',1:length(parcels_names));
+    set(gca,'XTickLabel',parcels_names);title(animals.sex_lut{sex_i});legend(animals.type_lut)
+end
+mysave(gcf,fullfile(outputfiggolder,'eigenvector','by_sex'));
+
+for co=1:3
+    figure;i=1;
+    for sex_i = 2:3
+        for type_i = 1:length(animals.type_lut)
+            subplot(2,length(animals.type_lut),i);i=i+1;
+            imagesc(mean(Wvec(:,:,cohort_label==co&labels_type==type_i&sex_label==sex_i),3));
+            title([animals.type_lut{type_i} ' ' animals.sex_lut{sex_i}]);
+            set(gca,'XTick',[]);
+            set(gca,'YTick',1:2:length(parcels_names));
+            set(gca,'YTickLabel',parcels_names(1:2:end));
+        end
+    end
+    suptitle(animals.cohort_lut{co});
+    mysave(gcf,fullfile(outputfiggolder, ['corr_by_sex_type_co' num2str(co)]));
+end
 
 
 
-
-
-
-
-
-
-
+end
 
 function plot_ctrl_vs_mutants(cent_features, simname, animals, outputfiggolder, statenames, doover)
 
@@ -1092,6 +1008,83 @@ M = mean(eigenvals, 3);
 S = std(eigenvals, [],3)/sqrt(size(eigenvals,3)-1);
 barwitherr(S,M)
 end
+
+% function plot_correlation_matrics_permutation_test(procfolder, simname, animals, outputfiggolder)
+% n=length(animals.folder_list);
+% validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
+% high_pupildata_sha = nan(23,23,1000,n);
+% locdata_sh = nan(23,23,1000,n);
+% highpupildata_shb = nan(23,23,1000,n);
+% lowpupildata_sh = nan(23,23,1000,n);
+% highfacedata_sh = nan(23,23,1000,n);
+% lowfacedata_sh = nan(23,23,1000,n);
+% sitdata = nan(23,23,n);
+% locdata = nan(23,23,n);
+% highpupildata = nan(23,23,n);
+% lowpupildata = nan(23,23,n);
+% highfacedata = nan(23,23,n);
+% lowfacedata = nan(23,23,n);
+% 
+% for ai = 1:length(animals.folder_list)
+%     if validinds(ai)
+%         if isfile(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'))
+%             
+%             shdata = load(fullfile(procfolder,animals.folder_list{ai} ,'shuffled_corr_Allen_.mat'));
+%             if isempty(shdata.corrmat_highpupilloc)||isempty(shdata.corrmat_highpupilloc.high_pupil)
+%                 continue;
+%             end
+%             high_pupildata_sha(:,:,:,ai) = shdata.corrmat_highpupilloc.high_pupil;
+%             locdata_sh(:,:,:,ai) = shdata.corrmat_highpupilloc.loc;
+%             if isfield(shdata, 'corrmat_pupil')&&~isempty(shdata.corrmat_pupil)
+%                 lowpupildata_sh(:,:,:,ai) = shdata.corrmat_pupil.low_pupil;
+%                 highpupildata_shb(:,:,:,ai) = shdata.corrmat_pupil.high_pupil;
+%             end
+%            
+%         end
+%         if isfile(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'))
+%             load(fullfile(procfolder,animals.folder_list{ai} ,'locAllen_Inf.mat'),'W_corr');
+%             locdata(:,:,ai) = W_corr;
+%         end
+%         if isfile(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'))
+%             load(fullfile(procfolder,animals.folder_list{ai} ,'sitAllen_Inf.mat'),'W_corr');
+%             sitdata(:,:,ai) = W_corr;
+%         end
+%         if isfile(fullfile(procfolder,animals.folder_list{ai} ,'high_pupilAllen_Inf.mat'))
+%             load(fullfile(procfolder,animals.folder_list{ai} ,'high_pupilAllen_Inf.mat'),'W_corr');
+%             highpupildata(:,:,ai) = W_corr;
+%         end
+%         if isfile(fullfile(procfolder,animals.folder_list{ai} ,'low_pupilAllen_Inf.mat'))
+%             load(fullfile(procfolder,animals.folder_list{ai} ,'low_pupilAllen_Inf.mat'),'W_corr');
+%             lowpupildata(:,:,ai) = W_corr;
+%         end
+%      
+%      
+%         
+%     end
+% end
+% 
+% for ci = 1:length(animals.type_lut)
+%     ii =  animals.type_list==ci&~squeeze(isnan(locdata(1,2,:)));
+%     nbytype(ci) = length(unique(animals.animal_list(ii)));
+% end
+% for ci = 1:length(animals.type_lut)
+%      % 2->3
+%     [hpupil23(:,:,ci),pvalpupil23(:,:,ci)]=corr_perm_test(locdata, highpupildata, locdata_sh, high_pupildata_sha, animals.type_list==ci);
+%     % 1->2
+%     [hpupil12(:,:,ci),pvalpupil12(:,:,ci)]=corr_perm_test(highpupildata, lowpupildata, highpupildata_shb, lowpupildata_sh, animals.type_list==ci);
+%    
+% end
+% % 1->2
+% plot_corr_by_state(animals, highpupildata, lowpupildata, hpupil12, 'High Pupil', 'Low Pupil');
+% mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_1_2'));
+% % 2->3
+% plot_corr_by_state(animals, locdata, highpupildata, hpupil23, 'Loc', 'High Pupil');
+% mysave(gcf, fullfile(outputfiggolder, 'corr_pupil_2_3'));
+% 
+% 
+% 
+% end
+
 % function plot_centrality_res_gal(animals, outputfiggolder, statenames)
 % [~, ~, finalindex] = get_allen_meta_parcels;
 % cent_features = {'degree' 'closeness' 'betweenness' 'pagerank' 'eigenvector', 'participation', 'community'};
