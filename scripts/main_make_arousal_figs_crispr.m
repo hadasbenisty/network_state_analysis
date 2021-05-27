@@ -140,7 +140,6 @@ for ai = 1:n
         continue;
     end
     load(fullfile(procfolder, animals_db.folder_list{ai}, ['arousal_traces_states.mat']));%
-    
     for state_i = 1:length(stateslabels)
         if isfield(segments_arousals, stateslabels{state_i})
             if isempty(segments_arousals.(stateslabels{state_i}))
@@ -168,27 +167,25 @@ for si=1:length(stateslabels_ttls)
     stateslabels_ttls{si}(strfind(stateslabels_ttls{si},'_')) = ' ';
 end
 
+values=NaN(n_animals,length(stateslabels));
+for state_i = 1:length(stateslabels)
+    [values(:,state_i),types,~]=sessions_to_animals(Tstates(:,state_i));
+end
+
 CondColors = get_4states_colors;
-if length(stateslabels_ttls)==2
+if length(stateslabels_ttls)==s2
     CondColors = get_3states_colors;
     CondColors=CondColors([1 3],:);
 end
 
-
-
 Mbytype=[];Sbytype=[];nbytype=[];
 
-for ci = 1:length(animals_db.type_lut)
-    X=Tstates(animals_db.type_list==ci , :);
+for ci = 1:length(unique(types)) %for each type
+    X=values(types==ci , :);
     X=bsxfun(@rdivide, X, nansum(X,2));
     Mbytype(ci,:) = nanmean(X);
     Sbytype(ci,:) = nanstd(X);
-%     nbytype(ci,:) = sum(~isnan(X));
-    ii = ~isnan(X);
-    jj = animals_db.animal_list( animals_db.type_list==ci);
-    for kk=1:size(ii,2)
-        nbytype(ci,kk)= length(unique(jj(ii(:,1))));
-    end
+    nbytype(ci,:) = length(find((types==ci)==1));
 end
 figure;b = barwitherr(Sbytype./sqrt(nbytype), Mbytype);
 for i=1:length(b)
@@ -204,7 +201,6 @@ title('Fraction of time on arousal state');
 mysave(gcf, fullfile(outputfiggolder, ['time_spent_fraction', num2str(length(stateslabels_ttls)) ]));
 
 figure;b = barwitherr(Sbytype'./sqrt(nbytype'), Mbytype');
-
 legend(str);
 set(gca,'XTickLabel',stateslabels_ttls);
 title('Fraction of time on arousal state');
@@ -274,7 +270,7 @@ for ci = 1:length(animals_db.type_lut)
         set(gcf,'renderer','Painters');
         b=hist(x, binsN);
         bar(binsN,b/sum(b), 'facecolor',CondColors(state_i,:),'facealpha',.8,'edgecolor','none');
-        title([ animals_db.type_lut{ci}]); xlabel('wheel speed');
+        title([ animals_db.type_lut{ci}]); xlabel('pupil');
         hold all
     end
     ylim([0 1]);

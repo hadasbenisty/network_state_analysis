@@ -127,7 +127,7 @@ end
 figure;
 subplot(2,1,1);bar([diff23M' nanmean(diff23M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('Loc minus High Face');ylabel('\Delta activity');
 legend('Data','Shuffled');
-subplot(2,1,2);bar([diff12M' nanmean(diff12M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('High Pupil minus Low Face');ylabel('\Delta activity');
+subplot(2,1,2);bar([diff12M' nanmean(diff12M_sh,2)]);set(gca,'XTickLabel',animals_db.type_lut);title('High Face minus Low Face');ylabel('\Delta activity');
 legend('Data','Shuffled');
 mysave(gcf,fullfile(outputfiggolder,'overall_activity_low_high_face_loc'));
 end
@@ -158,17 +158,29 @@ for i=1:length(animals_db.folder_list)
         end
     end
 end
+
+%%sessions to animals 
+new_mean_activity=NaN(n_animals,length(statenames));
+mean_squeezed_activity=squeeze(mean_activity);
+
+for state_i = 1:length(statenames)
+    [new_mean_activity(:,state_i),types,~]=sessions_to_animals(mean_squeezed_activity(state_i,:));
+end
+
+new_mean_parcel_activity=NaN(length(parcels_names),length(statenames),n_animals);
+for state_i = 1:length(statenames)
+    for parcel_i=1:length(parcels_names)
+        [new_mean_parcel_activity(parcel_i,state_i,:),types,~]=sessions_to_animals(squeeze(mean_activity_parcels(parcel_i,state_i,:))');
+    end
+end
+
 for ti = 1:length(animals_db.type_lut)
     currtype = animals_db.type_lut{ti};
-    M(ti,:) = nanmean(mean_activity(:, :, animals_db.type_list==ti), 3);
-    S(ti,:) = nanstd(mean_activity(:, :, animals_db.type_list==ti), [],3);
-    ii = ~isnan(squeeze(mean_activity(1, :, animals_db.type_list==ti)));
-    jj = animals_db.animal_list( animals_db.type_list==ti);
-    for kk=1:size(ii,1)
-        N(ti,kk)= length(unique(jj(ii(kk,:))));
-    end
-    M_parcels(:, ti,:) = nanmean(mean_activity_parcels(:, :, animals_db.type_list==ti), 3);
-    S_parcels(:, ti,:) = nanstd(mean_activity_parcels(:, :, animals_db.type_list==ti), [],3);
+    M(ti,:) = nanmean(new_mean_activity(:, types==ti), 2);
+    S(ti,:) = nanstd(new_mean_activity(:, types==ti), [],2);
+    N(ti)=length(find(types==ti)==1)
+    M_parcels(:, ti,:) = nanmean(mean_activity_parcels(:, :, types==ti), 3);
+    S_parcels(:, ti,:) = nanstd(mean_activity_parcels(:, :, types==ti), [],3);
 end
 for si=1:length(animals_db.type_lut)
     strnamesanimals{si} = [animals_db.type_lut{si} ' N=' num2str(N(si))];
@@ -275,11 +287,32 @@ animals_db = get_animals_meta_data_by_csv;
 
 dffpath = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
 [~, ~, finalindex.Allen] = get_allen_meta_parcels;
-validsessions = animals_db.toinclude_list==3;
-trials_wheelon = nan(23,71,length(validsessions));
-trials_wheeloff= nan(23,71,length(validsessions));
-trials_airpuff = nan(23,71,length(validsessions));
-trials_high_pupil = nan(23,71,length(validsessions));
+validanimals = unique(animals_db.animal_list(animals_db.toinclude_list==3));
+
+trials_wheelon = nan(23,71,length(validanimals));
+trials_wheeloff= nan(23,71,length(validanimals));
+trials_airpuff = nan(23,71,length(validanimals));
+trials_high_pupil = nan(23,71,length(validanimals));
+animalslist=[];
+counter=1;
+for j=1:length(validanimals)
+    curr_animalid=validanimals(j);
+    validsessions=animals_db.animal_list==curr_animalid&animals_db.toinclude_list==3;
+    %validsessions=animals_db.folder_list(find(inx==1));
+    trials_wheelon_sessions = nan(23,71,length(find(validsessions==1)));
+    trials_wheeloff_sessions= nan(23,71,length(find(validsessions==1)));
+    trials_airpuff_sessions = nan(23,71,length(find(validsessions==1)));
+%     if curr_animalid==8||curr_animalid==9||curr_animalid==23 %these
+%     animals only have locomotion not other states but currently including
+%     them in analysis
+%             continue;
+%     end
+    if length(find(validsessions==1))==0
+        continue;
+    else
+        animalstype=animals_db.type_list(animals_db.animal_list==curr_animalid); %get animal type for animalID
+        animalslist(counter)=animalstype(1);
+    end
 for i=1:length(validsessions)
     if ~validsessions(i)
         continue;
@@ -307,45 +340,45 @@ for i=1:length(validsessions)
     load(segmentfile, 'segments_arousals');
     Y = extract_segment(t_imaging, parcels_time_trace, segments_arousals.sit);
     Xa = bsxfun(@minus, parcels_time_trace, quantile(Y',.0050)');
-    
-    
-    
-    
+   
     before_win=2;
     
     after_win=5;fsimaing=10;
     
-    [trials_data, trials_inds] = extract_trials_by_onsets(t_imaging, timing.wheelOff, before_win, after_win, ...
+    [trials_data, ~] = extract_trials_by_onsets(t_imaging, timing.wheelOff, before_win, after_win, ...
         fsimaing, Xa);
-    trials_wheeloff(:,:,i) = mean(trials_data,3);
+    trials_wheeloff_sessions(:,:,i) = mean(trials_data,3);
     
     
-    [trials_data, trials_inds] = extract_trials_by_onsets(t_imaging, timing.wheelOn, before_win, after_win, ...
+    [trials_data, ~] = extract_trials_by_onsets(t_imaging, timing.wheelOn, before_win, after_win, ...
         fsimaing, Xa);
-    trials_wheelon(:,:,i) = mean(trials_data,3);
+    trials_wheelon_sessions(:,:,i) = mean(trials_data,3);
     if isfield(timing, 'airpuffstart') && ~isempty(timing.airpuffstart)
-        [trials_data, trials_inds] = extract_trials_by_onsets(t_imaging, timing.airpuffstart, before_win, after_win, ...
+        [trials_data, ~] = extract_trials_by_onsets(t_imaging, timing.airpuffstart, before_win, after_win, ...
             fsimaing, Xa);
-        trials_airpuff(:,:,i) = mean(trials_data,3);
+        trials_airpuff_sessions(:,:,i) = mean(trials_data,3);
     end
-    
 end
-
+    trials_wheelon(:,:,counter) =  nanmean(trials_wheelon_sessions,3);
+    trials_airpuff(:,:,counter) = nanmean(trials_airpuff_sessions,3);
+    trials_wheeloff(:,:,counter) = nanmean(trials_wheeloff_sessions,3);
+    counter=counter+1;
+end
 for ci=1:length(animals_db.type_lut)
-    M1(:,:,ci) = nanmean(trials_wheelon(:, :,animals_db.type_list==ci),3);
-    S1(:,:,ci) = nanstd(trials_wheelon(:, :,animals_db.type_list==ci),[],3);
+    M1(:,:,ci) = nanmean(trials_wheelon(:, :,animalslist==ci),3);
+    S1(:,:,ci) = nanstd(trials_wheelon(:, :,animalslist==ci),[],3);
     
-    M2(:,:,ci) = nanmean(trials_airpuff(:,  :,animals_db.type_list==ci),3);
-    S2(:,:,ci) = nanstd(trials_airpuff(:,  :,animals_db.type_list==ci),[],3);
+    M2(:,:,ci) = nanmean(trials_airpuff(:,  :,animalslist==ci),3);
+    S2(:,:,ci) = nanstd(trials_airpuff(:,  :,animalslist==ci),[],3);
     
-    M3(:,:,ci) = nanmean(trials_high_pupil(:,  :,animals_db.type_list==ci),3);
-    S3(:,:,ci) = nanstd(trials_high_pupil(:,  :,animals_db.type_list==ci),[],3);
+    M3(:,:,ci) = nanmean(trials_high_pupil(:,  :,animalslist==ci),3);
+    S3(:,:,ci) = nanstd(trials_high_pupil(:,  :,animalslist==ci),[],3);
     
-    M4(:,:,ci) = nanmean(trials_wheeloff(:,  :,animals_db.type_list==ci),3);
-    S4(:,:,ci) = nanstd(trials_wheeloff(:,  :,animals_db.type_list==ci),[],3);
+    M4(:,:,ci) = nanmean(trials_wheeloff(:,  :,animalslist==ci),3);
+    S4(:,:,ci) = nanstd(trials_wheeloff(:,  :,animalslist==ci),[],3);
     
-    ii = animals_db.type_list==ci&~squeeze(isnan(trials_wheelon(1,1,:)));
-    nbytype(ci) =  length(unique(animals_db.animal_list(ii)));
+    %%continue here and check why animals list is just 1 and 2 a nd no 3
+    nbytype(ci) =  length(find(animalslist==ci));
 end
 parcels_names = get_allen_meta_parcels;
 
@@ -353,11 +386,11 @@ inds = [1 14 22];
 figure;
 for k=1:length(inds)
     subplot(length(inds),1,k);
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,1),S4(inds(k),:,1)/sqrt(nbytype(1)-1));
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,1),S4(inds(k),:,1)/sqrt(nbytype(1)));
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,2),S4(inds(k),:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,2),S4(inds(k),:,2)/sqrt(nbytype(2)),'lineprops','r');
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,3),S4(inds(k),:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M4(inds(k),:,3),S4(inds(k),:,3)/sqrt(nbytype(3)),'lineprops','b');
     title(parcels_names{inds(k)});
 end
 c=get(gca,'Children');
@@ -370,11 +403,11 @@ mysave(gcf,fullfile(outputfiggolder, 'parcels_wheel_offset'));
 figure;
 for k=1:length(inds)
     subplot(length(inds),1,k);
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,1),S3(inds(k),:,1)/sqrt(nbytype(1)-1));
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,1),S3(inds(k),:,1)/sqrt(nbytype(1)));
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,2),S3(inds(k),:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,2),S3(inds(k),:,2)/sqrt(nbytype(2)),'lineprops','r');
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,3),S3(inds(k),:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M3(inds(k),:,3),S3(inds(k),:,3)/sqrt(nbytype(3)),'lineprops','b');
     title(parcels_names{inds(k)});
 end
 c=get(gca,'Children');
@@ -389,11 +422,11 @@ inds = [1 14 22];
 figure;
 for k=1:length(inds)
     subplot(length(inds),1,k);
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,1),S1(inds(k),:,1)/sqrt(nbytype(1)-1));
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,1),S1(inds(k),:,1)/sqrt(nbytype(1)));
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,2),S1(inds(k),:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,2),S1(inds(k),:,2)/sqrt(nbytype(2)),'lineprops','r');
     hold all;
-    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,3),S1(inds(k),:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+    shadedErrorBar(linspace(-before_win, after_win, size(M1,2)), M1(inds(k),:,3),S1(inds(k),:,3)/sqrt(nbytype(3)),'lineprops','b');
     title(parcels_names{inds(k)});
 end
 c=get(gca,'Children');
@@ -402,17 +435,16 @@ xlabel('Time [sec]');
 suptitle('Activity - Wheel Onset');
 mysave(gcf,fullfile(outputfiggolder, 'parcels_wheel_onset'));
 
-
+figure;
 for ci=1:length(animals_db.type_lut)
-    M(:,ci) = nanmean(nanmean(trials_wheelon(:, :,animals_db.type_list==ci),1),3);
-    S(:,ci) = nanstd(nanmean(trials_wheelon(:, :,animals_db.type_list==ci),1),[],3);
-    
+    M(:,ci) = nanmean(nanmean(trials_wheelon(:, :,animalslist==ci),1),3);
+    S(:,ci) = nanstd(nanmean(trials_wheelon(:, :,animalslist==ci),1),[],3);
 end
-figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)-1));
+figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)));
 hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)),'lineprops','r');
 hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)),'lineprops','b');
 c=get(gca,'Children');
 legend(c(end:-4:1),animals_db.type_lut);
 xlabel('Time [sec]');
@@ -420,38 +452,37 @@ title('Overall Average Activity - Wheel Onset');
 mysave(gcf,fullfile(outputfiggolder, 'overall_wheel_onset'));
 
 for ci=1:length(animals_db.type_lut)
-    M(:,ci) = nanmean(nanmean(trials_wheeloff(:, :,animals_db.type_list==ci),1),3);
-    S(:,ci) = nanstd(nanmean(trials_wheeloff(:, :,animals_db.type_list==ci),1),[],3);
+    M(:,ci) = nanmean(nanmean(trials_wheeloff(:, :,animalslist==ci),1),3);
+    S(:,ci) = nanstd(nanmean(trials_wheeloff(:, :,animalslist==ci),1),[],3);
     
 end
-figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)-1));
+figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)));
 hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)),'lineprops','r');
 hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)),'lineprops','b');
 c=get(gca,'Children');
 legend(c(end:-4:1),animals_db.type_lut);
 xlabel('Time [sec]');
 title('Overall Average Activity - Wheel Offset');
 mysave(gcf,fullfile(outputfiggolder, 'overall_wheel_offset'));
 
-
-
-for ci=1:length(animals_db.type_lut)
-    M(:,ci) = nanmean(nanmean(trials_high_pupil(:, :,animals_db.type_list==ci),1),3);
-    S(:,ci) = nanstd(nanmean(trials_high_pupil(:, :,animals_db.type_list==ci),1),[],3);
-    
-end
-figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)-1));
-hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)-1),'lineprops','r');
-hold all;
-shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)-1),'lineprops','b');
-c=get(gca,'Children');
-legend(c(end:-4:1),animals_db.type_lut);
-xlabel('Time [sec]');
-title('Overall Average Activity - Wheel Onset');
-mysave(gcf,fullfile(outputfiggolder, 'overall_wheel_onset'));
+% 
+% for ci=1:length(animals_db.type_lut)
+%     M(:,ci) = nanmean(nanmean(trials_high_pupil(:, :,animals_db.type_list==ci),1),3);
+%     S(:,ci) = nanstd(nanmean(trials_high_pupil(:, :,animals_db.type_list==ci),1),[],3);
+%     
+% end
+% figure;shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,1),S(:,1)/sqrt(nbytype(1)-1));
+% hold all;
+% shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,2),S(:,2)/sqrt(nbytype(2)-1),'lineprops','r');
+% hold all;
+% shadedErrorBar(linspace(-before_win, after_win, size(M,1)), M(:,3),S(:,3)/sqrt(nbytype(3)-1),'lineprops','b');
+% c=get(gca,'Children');
+% legend(c(end:-4:1),animals_db.type_lut);
+% xlabel('Time [sec]');
+% title('Overall Average Activity - Wheel Onset');
+% mysave(gcf,fullfile(outputfiggolder, 'overall_highpupil'));
 
 %
 % figure;

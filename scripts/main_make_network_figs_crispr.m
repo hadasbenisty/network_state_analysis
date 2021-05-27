@@ -6,7 +6,7 @@ animals = get_animals_meta_data_by_csv;
 stateslabels3 = { 'low_face', 'high_face', 'loc'};
 %stateslabels2 = { 'qui', 'loc'};
 % cent_features = {  'eigenvector' 'degree' 'closeness' 'participation' , 'diffmap',  'betweenness' 'pagerank', 'second_eigval'};%};%'eigenvector'
-%cent_features = {  'eigenvector' 'degree'  'second_eigval'};%};%'eigenvector'
+cent_features = {  'eigenvector' 'degree'  'second_eigval'};%};%'eigenvector'
 similarity_name = {'pearson_corr'   };%'corr',,  'fullcorr' 'cov''partial_corr'
 doover=true;
 %% Fig 4 - network
@@ -17,15 +17,15 @@ for sim_i = 1:length(similarity_name)
     procfolder = ['x:\Hadas\Meso-imaging\CRISPR\analysis_results\network_centrality_' similarity_name{sim_i}];
     mkNewDir(outputfiggolder)
     
-     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
+     %plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
     
-    plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
+    %plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     
-    plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
+    %plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
     %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
-    plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
+    %plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels2, doover);
     %     plot_correlation_matrices_type_sex(stateslabels2, similarity_name{sim_i}, animals, outputfiggolder);
     
 end
@@ -418,7 +418,7 @@ for sig_i = 1:length(signals_names)
     for th=thT
         for ti = 1:length(arousaltypes)
             curtype = animals.type_lut{ti};
-            animalsinds = find(animals.type_list==ti & animals.toinclude_list == find(strcmp(animals.toinclude_lut, 'Good'))&animals.arousal_cluster_list>0);
+            animalsinds = find(animals.type_list==ti & animals.toinclude_list == find(strcmp(animals.toinclude_lut, 'Good')));%&animals.arousal_cluster_list>0); REMOVED BY LAV
             for isweigted = 1:length(isweigtedstr)
                 
                 sumfile = fullfile(outputfolder, [num2str(Nstates) 'states_' curtype '_summary_centrality_', signals_names{sig_i}, '_' isweigtedstr{isweigted} 'th' num2str(th) '.mat']);
@@ -426,8 +426,8 @@ for sig_i = 1:length(signals_names)
                     load(sumfile);
                 else
                     [spon_states, spont_heatmap] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals.folder_list(animalsinds), statenames, isweigtedstr{isweigted}, th);
-                    save(sumfile, 'spon_states',...
-                        'spont_heatmap');
+                    %save(sumfile, 'spon_states',...
+                    %    'spont_heatmap'); REMOVED BY LAV
                 end
                 cent_by_allen_mean(:,:,:,ti) = squeeze(nanmean(spon_states,2));
                 cent_by_allen_std(:,:,:,ti) = squeeze(nanstd(spon_states,[],2));
@@ -438,6 +438,7 @@ for sig_i = 1:length(signals_names)
                 close all;
             end
         end
+        
         if ~all(isnan(W_spont(:)))
             
             %% type & arousal state
@@ -446,7 +447,7 @@ for sig_i = 1:length(signals_names)
                 for ti=1:length(arousaltypes)
                     subplot(length(statenames)+1,length(arousaltypes),l);
                     plot_corr_mat(W_spont(:,:,si,ti),parcels_names,[0 1]);
-                    title([ animals.arousal_cluster_lut{2+ti} ' ' statenames{si} ]);l=l+1;
+                    title([ ' ' statenames{si} ]);l=l+1;
                     colorbar;
                 end
             end
@@ -454,7 +455,7 @@ for sig_i = 1:length(signals_names)
             for ti=1:length(arousaltypes)
                 subplot(length(statenames)+1,length(arousaltypes),l);
                 plot_corr_mat(W_spont(:,:,end,ti)-W_spont(:,:,1,ti),parcels_names,[-.5  .5]/5);l=l+1;
-                title([ animals.arousal_cluster_lut{2+ti} ' ' statenames{end} '-' statenames{1} ]);
+                title([' ' statenames{end} '-' statenames{1} ]);
                 colorbar; %
             end
             colormap(redblue);
@@ -620,7 +621,7 @@ for sig_i = 1:length(signals_names)
                 for ti=1:length(arousaltypes)
                     subplot(length(statenames)+1,length(arousaltypes),l);
                     plot_corr_mat(W_spont(:,:,si,ti),parcels_names,[0 1]);
-                    title([ animals.arousal_cluster_lut{2+ti} ' ' statenames{si} ]);l=l+1;
+                    title([' ' statenames{si} ]);l=l+1;
                     colorbar;
                 end
             end
@@ -628,7 +629,7 @@ for sig_i = 1:length(signals_names)
             for ti=1:length(arousaltypes)
                 subplot(length(statenames)+1,length(arousaltypes),l);
                 plot_corr_mat(W_spont(:,:,end,ti)-W_spont(:,:,1,ti),parcels_names,[-.5  .5]/5);l=l+1;
-                title([ animals.arousal_cluster_lut{2+ti} ' ' statenames{end} '-' statenames{1} ]);
+                title([ ' ' statenames{end} '-' statenames{1} ]);
                 colorbar; %
             end
             colormap(redblue);
