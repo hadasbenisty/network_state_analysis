@@ -20,7 +20,7 @@ for sim_i = 1:length(similarity_name)
     %change these from sessions to animals
     %iterate over 4th dimension of nan(23,23,1000,n); and adjust code to
     %average new matrix
-     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder);
+     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder,false);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
    
@@ -33,10 +33,11 @@ for sim_i = 1:length(similarity_name)
     
 end
 end
-function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder)
+function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder,doover)
+if doover==true
 n=length(animals.folder_list);
 validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
-    
+
 high_facedata_sha = nan(23,23,1000,n);
 locdata_sh = nan(23,23,1000,n);
 highfacedata_shb = nan(23,23,1000,n);
@@ -83,16 +84,83 @@ for ai = 1:length(animals.folder_list)
         
     end
 end
+parcels_names = get_allen_meta_parcels;
+for dataset=1:4
+    if dataset==1
+        data=sitdata;
+    elseif dataset==2
+        data=locdata;
+    elseif dataset==3
+        data=highfacedata;
+    elseif dataset==4
+        data=lowfacedata; %3d
+    end
+    newdata=nan(23,23,n_animals);    
+for parcel_i=1:length(parcels_names)
+    for parcel_j=1:length(parcels_names)
+        [newdata(parcel_i,parcel_j,:),types,~]=sessions_to_animals(squeeze(data(parcel_i,parcel_j,:)))
+    end
+end
+    if dataset==1
+        sitdata_new=newdata;
+    elseif dataset==2
+        locdata_new=newdata;
+    elseif dataset==3
+        highfacedata_new=newdata;
+    elseif dataset==4
+        lowfacedata_new=newdata; %3d
+    end
+    clearvars data newdata parcel_i parcel_j
+end
+%for each shuffled (x1000) correlation matrix per session, average across
+%sessions to days (same as above)
+
+for dataset=2:4
+    if dataset==1
+        data=high_facedata_sha;
+    elseif dataset==2
+        data=locdata_sh;
+    elseif dataset==3
+        data=highfacedata_shb;
+    else
+        data=lowfacedata_sh;
+    end
+    newdata=nan(23,23,1000,n_animals); 
+    for perm_i=1:1000
+        for parcel_i=1:length(parcels_names)
+            for parcel_j=1:length(parcels_names)
+                newdata(parcel_i,parcel_j,perm_i,:)=sessions_to_animals(squeeze(data(parcel_i,parcel_j,perm_i,:)));
+                disp(strcat(num2str(perm_i),'{ }',num2str(dataset)));
+            end
+        end
+    end
+    if dataset==1
+        high_facedata_sha_new=newdata;
+    elseif dataset==2
+        locdata_sh_new=newdata;
+    elseif dataset==3
+        highfacedata_shb_new=newdata;
+    elseif dataset==4
+        lowfacedata_sh_new=newdata; %3d
+    end
+    clearvars data newdata parcel_i parcel_j
+end
+else
+    load('newest_all_facemap_perm_corr.mat');
+end
+
+%save('newest_all_facemap_perm_corr.mat')
+%save('backup_newest_all_facemap_perm_corr.mat','high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new','-v7.3')
 
 for ci = 1:length(animals.type_lut)
-    ii =  animals.type_list==ci&~squeeze(isnan(locdata(1,2,:)));
-    nbytype(ci) = length(unique(animals.animal_list(ii)));
+    nbytype(ci)=length(find(types==ci)==1);
 end
+
 for ci = 1:length(animals.type_lut)
      % 2->3
-    [hface23(:,:,ci),pvalface23(:,:,ci)]=corr_perm_test(locdata, highfacedata, locdata_sh, high_facedata_sha, animals.type_list==ci);
+    [hface23(:,:,ci),pvalface23(:,:,ci)]=corr_perm_test(locdata_new, highfacedata_new, locdata_sh_new, high_facedata_sha_new, types==ci);
     % 1->2
-    [hface12(:,:,ci),pvalface12(:,:,ci)]=corr_perm_test(highfacedata, lowfacedata, highfacedata_shb, lowfacedata_sh, animals.type_list==ci);
+    [hface12(:,:,ci),pvalface12(:,:,ci)]=corr_perm_test(highfacedata_new, lowfacedata_new, highfacedata_shb_new, lowfacedata_sh_new, types==ci);
    
 end
 % 1->2
@@ -204,11 +272,6 @@ function [spon_states, spont_heatmap]  = load_centrality_results(cent_features, 
 spon_states = nan(23, length(animals), length(statenames), length(cent_features));
 spont_heatmap = nan(256,256, length(animals),length(statenames), length(cent_features));
 
-
-
-
-
-
 for i=1:length(animals)
     animal=animals{i};
     for state_i = 1:length(statenames)
@@ -274,7 +337,7 @@ for sig_i = 1:length(signals_names)
     arousaltypes = unique(animals.type_list);
     Nstates = length(statenames);
     for th=thT
-        for ti = 1:length(arousaltypes)
+        for ti = 1:length(arousaltypes) %for animal types 
             curtype = animals.type_lut{ti};
             animalsinds = find(animals.type_list==ti & animals.toinclude_list == find(strcmp(animals.toinclude_lut, 'Good')));%&animals.arousal_cluster_list>0); REMOVED BY LAV
             for isweigted = 1:length(isweigtedstr)
@@ -286,6 +349,8 @@ for sig_i = 1:length(signals_names)
                     [spon_states, spont_heatmap] = load_centrality_results(cent_features, signals_names{sig_i}, outputfolder, animals.folder_list(animalsinds), statenames, isweigtedstr{isweigted}, th);
                     save(sumfile, 'spon_states','spont_heatmap'); 
                 end
+                
+                %sessions to animals here before plotting 
                 cent_by_allen_mean(:,:,:,ti) = squeeze(nanmean(spon_states,2));
                 cent_by_allen_std(:,:,:,ti) = squeeze(nanstd(spon_states,[],2));
                 cent_by_allen_N(:,:,ti) = squeeze(sum(~isnan(spon_states(1,:,:,:,:)),2));
@@ -784,21 +849,28 @@ for sig_i = 1:length(signals_names)
                 %                 set(gcf,'Position',[680         104        1107         874]);
                 %                 mysave(gcf, fullfile(outputfiggolder,[num2str(Nstates) 'states_' 'W_'   signals_names{sig_i} '_th' num2str(th) '_' curtype]));
                 
+                %%
+                %add sessions to animals to convert spont states here
                 
+                %%
                 diffmapind = find(strcmp(cent_features, 'diffmap'));
                 if ~isempty(diffmapind)
                     for j=1:length(statenames)
                         spon_states(:, :, j, diffmapind) = sign(diffmap2clusters(spon_states(:, :, j, diffmapind)));
                     end
                 end
-                
+                %spon_states = parcels, length(animals), length(statenames), length(cent_features);
+
                 legstr = statenames;
                 for k=1:length(legstr)
                     legstr{k}(legstr{k}=='_') = ' ';
                 end
                 parcels_names = get_allen_meta_parcels;
                 
-                for ni = 1:2%find(~strcmp(cent_features, 'second_eigval'))
+                %iterate through cent features 
+                
+                sessions_to_animals_type(spon_states(parcel_i,:,state_i,ni))
+                for ni = 1:3%find(~strcmp(cent_features, 'second_eigval'))
                     %                     for ii=1:length(animalsinds)
                     %                         if all(all(isnan(squeeze(spon_states(:,ii,:,ni)))))
                     %                             continue;
@@ -808,6 +880,7 @@ for sig_i = 1:length(signals_names)
                     %                         str = animals.folder_list{animalsinds(ii)};str(strfind(str, '/')) = '_';str(strfind(str, '\')) = '_';
                     %                         mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [str num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
                     %                     end
+                    
                     plot_bars_by_conditions(spon_states(:,:,:,ni), ...
                         cent_features{ni}, parcels_names, legstr, curtype);
                     mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
