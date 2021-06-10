@@ -1,28 +1,26 @@
 function main_plot_initial_report
-
 %
 addpath('..\functions');
 addpath(genpath('../utils'));
 addpath(genpath('../meta_data_processing/'));
 % procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr';
 [~, ~, finalindex.Allen] = get_allen_meta_parcels;
-outputfiggolder = 'X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\initial_report';
+outputfiggolder = 'X:\Hadas\Meso-imaging\CRISPR\Figures\initial_report';
 dffpath = 'X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
+dffpath = 'X:\Hadas\Meso-imaging\CRISPR\traces_data\';
 
 mkNewDir(outputfiggolder);
 animals_db = get_animals_meta_data_by_csv;
 for fi = 1:length(animals_db.ex_lut)
     mkNewDir(fullfile(outputfiggolder , ['group' num2str(animals_db.ex_lut(fi))]));
 end
-parcelsallen=load('X:\Hadas\Meso-imaging\Antara\preprocessing\parcells_updated121519.mat');
+parcelsallen=load('parcells_updated121519.mat');
 
 spontindic = animals_db.sessionsid_list==find(strcmp(animals_db.sessionsids_lut, 'Spon'));
 for i = 1:length(animals_db.animal_lut)
     curranimal = find((animals_db.animal_list ==  (i))&spontindic);
     animals_inds_list{i} = curranimal;
 end
-
-
 for i = 1:length(animals_inds_list)
     
     for ii = 1:length(animals_inds_list{i})
@@ -37,9 +35,9 @@ for i = 1:length(animals_inds_list)
         if isfile(fullfile(outfigscurrpath, [str '_means.fig']))
             continue;
         end
-        
-        spike2pth = fullfile('X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData\', animals_db.folder_list{k});
-        if ~isfile(fullfile(spike2pth, 'smrx_signals_v3.mat'))
+% spike2pth = fullfile('X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData\', animals_db.folder_list{k});
+        spike2pth = fullfile('X:\Hadas\Meso-imaging\CRISPR\traces_data\');
+        if ~isfile(fullfile(spike2pth, animals_db.folder_list{k},'smrx_signals_v4.mat'))
             disp(['No spike2 '  animals_db.folder_list{k}]);
             continue;
         end
@@ -60,8 +58,8 @@ for i = 1:length(animals_inds_list)
             continue;
         end
         %% plot traces
-        
-        load(fullfile(spike2pth, 'smrx_signals_v3.mat'), 'timing', 'channels_data');
+
+        load(fullfile(spike2pth,  animals_db.folder_list{k},'smrx_signals_v4.mat'), 'timing', 'channels_data');
         load(datafile_allen, 'parcels_time_trace');
         t_imaging = timing.bluestart;
         L=min(length(t_imaging), size(parcels_time_trace,2));
@@ -109,4 +107,3 @@ for i = 1:length(animals_inds_list)
     end
 end
 end
-

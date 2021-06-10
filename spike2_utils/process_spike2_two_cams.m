@@ -15,22 +15,16 @@ sCFG.sPARAM.winlengthsmoothing = 1;%smoothing wheel with 1 second window
 data = process_spike2_smr2mat('', outputpath, data_smr_time_stamp_filename, channels_num);
 [channels_data,wheelOn,wheelOff,h1] = get_channels_data_from_samples_with_wheelonoff(data, channels, sCFG,fsspike2);
 mysave(h1, char(strcat(outputpath,'\wheel_on_off_times')), 'all');
-
 timing.allwheelon=wheelOn(:); timing.allwheeloff=wheelOff(:);
 threshold1=0.6;threshold2=0.05;
-
 [timing.mesostart,timing.mesoend]=squaredetect(channels_data.mesoframe,.5);%camera start, end
 timing.mesostart=timing.mesostart/fsspike2; timing.mesoend=timing.mesoend/fsspike2; 
-
 [timing.bluestart,timing.blueend]=squaredetect(channels_data.blue,.5);%blue light start, end
 timing.bluestart=timing.bluestart/fsspike2;timing.blueend=timing.blueend/fsspike2; 
-
 [timing.uvstart,timing.uvend]=squaredetect(channels_data.uv,.5);%uv light start, end 
 timing.uvstart=timing.uvstart/fsspike2; timing.uvend=timing.uvend/fsspike2; 
-
 [airpuffstart,airpuffend]=squaredetect(channels_data.air_puff,.5);%airpuf/electrical stim start,end
 airpuffstart=airpuffstart/fsspike2;airpuffend=airpuffend/fsspike2; 
-
 if ~isempty(airpuffstart)
 tmp=find(diff(airpuffstart)>5)+1; %make sure airpuffs/estim are spaced by at least 5s 
 tmp1=airpuffstart(tmp);tmp2=airpuffend(tmp); 
@@ -42,60 +36,10 @@ threshold1=0.6;%lav changed threshold 2 from 0.05 to 1 on dec 22 2020
 threshold2=0.05;
 
 [timing.pupilcamstart,timing.pupilcamend]= PupilDetectOnOff(channels_data.pupil,threshold1,threshold2,1/pupilSR,fsspike2);
-
+if isempty(timing.mesostart)
+timing.mesostart = timing.bluestart;
+timing.mesoend = timing.blueend;
+end
 %% finetune locomotion and airpuff/electrical stimulation timing 
 %only use wheel on with quiescence period of 10s and at least 5s of
 %running and not occuring during other events (visual stim and airpuff)
-idx=(wheelOn>timing.mesostart(1)+minSitDuration); 
-wheelOn_t1=wheelOn(idx); 
-wheelOff_t1=wheelOff(idx); 
-
-idx1=find((wheelOff_t1-wheelOn_t1)>=minRunDuration); 
-newWheelOnTimes=wheelOn_t1(2:end); 
-newWheelOffTimes=wheelOff_t1(1:end-1);
-idx2=(find((newWheelOnTimes-newWheelOffTimes)>=minSitDuration))+1;
-idx3=intersect(idx1,idx2);                                
-
-wheelOn_int=wheelOn_t1(1,idx3);
-wheelOff_int=wheelOff_t1(1,idx3); 
-
-%find wheel on times when airpuff/stim  is not given 
-allEvts=airpuffstart; 
-if ~isempty(allEvts)
-    allEvts=sort(allEvts,'ascend');
-    for i=1:length(allEvts)
-        if i==1 && length(allEvts)==1
-             index{i}=[(find(wheelOn_int<(allEvts(i)-minRunDuration))), (find(wheelOn_int>(allEvts(i)+ITITime)))];
-        elseif i==1   
-            index{i}=[(find(wheelOn_int<(allEvts(i)-minRunDuration))), (find(wheelOn_int>(allEvts(i)+ITITime) & wheelOn_int<(allEvts(i+1)-minRunDuration)))];
-        elseif i>1 && i<length(allEvts)
-            index{i}=find(wheelOn_int>(allEvts(i)+ITITime) & wheelOn_int<(allEvts(i+1)-minRunDuration));
-        elseif i==length(allEvts)
-            index{i}=find(wheelOn_int>allEvts(i)+ITITime);
-        end
-    end
-    Indices=cell2mat(index);
-    wheelOn_final=wheelOn_int(1,Indices);
-    wheelOff_final=wheelOff_int(1,Indices);
-else
-    wheelOn_final=wheelOn_int;
-    wheelOff_final=wheelOff_int;
-end
-timing.wheelOn=wheelOn_final(:); timing.wheelOff=wheelOff_final(:); %locomotion onset and offset times in seconds
-
-
-%extract airpuff/estim times not contaminated by locomotion 
-airpuffStart_final=airpuffstart; 
-airpuffEnd_final=airpuffend; 
-if ~isempty(airpuffStart_final)
-for i=1:length(airpuffstart)
-    isRun=find(wheelOn>(airpuffstart(i)-2) & wheelOn<airpuffstart(i)+ITITime);
-    ToDelete(i)=~isempty(isRun);   
-end 
-airpuffStart_final(ToDelete)=[]; 
-airpuffEnd_final(ToDelete)=[]; 
-end  
-timing.airpuffstart=airpuffStart_final(:); timing.airpuffend=airpuffEnd_final(:); %airpuff/estim on/off times in seconds 
-
-
-
