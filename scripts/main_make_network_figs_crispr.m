@@ -20,12 +20,12 @@ for sim_i = 1:length(similarity_name)
     %change these from sessions to animals
     %iterate over 4th dimension of nan(23,23,1000,n); and adjust code to
     %average new matrix
-     plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder,false);
+    plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder,false);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
    
     %this is where im getting errors-continue tomorrow
-    plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
+    %plot_centrality_across_groups_arousal(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
     
     %not used in a while
     %     plot_ctrl_vs_mutants(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
@@ -146,7 +146,7 @@ for dataset=2:4
     clearvars data newdata parcel_i parcel_j
 end
 else
-    load('newest_all_facemap_perm_corr.mat');
+    load('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newest_all_facemap_perm_corr.mat');
 end
 
 %save('newest_all_facemap_perm_corr.mat')
@@ -161,7 +161,9 @@ for ci = 1:length(animals.type_lut)
     [hface23(:,:,ci),pvalface23(:,:,ci)]=corr_perm_test(locdata_new, highfacedata_new, locdata_sh_new, high_facedata_sha_new, types==ci);
     % 1->2
     [hface12(:,:,ci),pvalface12(:,:,ci)]=corr_perm_test(highfacedata_new, lowfacedata_new, highfacedata_shb_new, lowfacedata_sh_new, types==ci);
-   
+ 
+    [hface13(:,:,ci),pvalface13(:,:,ci)]=corr_perm_test(locdata_new, lowfacedata_new, locdata_sh_new, lowfacedata_sh_new, types==ci);
+
 end
 % 1->2
 plot_corr_by_state(animals, highfacedata, lowfacedata, hface12, 'High face', 'Low face');
@@ -170,7 +172,8 @@ mysave(gcf, fullfile(outputfiggolder, 'corr_face_1_2'));
 plot_corr_by_state(animals, locdata, highfacedata, hface23, 'Loc', 'High face');
 mysave(gcf, fullfile(outputfiggolder, 'corr_face_2_3'));
 
-
+plot_corr_by_state(animals, locdata, lowfacedata, hface13, 'Loc', 'Low face');
+mysave(gcf, fullfile(outputfiggolder, 'corr_face_1_3'));
 
 end
 function [trial_states, spon_states] = load_similarity_matrices(signame, outputfolder, animals, statenames, isweigtedstr)
@@ -825,9 +828,8 @@ for sig_i = 1:length(signals_names)
             %             somatoinds = find(parcels_region_labels==6);
             thT=[ Inf ];%150
     end
-    arousaltypes = unique(animals.type_list);
     Nstates = length(statenames);
-    for ti = 1:length(arousaltypes)
+    for ti = 1:length(unique(animals.type_list))
         curtype = animals.type_lut{ti};
         animalsinds = find(animals.type_list==ti & animals.toinclude_list==3);
         for isweigted = 1:length(isweigtedstr)
@@ -868,8 +870,15 @@ for sig_i = 1:length(signals_names)
                 parcels_names = get_allen_meta_parcels;
                 
                 %iterate through cent features 
+                clearvars spon_states_new
+                for ni = 1:3 %cent type
+                    for state_i=1:length(statenames) %state type
+                        for parcel_i=1:length(parcels_names) %parcel 
+                            spon_states_new(parcel_i,:,state_i,ni)=sessions_to_animals_type(spon_states(parcel_i,:,state_i,ni),ti);
+                        end
+                    end
+                end
                 
-                sessions_to_animals_type(spon_states(parcel_i,:,state_i,ni))
                 for ni = 1:3%find(~strcmp(cent_features, 'second_eigval'))
                     %                     for ii=1:length(animalsinds)
                     %                         if all(all(isnan(squeeze(spon_states(:,ii,:,ni)))))
@@ -881,7 +890,7 @@ for sig_i = 1:length(signals_names)
                     %                         mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [str num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
                     %                     end
                     
-                    plot_bars_by_conditions(spon_states(:,:,:,ni), ...
+                    plot_bars_by_conditions(spon_states_new(:,:,:,ni), ...
                         cent_features{ni}, parcels_names, legstr, curtype);
                     mysave(gcf, fullfile(outputfiggolder,cent_features{ni}, [num2str(Nstates) 'states_' curtype '_spont_',cent_features{ni},'_'  isweigtedstr{isweigted}  '_bars_' signals_names{sig_i} '_th' num2str(th)]));
                     

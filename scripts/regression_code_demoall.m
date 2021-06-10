@@ -17,12 +17,11 @@ figspath = 'X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\regression';
 do_analysis(animals_db, datapath, imagingpath, spike2path, procdatapath);
 plot_regression_results(animals_db, procdatapath, figspath);
 
-
 end
 function do_analysis(animals_db, datapath, imagingpath, spike2path, procdatapath)
 % regression analysis
 clc;
-for k=44:length(animals_db.animal_list)
+for k=1:length(animals_db.animal_list)
     if animals_db.toinclude_list(k)==find(strcmp(animals_db.toinclude_lut, 'Good'))&&...
             animals_db.isgoodpupil_list(k)==find(strcmp(animals_db.isgoodpupil_lut, 'GOOD'))
         mkNewDir(fullfile(procdatapath,animals_db.folder_list{k}));

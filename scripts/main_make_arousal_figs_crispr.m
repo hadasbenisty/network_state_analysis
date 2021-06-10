@@ -150,11 +150,13 @@ for ai = 1:n
                 Tstates(ai, state_i) = sum(diff(segments_arousals.(stateslabels{state_i}),1,2));
                 Nstates(ai, state_i) = size(segments_arousals.(stateslabels{state_i}),1);
                 wheelvalsall.(stateslabels{state_i})(ai) = mean(extract_segment(t_imaging, wheel_speed', segments_arousals.(stateslabels{state_i})));
+                %changed june 9 to extract zscored value (by bottom 10%)
+                %rather than raw pupil and facemap values
                 if ~isempty(pupil) && ~all(isnan(pupil))
-                    pupvalsall.(stateslabels{state_i})(ai) = mean(extract_segment(t_imaging, pupil', segments_arousals.(stateslabels{state_i})));
+                    pupvalsall.(stateslabels{state_i})(ai) = mean(extract_segment(t_imaging, pupil_Norm', segments_arousals.(stateslabels{state_i})));
                 end
                 if ~isempty(face) && ~all(isnan(face))
-                    facevalsall.(stateslabels{state_i})(ai) = mean(extract_segment(t_imaging, face', segments_arousals.(stateslabels{state_i})));
+                    facevalsall.(stateslabels{state_i})(ai) = mean(extract_segment(t_imaging, face_Norm', segments_arousals.(stateslabels{state_i})));
                 end
                 runningTime(ai) = sum(abs(wheel_speed)>0.03)/length(wheel_speed);
             end
@@ -173,7 +175,7 @@ for state_i = 1:length(stateslabels)
 end
 
 CondColors = get_4states_colors;
-if length(stateslabels_ttls)==s2
+if length(stateslabels_ttls)==2
     CondColors = get_3states_colors;
     CondColors=CondColors([1 3],:);
 end

@@ -13,15 +13,15 @@ mkNewDir(procdatapath);
 doover=true;
 
 
-
-for k=55:length(animals_db.folder_list)
-    disp(k)
-    isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
-    if isimaging_good
-        extract_sustained_states_wheel_pupil_face(spike2path, procdatapath, animals_db.folder_list{k});
-    end
-    close all;
-end
+%temporarily commented out to zscore dff
+% for k=1:length(animals_db.folder_list)
+%     disp(k)
+%     isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
+%     if isimaging_good
+%         extract_sustained_states_wheel_pupil_face(spike2path, procdatapath, animals_db.folder_list{k});
+%     end
+%     close all;
+% end
 
 %
 %  for k=1:length(animals_db.folder_list)
@@ -531,6 +531,7 @@ if ispupil
     pupil = interp1(pupil_time, pupil, t_imaging);
 else
     pupil=nan;
+    pupil_Norm=nan;
 end
 
 if isfacemap
@@ -545,10 +546,11 @@ if isfacemap
     face = interp1(face_time, face, t_imaging);
 else
     face=nan;
+    face_Norm=nan;
 end
 
 save(fullfile(procdatapath, animalpath, 'arousal_traces_states.mat'),...
-    't_imaging','pupil','face', 'wheel_speed', 'segments_arousals');
+    't_imaging','pupil','face', 'wheel_speed', 'segments_arousals','pupil_Norm','face_Norm');
 
 
 if ~isfield(segments_arousals, 'low_face')||~isfield(segments_arousals, 'high_face')
@@ -675,6 +677,7 @@ for ir=1:length(animals_db.animal_list)
     %     delay_filt=150;
     datafile_allen = fullfile(spike2path, animal,  'Ca_traces_spt_patch11_Allen_dfff.mat');
     %     datafile_grid4 = fullfile(dffpath, animal,'Ca_traces_spt_patch11_Grid4_dfff.mat');
+    
     if ~exist(fullfile(spike2pth, 'smrx_signals_v4.mat'), 'file')
         continue;
     end
@@ -704,17 +707,49 @@ for ir=1:length(animals_db.animal_list)
     end
     Y = extract_segment(t_imaging, Xa, segments_arousals.sit);
     
+    
     Xa = bsxfun(@minus, Xa, quantile(Y',.0050)');
     tind = randperm(size(Xa,2));
     Xa_shuffled = Xa(:,tind);
-    %     Xa = bsxfun(@rdivide, Xa, nanstd(Xa,[],2));
+    
+    %zscore changed june 9
+    
+%     Zscored_Xa=nan(size(Xa,1),size(Xa,2));
+%     for i=1:23
+%         val=Xa(i,:);
+%         Ms = sort(val,'ascend','MissingPlacement','last');% Sort asending along time dimension
+%         F0Vals = Ms(1:ceil(length(Ms)*0.1)); % lower 10% of the values
+%         MeanF0=mean(F0Vals);
+%         Zscored_Xa(i,:)=(Xa(i,:)-MeanF0)./nanstd(F0Vals);
+%     end
+
+
+     Xa_original=a.parcels_time_trace(finalindex.Allen,:);
+%     Xa_Zscored = bsxfun(@minus, Xa_original, nanmean(nanmean(Xa_original)));
+%     Xa_Zscored = bsxfun(@rdivide, Xa_Zscored, nanstd(nanstd(Xa_original)));
+
+    Xa_Zscored=nan(size(Xa,1),size(Xa,2));
+    for i=1:23
+        A=Xa_original(i,:);
+        Xa_Zscored(i,:)=(A - nanmean(A))./nanstd(A);
+    end
+    
+
     res = get_data_by_state(statesnames, Xa, t_imaging, segments_arousals);
     names = fieldnames(res);
-    
     for k=1:length(names)
         eval([names{k} ' =  res.(names{k});']);
     end
     save(resfile,'low_face','high_face','loc');
+    
+    
+    zscored_resfile = fullfile(procdatapath,  animal, 'z_con_states.mat');
+    Zscored_res = get_data_by_state(statesnames, Xa_Zscored, t_imaging, segments_arousals);
+    for k=1:length(names)
+        eval([names{k} ' =  Zscored_res.(names{k});']);
+    end
+    save(zscored_resfile,'low_face','high_face','loc');
+
 end
 
 end

@@ -148,14 +148,18 @@ for i=1:length(animals_db.folder_list)
         continue;
     end
     resfile = fullfile(procdatapath,  animals_db.folder_list{i}, 'con_states.mat');
+    zscored_data=  fullfile(procdatapath,  animals_db.folder_list{i}, 'z_con_states.mat');
+
     if isfile(resfile)
         load(resfile);
+        z=load(zscored_data);
+        
         for state_i = 1:length(statenames)
             dat = eval(statenames{state_i});
-            
+            zdat=z.(statenames{state_i});
             if ~isempty(dat.Allen)
-                mean_activity(:, state_i, i) = nanmean(nanmean(dat.Allen, 2));
-                mean_activity_parcels(:, state_i, i) = nanmean(dat.Allen, 2);
+                mean_activity(:, state_i, i) = nanmean(nanmean(zdat.Allen, 2));
+                mean_activity_parcels(:, state_i, i) = nanmean(zdat.Allen, 2);
             end
         end
     end
@@ -341,8 +345,15 @@ for i=1:length(validsessions)
         continue;
     end
     load(segmentfile, 'segments_arousals');
-    Y = extract_segment(t_imaging, parcels_time_trace, segments_arousals.sit);
-    Xa = bsxfun(@minus, parcels_time_trace, quantile(Y',.0050)');
+%    Y = extract_segment(t_imaging, parcels_time_trace, segments_arousals.sit);
+%     Xa = bsxfun(@minus, parcels_time_trace, quantile(Y',.0050)');
+
+    %added june 9
+    Xa=nan(size(parcels_time_trace,1),size(parcels_time_trace,2));
+    for i=1:23
+        A=parcels_time_trace(i,:);
+        Xa(i,:)=(A - nanmean(A))./nanstd(A);
+    end
    
     before_win=2;
     
