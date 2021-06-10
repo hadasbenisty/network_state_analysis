@@ -7,19 +7,21 @@ addpath(genpath('../network_state_analysis/utils'));
 addpath(genpath('../network_state_analysis/functions'));
 addpath(genpath('../network_state_analysis/scripts'));
 
-datapath = 'X:\Hadas\Meso-imaging\Antara\data\Antara\AnalyzedData';
-imagingpath='X:\Hadas\Meso-imaging\Antara\final_preprocess\alldata';
-spike2path = 'X:\CardinLab\Antara\AnalyzedData\';
+datapath = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
+imagingpath='X:\Hadas\Meso-imaging\CRISPR\traces_data';
+spike2path = 'X:\Hadas\Meso-imaging\CRISPR\traces_data';
 animals_db = get_animals_meta_data_by_csv;
-procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\regression';
-figspath = 'X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\regression';
-
+%procdatapath = 'X:\Hadas\Mesoimaging\crispr\meso_results\ProcessingDirectory_crispr\regression';
+procdatapath='X:\Hadas\Meso-imaging\CRISPR\analysis_results';
+%figspath = 'X:\Hadas\Mesoimaging\crispr\meso_results\figs_crispr\regression';
+figspath='X:\Hadas\Meso-imaging\CRISPR\Figures\regression';
 do_analysis(animals_db, datapath, imagingpath, spike2path, procdatapath);
 plot_regression_results(animals_db, procdatapath, figspath);
 
 end
 function do_analysis(animals_db, datapath, imagingpath, spike2path, procdatapath)
 % regression analysis
+addpath(genpath('../network_state_analysis/'));
 clc;
 for k=1:length(animals_db.animal_list)
     if animals_db.toinclude_list(k)==find(strcmp(animals_db.toinclude_lut, 'Good'))&&...

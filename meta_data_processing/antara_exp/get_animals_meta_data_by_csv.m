@@ -3,7 +3,7 @@ function animals_db = get_animals_meta_data_by_csv(csvfile)
 %     load('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
 % else
     if nargin == 0
-        csvfile = '../meta_data_processing/antara_exp/Processing_Pipeline_Full_expression_andHannah.xlsx';
+        csvfile = '../network_state_analysis/meta_data_processing/antara_exp/Processing_Pipeline_Full_expression_andHannah.xlsx';
     end
     T = readtable(csvfile);
 
@@ -68,5 +68,5 @@ animals_db.isgoodpupil_lut=isgoodpupil_lut;
 animals_db.isgoodpupil_list=isgoodpupil_list;
 animals_db.isimagingood_lut=isimagingood_lut;
 animals_db.isimagingood_list=isimagingood_list;
-    save('../meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
+    save('../network_state_analysis/meta_data_processing/antara_exp/animals_db.mat', 'animals_db');
 %end 

@@ -34,6 +34,7 @@ for sim_i = 1:length(similarity_name)
 end
 end
 function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder,doover)
+
 if doover==true
 n=length(animals.folder_list);
 validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
@@ -98,7 +99,7 @@ for dataset=1:4
     newdata=nan(23,23,n_animals);    
 for parcel_i=1:length(parcels_names)
     for parcel_j=1:length(parcels_names)
-        [newdata(parcel_i,parcel_j,:),types,~]=sessions_to_animals(squeeze(data(parcel_i,parcel_j,:)))
+        [newdata(parcel_i,parcel_j,:),types,~]=sessions_to_animals(squeeze(data(parcel_i,parcel_j,:)));
     end
 end
     if dataset==1
@@ -145,13 +146,17 @@ for dataset=2:4
     end
     clearvars data newdata parcel_i parcel_j
 end
+
 else
-    load('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newest_all_facemap_perm_corr.mat');
+    load('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newest_all_facemap_perm_corr.mat',...
+    'high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new',...
+    'sitdata_new','locdata_new'...
+    ,'highfacedata_new','lowfacedata_new');
 end
 
 %save('newest_all_facemap_perm_corr.mat')
 %save('backup_newest_all_facemap_perm_corr.mat','high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new','-v7.3')
-
+[~,types]=sessions_to_animals(animals.type_list);
 for ci = 1:length(animals.type_lut)
     nbytype(ci)=length(find(types==ci)==1);
 end
@@ -166,13 +171,13 @@ for ci = 1:length(animals.type_lut)
 
 end
 % 1->2
-plot_corr_by_state(types, highfacedata_new, lowfacedata_new, hface12, 'High face', 'Low face');
+plot_corr_by_state(animals, highfacedata, lowfacedata, hface12, 'High face', 'Low face');
 mysave(gcf, fullfile(outputfiggolder, 'corr_face_1_2'));
 % 2->3
-plot_corr_by_state(types, locdata_new, highfacedata_new, hface23, 'Loc', 'High face');
+plot_corr_by_state(animals, locdata, highfacedata, hface23, 'Loc', 'High face');
 mysave(gcf, fullfile(outputfiggolder, 'corr_face_2_3'));
 
-plot_corr_by_state(types, locdata_new, lowfacedata_new, hface13, 'Loc', 'Low face');
+plot_corr_by_state(animals, locdata, lowfacedata, hface13, 'Loc', 'Low face');
 mysave(gcf, fullfile(outputfiggolder, 'corr_face_1_3'));
 
 end

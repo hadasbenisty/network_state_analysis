@@ -262,7 +262,7 @@ end
 mysave(gcf, fullfile(outputfiggolder, ['spont_wheel_hist_' num2str(length(stateslabels_ttls)) 'states']));
 
 %% pupil histograms per state and behavior
-figure;binsN = linspace(100,3e3,100);
+figure;binsN = linspace(0,100,100);
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
     subplot(1,length(animals_db.type_lut),ci);
@@ -281,7 +281,7 @@ end
 mysave(gcf, fullfile(outputfiggolder, ['spont_pup_hist_' num2str(length(stateslabels_ttls)) 'states']));
 
 %facemap
-figure;binsN = linspace(100,3e3,100);
+figure;binsN = linspace(0,200,100);
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
     subplot(1,length(animals_db.type_lut),ci);
@@ -301,11 +301,11 @@ mysave(gcf, fullfile(outputfiggolder, ['spont_facemap_hist_' num2str(length(stat
 %facemap 2 states
 
 %facemap
-figure;binsN = linspace(100,3e3,100);
+figure;binsN = linspace(0,100,100);
 for ci = 1:length(animals_db.type_lut)
     animals = find(animals_db.type_list==ci);
     subplot(1,length(animals_db.type_lut),ci);
-    for state_i = 2:length(stateslabels)
+    for state_i = 1:2
         x = facevalsall.(stateslabels{state_i})(animals);
         set(gcf,'renderer','Painters');
         b=hist(x, binsN);

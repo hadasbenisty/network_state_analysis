@@ -14,14 +14,14 @@ doover=true;
 
 
 %temporarily commented out to zscore dff
-% for k=1:length(animals_db.folder_list)
-%     disp(k)
-%     isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
-%     if isimaging_good
-%         extract_sustained_states_wheel_pupil_face(spike2path, procdatapath, animals_db.folder_list{k});
-%     end
-%     close all;
-% end
+for k=1:length(animals_db.folder_list)
+    disp(k)
+    isimaging_good =animals_db.toinclude_list(k) == find(strcmp(animals_db.toinclude_lut,'Good'));
+    if isimaging_good
+        extract_sustained_states_wheel_pupil_face(spike2path, procdatapath, animals_db.folder_list{k});
+    end
+    close all;
+end
 
 %
 %  for k=1:length(animals_db.folder_list)

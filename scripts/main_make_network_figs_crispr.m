@@ -20,7 +20,7 @@ for sim_i = 1:length(similarity_name)
     %change these from sessions to animals
     %iterate over 4th dimension of nan(23,23,1000,n); and adjust code to
     %average new matrix
-    plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder,false);
+    plot_correlation_matrics_permutation_test_facemap(procfolder, similarity_name{sim_i}, animals, outputfiggolder,true);
     
     plot_centrality_res(cent_features, similarity_name{sim_i}, animals, outputfiggolder, stateslabels3, doover);
    
@@ -34,6 +34,7 @@ for sim_i = 1:length(similarity_name)
 end
 end
 function plot_correlation_matrics_permutation_test_facemap(procfolder, simname, animals, outputfiggolder,doover)
+
 if doover==true
 n=length(animals.folder_list);
 validinds = animals.toinclude_list==find(strcmp(animals.toinclude_lut, 'Good'));
@@ -98,7 +99,7 @@ for dataset=1:4
     newdata=nan(23,23,n_animals);    
 for parcel_i=1:length(parcels_names)
     for parcel_j=1:length(parcels_names)
-        [newdata(parcel_i,parcel_j,:),types,~]=sessions_to_animals(squeeze(data(parcel_i,parcel_j,:)))
+        [newdata(parcel_i,parcel_j,:),types,~]=sessions_to_animals(squeeze(data(parcel_i,parcel_j,:)));
     end
 end
     if dataset==1
@@ -115,7 +116,7 @@ end
 %for each shuffled (x1000) correlation matrix per session, average across
 %sessions to days (same as above)
 
-for dataset=2:4
+for dataset=1:4
     if dataset==1
         data=high_facedata_sha;
     elseif dataset==2
@@ -145,13 +146,21 @@ for dataset=2:4
     end
     clearvars data newdata parcel_i parcel_j
 end
+    save('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newestv2_all_facemap_perm_corr.mat',...
+    'high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new',...
+    'sitdata_new','locdata_new'...
+    ,'highfacedata_new','lowfacedata_new')
+
 else
-    load('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newest_all_facemap_perm_corr.mat');
+    load('X:\Hadas\Meso-imaging\CRISPR\analysis_results\newestv2_all_facemap_perm_corr.mat',...
+    'high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new',...
+    'sitdata_new','locdata_new'...
+    ,'highfacedata_new','lowfacedata_new');
 end
 
 %save('newest_all_facemap_perm_corr.mat')
 %save('backup_newest_all_facemap_perm_corr.mat','high_facedata_sha_new','locdata_sh_new','highfacedata_shb_new','lowfacedata_sh_new','-v7.3')
-
+[~,types]=sessions_to_animals(animals.type_list);
 for ci = 1:length(animals.type_lut)
     nbytype(ci)=length(find(types==ci)==1);
 end
